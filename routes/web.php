@@ -37,9 +37,11 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
 
     // Mesas
-    Route::post('/mesas',         [MesaController::class, 'store'])->name('mesas.store');
-    Route::put('/mesas/{mesa}',   [MesaController::class, 'update'])->name('mesas.update');
-    Route::delete('/mesas/{mesa}',[MesaController::class, 'destroy'])->name('mesas.destroy');
+    Route::post('/mesas',                    [MesaController::class, 'store'])->name('mesas.store');
+    Route::put('/mesas/{mesa}',              [MesaController::class, 'update'])->name('mesas.update');
+    Route::delete('/mesas/{mesa}',           [MesaController::class, 'destroy'])->name('mesas.destroy');
+    Route::post('/mesas/{mesa}/unir',        [MesaController::class, 'unir'])->name('mesas.unir');
+    Route::post('/mesas/{mesa}/separar',     [MesaController::class, 'separar'])->name('mesas.separar');
 
     // Pedidos
     Route::post('/pedidos', [PedidoController::class, 'store'])->name('pedidos.store');

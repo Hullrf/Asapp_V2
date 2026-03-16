@@ -12,7 +12,12 @@ class PanelController extends Controller
         $productos = $negocio->productos()->with('categoria')->orderBy('nombre')->get();
         $categorias = $negocio->categorias()->orderBy('nombre')->get();
         $mesas     = $negocio->mesas()
-            ->with(['pedidos' => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1)])
+            ->with([
+                'pedidos'      => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
+                'mesasUnidas',
+                'mesaPrincipal',
+                'mesaPrincipal.pedidos' => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
+            ])
             ->orderBy('nombre')
             ->get();
 

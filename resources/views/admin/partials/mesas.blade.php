@@ -28,18 +28,49 @@
         <div class="mesas-grid">
             @foreach ($mesas as $mesa)
                 @php
-                    $pedidoActivo = $mesa->pedidos->first();
-                    $ocupada      = (bool) $pedidoActivo;
-                    $urlQr        = route('mesa.publica', $mesa->codigo_qr);
+                    $esSecundaria = $mesa->estaUnida();
+
+                    // Pedido activo: para secundarias, usar el de la principal
+                    if ($esSecundaria) {
+                        $pedidoActivo = $mesa->mesaPrincipal->pedidos->first() ?? null;
+                    } else {
+                        $pedidoActivo = $mesa->pedidos->first();
+                    }
+
+                    $ocupada = (bool) $pedidoActivo;
+                    $urlQr   = route('mesa.publica', $mesa->codigo_qr);
+
+                    // Mesas candidatas a ser la principal de esta mesa:
+                    // libres, no secundarias, no la mesa misma, sin mesas unidas propias
+                    $candidatas = $mesas->filter(fn($m) =>
+                        $m->id_mesa !== $mesa->id_mesa &&
+                        ! $m->estaUnida() &&
+                        $m->pedidos->isEmpty()
+                    );
                 @endphp
 
-                <div class="mesa-card {{ $ocupada ? 'ocupada' : 'libre' }}">
-                    <div class="mesa-icono">{{ $ocupada ? '🟡' : '🟢' }} 🪑</div>
+                <div class="mesa-card {{ $ocupada ? 'ocupada' : 'libre' }}"
+                     style="{{ $esSecundaria ? 'border-style: dashed; opacity: 0.85;' : '' }}">
+
+                    <div class="mesa-icono">{{ $ocupada ? '🟡' : '🟢' }} {{ $esSecundaria ? '🔗' : '🪑' }}</div>
                     <div class="mesa-nombre">{{ $mesa->nombre }}</div>
 
                     <span class="mesa-estado {{ $ocupada ? 'estado-ocupada' : 'estado-libre' }}">
                         {{ $ocupada ? 'Ocupada' : 'Libre' }}
                     </span>
+
+                    {{-- Indicador de unión --}}
+                    @if ($esSecundaria)
+                        <div style="font-size:11px; color:#7C3AED; background:#EDE9FE; border-radius:6px;
+                                    padding:3px 8px; margin-bottom:4px; text-align:center;">
+                            🔗 Unida a: <strong>{{ $mesa->mesaPrincipal->nombre }}</strong>
+                        </div>
+                    @elseif ($mesa->mesasUnidas->isNotEmpty())
+                        <div style="font-size:11px; color:#6B21A8; background:#F3E8FF; border-radius:6px;
+                                    padding:3px 8px; margin-bottom:4px; text-align:center;">
+                            🪑 Grupo: {{ $mesa->mesasUnidas->pluck('nombre')->prepend($mesa->nombre)->join(' + ') }}
+                        </div>
+                    @endif
 
                     <div class="mesa-acciones">
 
@@ -56,11 +87,13 @@
                                 📄 Ver factura
                             </a>
                         @else
-                            {{-- Ir a crear pedido para esta mesa --}}
-                            <button class="btn btn-primary btn-sm"
-                                    onclick="irACrearPedido({{ $mesa->id_mesa }})">
-                                🧾 Nuevo pedido
-                            </button>
+                            @if (! $esSecundaria)
+                                {{-- Ir a crear pedido (solo mesas principales/independientes) --}}
+                                <button class="btn btn-primary btn-sm"
+                                        onclick="irACrearPedido({{ $mesa->id_mesa }})">
+                                    🧾 Nuevo pedido
+                                </button>
+                            @endif
                         @endif
 
                         {{-- Renombrar --}}
@@ -74,16 +107,46 @@
                             <button type="submit" class="btn btn-warning btn-sm" style="flex-shrink:0;">✏️</button>
                         </form>
 
-                        @if (!$ocupada)
-                            {{-- Eliminar --}}
-                            <form action="{{ route('panel.mesas.destroy', $mesa) }}" method="POST"
-                                  onsubmit="return confirm('¿Eliminar esta mesa?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">
-                                    🗑️ Eliminar
-                                </button>
-                            </form>
+                        @if (! $ocupada)
+                            @if ($esSecundaria)
+                                {{-- Separar de la principal --}}
+                                <form action="{{ route('panel.mesas.separar', $mesa) }}" method="POST"
+                                      onsubmit="return confirm('¿Separar {{ addslashes($mesa->nombre) }} de {{ addslashes($mesa->mesaPrincipal->nombre) }}?')">
+                                    @csrf
+                                    <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">
+                                        🔓 Separar mesa
+                                    </button>
+                                </form>
+                            @else
+                                {{-- Unir con otra mesa (solo si no tiene mesas unidas propias) --}}
+                                @if ($mesa->mesasUnidas->isEmpty() && $candidatas->isNotEmpty())
+                                    <form action="{{ route('panel.mesas.unir', $mesa) }}" method="POST"
+                                          style="display:flex; gap:6px; margin-top:4px; width:100%;">
+                                        @csrf
+                                        <select name="id_mesa_principal" required
+                                                style="flex:1; min-width:0; font-size:12px; padding:5px 8px;">
+                                            <option value="">— Unir con —</option>
+                                            @foreach ($candidatas as $c)
+                                                <option value="{{ $c->id_mesa }}">{{ $c->nombre }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="btn btn-info btn-sm"
+                                                style="flex-shrink:0;" title="Unir mesa">
+                                            🔗
+                                        </button>
+                                    </form>
+                                @endif
+
+                                {{-- Eliminar --}}
+                                <form action="{{ route('panel.mesas.destroy', $mesa) }}" method="POST"
+                                      onsubmit="return confirm('¿Eliminar esta mesa?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">
+                                        🗑️ Eliminar
+                                    </button>
+                                </form>
+                            @endif
                         @endif
 
                     </div>

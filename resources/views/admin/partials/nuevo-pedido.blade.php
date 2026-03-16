@@ -1,5 +1,6 @@
 @php
-    $mesasLibres      = $mesas->filter(fn($m) => $m->pedidos->isEmpty())->values();
+    // Excluir mesas secundarias (unidas a otra): el pedido se crea en la principal
+    $mesasLibres      = $mesas->filter(fn($m) => $m->pedidos->isEmpty() && ! $m->estaUnida())->values();
     $productosDisp    = $productos->filter(fn($p) => $p->disponible)->values();
 @endphp
 
