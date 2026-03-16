@@ -107,15 +107,22 @@
 
 {{-- ── TABLA DE PRODUCTOS ── --}}
 <div class="card">
-    <div class="card-title">📋 Productos del negocio</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
+        <div class="card-title" style="margin-bottom:0;">📋 Productos del negocio</div>
+        @if ($productos->isNotEmpty())
+            <input type="text" id="buscador-productos" placeholder="🔍 Buscar por nombre, categoría…"
+                   oninput="filtrarProductos(this.value)"
+                   style="max-width:260px; font-size:13px; padding:7px 12px;">
+        @endif
+    </div>
 
     @if ($productos->isEmpty())
         <p style="color:#9B8EC4; font-size:14px; text-align:center; padding:24px 0;">
             Aún no has agregado productos. Usa el formulario de arriba.
         </p>
     @else
-        <div style="overflow-x:auto;">
-            <table>
+        <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+            <table id="tabla-productos">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -130,12 +137,13 @@
                 </thead>
                 <tbody>
                     @foreach ($productos as $producto)
+                    @php $busqueda = strtolower($producto->nombre . ' ' . $producto->descripcion . ' ' . ($producto->categoria?->nombre ?? '')); @endphp
                         @php
                             $sinStock  = $producto->stock === null;
                             $agotado   = !$sinStock && $producto->stock === 0;
                             $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
                         @endphp
-                        <tr>
+                        <tr data-busqueda="{{ $busqueda }}">
                             <td style="color:#9B8EC4;">{{ $producto->id_producto }}</td>
                             <td style="font-weight:600;">{{ $producto->nombre }}</td>
                             <td style="color:#9B8EC4; font-size:12px;">{{ $producto->descripcion }}</td>
@@ -189,6 +197,11 @@
                             </td>
                         </tr>
                     @endforeach
+                    <tr id="sin-resultados" style="display:none;">
+                        <td colspan="8" style="text-align:center; color:#9B8EC4; padding:20px; font-size:13px;">
+                            Sin productos que coincidan con la búsqueda.
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -273,6 +286,20 @@ function cerrarModalProducto() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalProducto(); });
+
+function filtrarProductos(q) {
+    const term = q.toLowerCase().trim();
+    const filas = document.querySelectorAll('#tabla-productos tbody tr');
+    let visibles = 0;
+    filas.forEach(fila => {
+        const texto = fila.dataset.busqueda || '';
+        const match = !term || texto.includes(term);
+        fila.style.display = match ? '' : 'none';
+        if (match) visibles++;
+    });
+    const aviso = document.getElementById('sin-resultados');
+    if (aviso) aviso.style.display = visibles === 0 ? '' : 'none';
+}
 </script>
 
 <style>
@@ -282,8 +309,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalP
         grid-template-columns: 3fr 7fr;
         gap: 24px;
         margin-bottom: 24px;
-        align-items: start;
+        align-items: stretch;
     }
+
+    .inv-top-grid > .card {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .inv-top-grid > .card form:last-child,
+    .inv-top-grid > .card > form { flex: 1; }
 
     .inv-top-grid > .card { min-width: 0; }
 
@@ -354,7 +389,17 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalP
     }
 
     /* Categorías lista */
-    .categorias-lista { display: flex; flex-direction: column; }
+    .categorias-lista {
+        display: flex;
+        flex-direction: column;
+        max-height: 260px;
+        overflow-y: auto;
+        padding-right: 4px;
+    }
+
+    .categorias-lista::-webkit-scrollbar { width: 4px; }
+    .categorias-lista::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
+    .categorias-lista::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
 
     .categoria-item {
         display: flex;
@@ -434,6 +479,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalP
     }
 
     .inv-modal-close:hover { background: #F5F3FF; color: #3D0E8A; }
+
+    /* Scrollbar tabla productos */
+    #tabla-productos { border-collapse: collapse; width: 100%; }
+    div:has(> #tabla-productos)::-webkit-scrollbar { width: 4px; height: 4px; }
+    div:has(> #tabla-productos)::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
+    div:has(> #tabla-productos)::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
 
     @media (max-width: 900px) {
         .inv-top-grid { grid-template-columns: 1fr; }

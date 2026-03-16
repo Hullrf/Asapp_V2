@@ -65,13 +65,13 @@
 
                         {{-- Renombrar --}}
                         <form action="{{ route('panel.mesas.update', $mesa) }}" method="POST"
-                              style="display:flex; gap:6px; margin-top:4px;">
+                              style="display:flex; gap:6px; margin-top:4px; width:100%;">
                             @csrf
                             @method('PUT')
                             <input type="text" name="nuevo_nombre"
                                    value="{{ $mesa->nombre }}"
-                                   style="flex:1; font-size:12px; padding:5px 8px;" required>
-                            <button type="submit" class="btn btn-warning btn-sm">✏️</button>
+                                   style="flex:1; min-width:0; font-size:12px; padding:5px 8px;" required>
+                            <button type="submit" class="btn btn-warning btn-sm" style="flex-shrink:0;">✏️</button>
                         </form>
 
                         @if (!$ocupada)
