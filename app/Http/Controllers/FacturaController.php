@@ -60,6 +60,19 @@ class FacturaController extends Controller
         return redirect()->route('factura.show', $pedido->id_pedido);
     }
 
+    public function sync(Pedido $pedido)
+    {
+        $pedido->load('items');
+
+        return response()->json([
+            'pedido_estado' => $pedido->estado->value,
+            'items'         => $pedido->items->map(fn($i) => [
+                'id'     => $i->id_item,
+                'estado' => $i->estado->value,
+            ])->values(),
+        ]);
+    }
+
     public function reabrir(Pedido $pedido)
     {
         if ($pedido->estado === EstadoPedido::Pagado) {

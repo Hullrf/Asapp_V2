@@ -48,7 +48,7 @@ class PanelController extends Controller
                 'mesaPrincipal',
                 'mesaPrincipal.pedidos' => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
             ])
-            ->orderBy('nombre')
+            ->orderByRaw('LENGTH(nombre), nombre')
             ->get();
 
         $base_url = request()->getSchemeAndHttpHost();

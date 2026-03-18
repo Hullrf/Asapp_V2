@@ -6,6 +6,7 @@ use App\Models\ItemPedido;
 use App\Models\Pago;
 use App\Models\Pedido;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PasarelaController extends Controller
 {
@@ -26,28 +27,34 @@ class PasarelaController extends Controller
         $ids   = array_map('intval', (array) $request->input('items_confirmados', []));
         $monto = 0;
 
-        foreach ($ids as $id_item) {
-            $item = ItemPedido::where('id_item', $id_item)
-                        ->where('id_pedido', $pedido->id_pedido)
-                        ->first();
+        DB::transaction(function () use ($ids, $pedido, &$monto) {
+            foreach ($ids as $id_item) {
+                // lockForUpdate: si otro request ya está procesando este ítem,
+                // espera hasta que termine. Solo procesa ítems aún Pendientes.
+                $item = ItemPedido::where('id_item', $id_item)
+                            ->where('id_pedido', $pedido->id_pedido)
+                            ->where('estado', 'Pendiente')
+                            ->lockForUpdate()
+                            ->first();
 
-            if (!$item) continue;
+                if (!$item) continue; // ya fue pagado por otro usuario, se omite
 
-            $item->update(['estado' => 'Pagado']);
-            $monto += $item->subtotal;
-        }
+                $item->update(['estado' => 'Pagado']);
+                $monto += $item->subtotal;
+            }
 
-        if ($monto > 0) {
-            Pago::create([
-                'id_pedido'   => $pedido->id_pedido,
-                'monto'       => $monto,
-                'metodo_pago' => 'digital',
-                'estado'      => 'simulado',
-            ]);
-        }
+            if ($monto > 0) {
+                Pago::create([
+                    'id_pedido'   => $pedido->id_pedido,
+                    'monto'       => $monto,
+                    'metodo_pago' => 'digital',
+                    'estado'      => 'simulado',
+                ]);
+            }
 
-        $pedido->refresh();
-        $pedido->update(['estado' => $pedido->estaPagado() ? 'Pagado' : 'Parcial']);
+            $pedido->refresh();
+            $pedido->update(['estado' => $pedido->estaPagado() ? 'Pagado' : 'Parcial']);
+        });
 
         return redirect()->route('pago.exitoso', ['pedido' => $pedido->id_pedido, 'monto' => $monto]);
     }

@@ -341,6 +341,9 @@
         #panel-toast.show      { opacity: 1; transform: translateY(0); }
         #panel-toast.toast-ok  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
         #panel-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
+        .toast-inner   { display: flex; align-items: center; gap: 14px; }
+        .toast-close   { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; color: inherit; padding: 0; line-height: 1; flex-shrink: 0; }
+        .toast-close:hover { opacity: 1; }
 
         /* ── MODAL NUEVO PEDIDO ── */
         .modal-np { max-width: 640px; text-align: left; max-height: 90vh; display: flex; flex-direction: column; }
@@ -488,7 +491,7 @@
                                         <input type="number"
                                                name="cantidades[{{ $p->id_producto }}]"
                                                id="np-cant-{{ $p->id_producto }}"
-                                               value="1" min="1" max="99" disabled>
+                                               value="1" min="1" disabled>
                                     </td>
                                 </tr>
                             @endforeach
@@ -637,7 +640,7 @@ document.getElementById('modal-np').addEventListener('click', function(e) {
 // ── AJAX Form Interceptor ─────────────────────────────────────────────
 document.addEventListener('submit', async function(e) {
     const form = e.target;
-    if (!form.dataset.ajax) return;
+    if (!('ajax' in form.dataset)) return;
     e.preventDefault();
 
     let res, data;
@@ -676,7 +679,7 @@ document.addEventListener('submit', async function(e) {
 // ── Toast ─────────────────────────────────────────────────────────────
 function showToast(msg, ok = true) {
     const t = document.getElementById('panel-toast');
-    t.innerHTML = msg;
+    t.innerHTML = `<div class="toast-inner"><span>${msg}</span><button class="toast-close" onclick="document.getElementById('panel-toast').classList.remove('show')">✕</button></div>`;
     t.className = (ok ? 'toast-ok' : 'toast-err');
     t.classList.add('show');
     clearTimeout(t._timer);

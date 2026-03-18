@@ -389,6 +389,32 @@
         .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.5; }
         .empty-state p { font-size: 14px; }
 
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #16a34a;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 20px;
+            padding: 3px 9px;
+        }
+        .live-dot {
+            width: 6px;
+            height: 6px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.75); }
+        }
+
         @media (max-width: 900px) {
             .page { grid-template-columns: 1fr; }
             .panel-side { order: -1; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -430,8 +456,13 @@
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Ítems del pedido</span>
-                @php $estadoClass = 'estado-' . strtolower($pedido->estado->value); @endphp
-                <span class="estado-badge {{ $estadoClass }}">{{ $pedido->estado->value }}</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    @if (!$pedidoPagado)
+                        <span class="live-badge"><span class="live-dot"></span>En vivo</span>
+                    @endif
+                    @php $estadoClass = 'estado-' . strtolower($pedido->estado->value); @endphp
+                    <span class="estado-badge {{ $estadoClass }}" id="pedido-estado-badge">{{ $pedido->estado->value }}</span>
+                </div>
             </div>
 
             @if ($pedidoPagado)
@@ -467,7 +498,7 @@
                             </tr>
                         @else
                             @foreach ($pedido->items as $item)
-                                <tr>
+                                <tr data-item-id="{{ $item->id_item }}">
                                     {{-- Checkbox (solo clientes) --}}
                                     @if (!$es_admin)
                                     <td>
@@ -656,7 +687,10 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const PASARELA_URL = '{{ route('pasarela.show', $pedido->id_pedido) }}';
+    const PASARELA_URL  = '{{ route('pasarela.show', $pedido->id_pedido) }}';
+    const SYNC_URL      = '{{ route('factura.sync', $pedido->id_pedido) }}';
+    const ES_ADMIN      = {{ $es_admin ? 'true' : 'false' }};
+    const PEDIDO_PAGADO = {{ $pedidoPagado ? 'true' : 'false' }};
     const CSRF_TOKEN   = '{{ csrf_token() }}';
 
     const btnPagar   = document.getElementById('btnPagar');
@@ -684,6 +718,66 @@ document.addEventListener('DOMContentLoaded', function () {
 
     checkboxes().forEach(cb => cb.addEventListener('change', actualizar));
     actualizar();
+
+    // ── Polling en tiempo real ──────────────────────────────────────────
+    if (!PEDIDO_PAGADO) {
+        let prevSnapshot = null;
+
+        async function sincronizar() {
+            if (document.hidden) return;
+            try {
+                const res  = await fetch(SYNC_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const data = await res.json();
+
+                if (prevSnapshot === null) { prevSnapshot = data; return; }
+
+                // Detectar cambios estructurales (ítems añadidos o eliminados)
+                const prevIds = prevSnapshot.items.map(i => i.id).sort().join(',');
+                const currIds = data.items.map(i => i.id).sort().join(',');
+                if (prevIds !== currIds || data.pedido_estado !== prevSnapshot.pedido_estado) {
+                    location.reload();
+                    return;
+                }
+
+                // Actualizar estados individuales
+                data.items.forEach(item => {
+                    const prev = prevSnapshot.items.find(i => i.id === item.id);
+                    if (prev && prev.estado !== item.estado) {
+                        actualizarItemEstado(item.id, item.estado);
+                    }
+                });
+
+                prevSnapshot = data;
+            } catch { /* fallo silencioso */ }
+        }
+
+        function actualizarItemEstado(id, estado) {
+            const row = document.querySelector(`tr[data-item-id="${id}"]`);
+            if (!row) return;
+
+            // Actualizar badge de estado del ítem
+            const badge = row.querySelector('.estado-badge');
+            if (badge) {
+                badge.textContent = estado;
+                badge.className   = 'estado-badge estado-' + estado.toLowerCase();
+            }
+
+            // Bloquear checkbox si el ítem ya fue pagado (vista cliente)
+            if (!ES_ADMIN && estado === 'Pagado') {
+                const cb = row.querySelector('input[type="checkbox"].pay-checkbox');
+                if (cb) {
+                    cb.checked  = true;
+                    cb.disabled = true;
+                    cb.classList.remove('pay-checkbox');
+                    actualizar(); // recalcular total
+                }
+            }
+        }
+
+        setTimeout(sincronizar, 1000);
+        setInterval(sincronizar, 3000);
+    }
+    // ────────────────────────────────────────────────────────────────────
 
     if (btnPagar) {
         btnPagar.addEventListener('click', function () {
