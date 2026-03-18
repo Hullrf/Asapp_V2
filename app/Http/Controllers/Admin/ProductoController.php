@@ -26,7 +26,10 @@ class ProductoController extends Controller
             'stock_minimo' => $request->filled('stock_minimo') ? (int) $request->stock_minimo : 5,
         ]);
 
-        return back()->with('message', '✅ Producto agregado correctamente.');
+        $msg = '✅ Producto agregado correctamente.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     public function update(Request $request, Producto $producto)
@@ -49,19 +52,28 @@ class ProductoController extends Controller
             'stock_minimo' => $request->filled('stock_minimo') ? (int) $request->stock_minimo : 5,
         ]);
 
-        return back()->with('message', '✅ Producto actualizado correctamente.');
+        $msg = '✅ Producto actualizado correctamente.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
-    public function destroy(Producto $producto)
+    public function destroy(Request $request, Producto $producto)
     {
         $this->autorizarProducto($producto);
 
         if ($producto->itemsPedido()->exists()) {
-            return back()->with('message', '❌ No se puede eliminar: el producto está incluido en una o más facturas.');
+            $msg = '❌ No se puede eliminar: el producto está incluido en una o más facturas.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         $producto->delete();
-        return back()->with('message', '✅ Producto eliminado.');
+        $msg = '✅ Producto eliminado.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     private function autorizarProducto(Producto $producto): void

@@ -1,3 +1,6 @@
+{{-- Badge oculto para actualizar el contador del tab sin recargar --}}
+<span id="stock-bajo-count" data-count="{{ $productosStockBajo->count() }}" style="display:none;"></span>
+
 {{-- ── ALERTAS DE STOCK BAJO ── --}}
 @if ($productosStockBajo->isNotEmpty())
 <div class="stock-alert-box">
@@ -19,6 +22,7 @@
     <div class="card" style="margin-bottom:0;">
         <div class="card-title">🏷️ Categorías</div>
         <form action="{{ route('panel.categorias.store') }}" method="POST"
+              data-ajax data-refresh="inventario"
               style="display:flex; gap:8px; margin-bottom: {{ $categorias->isNotEmpty() ? '16px' : '0' }}">
             @csrf
             <input type="text" name="nombre" placeholder="Nueva categoría…" style="flex:1;" required>
@@ -33,6 +37,7 @@
                         <div class="cat-item-header">
                             <span class="cat-chip">{{ $cat->nombre }}</span>
                             <form action="{{ route('panel.categorias.destroy', $cat) }}" method="POST"
+                                  data-ajax data-refresh="inventario"
                                   onsubmit="return confirm('¿Eliminar «{{ addslashes($cat->nombre) }}»? Los productos quedarán sin categoría.')">
                                 @csrf
                                 @method('DELETE')
@@ -41,6 +46,7 @@
                         </div>
                         {{-- Fila inferior: renombrar --}}
                         <form action="{{ route('panel.categorias.update', $cat) }}" method="POST"
+                              data-ajax data-refresh="inventario"
                               class="cat-item-rename">
                             @csrf
                             @method('PUT')
@@ -60,7 +66,8 @@
     {{-- ── AGREGAR PRODUCTO ── --}}
     <div class="card" style="margin-bottom:0;">
         <div class="card-title">➕ Agregar nuevo producto</div>
-        <form action="{{ route('panel.productos.store') }}" method="POST">
+        <form action="{{ route('panel.productos.store') }}" method="POST"
+              data-ajax data-refresh="inventario,estadisticas">
             @csrf
             <div class="inv-form-grid">
                 <div class="form-group">
@@ -188,6 +195,7 @@
                                     </button>
 
                                     <form action="{{ route('panel.productos.destroy', $producto) }}" method="POST"
+                                          data-ajax data-refresh="inventario,estadisticas"
                                           onsubmit="return confirm('¿Eliminar «{{ addslashes($producto->nombre) }}»?')">
                                         @csrf
                                         @method('DELETE')
@@ -216,7 +224,8 @@
             <button class="inv-modal-close" onclick="cerrarModalProducto()">✕</button>
         </div>
 
-        <form id="form-editar" method="POST">
+        <form id="form-editar" method="POST"
+              data-ajax data-refresh="inventario,estadisticas">
             @csrf
             @method('PUT')
             <div class="inv-form-grid">

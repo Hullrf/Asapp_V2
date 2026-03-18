@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -11,7 +12,11 @@ class CategoriaController extends Controller
     {
         $request->validate(['nombre' => ['required', 'string', 'max:80']]);
         auth()->user()->negocio->categorias()->create(['nombre' => $request->nombre]);
-        return back()->with('message', '✅ Categoría creada.');
+
+        $msg = '✅ Categoría creada.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     public function update(Request $request, Categoria $categoria)
@@ -19,13 +24,21 @@ class CategoriaController extends Controller
         abort_unless($categoria->id_negocio === auth()->user()->id_negocio, 403);
         $request->validate(['nombre' => ['required', 'string', 'max:80']]);
         $categoria->update(['nombre' => $request->nombre]);
-        return back()->with('message', '✅ Categoría actualizada.');
+
+        $msg = '✅ Categoría actualizada.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
-    public function destroy(Categoria $categoria)
+    public function destroy(Request $request, Categoria $categoria)
     {
         abort_unless($categoria->id_negocio === auth()->user()->id_negocio, 403);
         $categoria->delete();
-        return back()->with('message', '✅ Categoría eliminada. Los productos asociados quedaron sin categoría.');
+
+        $msg = '✅ Categoría eliminada. Los productos asociados quedaron sin categoría.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 }

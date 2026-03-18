@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Panel de Control — ASAPP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -320,11 +321,41 @@
             vertical-align: middle;
         }
 
-        /* ── CREAR PEDIDO ── */
+        /* ── TOAST ── */
+        #panel-toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+        }
+        #panel-toast.show      { opacity: 1; transform: translateY(0); }
+        #panel-toast.toast-ok  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+        #panel-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
+
+        /* ── MODAL NUEVO PEDIDO ── */
+        .modal-np { max-width: 640px; text-align: left; max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-np h3 { margin-bottom: 0; }
+        .np-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+        .np-close { background: none; border: none; font-size: 16px; color: #9B8EC4; cursor: pointer; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+        .np-close:hover { background: #F5F3FF; color: #3D0E8A; }
+        .np-body { overflow-y: auto; flex: 1; margin-bottom: 16px; }
+        .np-body::-webkit-scrollbar { width: 4px; }
+        .np-body::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
+        .np-body::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
         .pedido-tabla { width: 100%; font-size: 13px; border-collapse: collapse; }
-        .pedido-tabla th { text-align: left; padding: 8px 10px; color: #6B21E8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #E0D9F5; }
-        .pedido-tabla td { padding: 10px; border-bottom: 1px solid #EDE9F8; vertical-align: middle; }
-        .pedido-tabla input[type="number"] { width: 70px; }
+        .pedido-tabla th { text-align: left; padding: 8px 10px; color: #6B21E8; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #E0D9F5; position: sticky; top: 0; background: #fff; }
+        .pedido-tabla td { padding: 9px 10px; border-bottom: 1px solid #EDE9F8; vertical-align: middle; }
+        .pedido-tabla input[type="number"] { width: 65px; }
         .pedido-tabla input[type="checkbox"] { width: 18px; height: 18px; accent-color: #6B21E8; cursor: pointer; }
     </style>
 </head>
@@ -346,12 +377,10 @@
 <div class="tabs">
     <button class="tab active" onclick="showTab('inventario', this)">
         📦 Inventario
-        @if ($productosStockBajo->isNotEmpty())
-            <span class="tab-badge">{{ $productosStockBajo->count() }}</span>
-        @endif
+        <span class="tab-badge" id="badge-stock"
+              style="{{ $productosStockBajo->isEmpty() ? 'display:none' : '' }}">{{ $productosStockBajo->count() }}</span>
     </button>
     <button class="tab"        onclick="showTab('mesas', this)">🪑 Mesas</button>
-    <button class="tab"        onclick="showTab('nuevo-pedido', this)">🧾 Nuevo Pedido</button>
     <button class="tab"        onclick="showTab('estadisticas', this)">📊 Estadísticas</button>
     <button class="tab"        onclick="showTab('historial', this)">✅ Historial</button>
 </div>
@@ -377,11 +406,6 @@
         @include('admin.partials.mesas')
     </div>
 
-    {{-- TAB: NUEVO PEDIDO --}}
-    <div id="tab-nuevo-pedido" class="section">
-        @include('admin.partials.nuevo-pedido')
-    </div>
-
     {{-- TAB: ESTADÍSTICAS --}}
     <div id="tab-estadisticas" class="section">
         @include('admin.partials.estadisticas')
@@ -393,6 +417,9 @@
     </div>
 
 </div>
+
+{{-- TOAST --}}
+<div id="panel-toast"></div>
 
 {{-- MODAL QR --}}
 <div class="modal-overlay" id="modal-qr">
@@ -409,6 +436,80 @@
     </div>
 </div>
 
+{{-- MODAL NUEVO PEDIDO --}}
+<div class="modal-overlay" id="modal-np">
+    <div class="modal modal-np">
+        <div class="np-header">
+            <h3 id="np-titulo">🧾 Nuevo pedido</h3>
+            <button class="np-close" onclick="cerrarNuevoPedido()">✕</button>
+        </div>
+
+        @php $productosDisp = $productos->filter(fn($p) => $p->disponible)->values(); @endphp
+
+        @if ($productosDisp->isEmpty())
+            <p style="color:#9B8EC4; font-size:14px; text-align:center; padding:24px 0;">
+                No hay productos disponibles. Agrégalos en la pestaña Inventario.
+            </p>
+        @else
+            <input type="text" id="np-buscador" placeholder="🔍 Buscar producto…"
+                   oninput="filtrarNP(this.value)"
+                   style="width:100%; margin-bottom:12px; font-size:13px;">
+
+            <form action="{{ route('panel.pedidos.store') }}" method="POST" id="form-np">
+                @csrf
+                <input type="hidden" name="id_mesa" id="np-id-mesa">
+
+                <div class="np-body" style="max-height:360px;">
+                    <table class="pedido-tabla" id="np-tabla">
+                        <thead>
+                            <tr>
+                                <th>Agregar</th>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Cantidad</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($productosDisp as $p)
+                                <tr data-np="{{ strtolower($p->nombre . ' ' . ($p->categoria?->nombre ?? '')) }}">
+                                    <td>
+                                        <input type="checkbox" name="productos[]"
+                                               value="{{ $p->id_producto }}"
+                                               onchange="toggleNP(this, {{ $p->id_producto }})">
+                                    </td>
+                                    <td>
+                                        <div style="font-weight:600; color:#1a1a2e;">{{ $p->nombre }}</div>
+                                        @if ($p->categoria)
+                                            <div style="font-size:11px; color:#9B8EC4;">{{ $p->categoria->nombre }}</div>
+                                        @endif
+                                    </td>
+                                    <td style="white-space:nowrap;">${{ number_format($p->precio, 0, ',', '.') }}</td>
+                                    <td>
+                                        <input type="number"
+                                               name="cantidades[{{ $p->id_producto }}]"
+                                               id="np-cant-{{ $p->id_producto }}"
+                                               value="1" min="1" max="99" disabled>
+                                    </td>
+                                </tr>
+                            @endforeach
+                            <tr id="np-sin-resultados" style="display:none;">
+                                <td colspan="4" style="text-align:center; color:#9B8EC4; padding:16px; font-size:13px;">
+                                    Sin productos que coincidan.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:4px;">
+                    <button type="button" class="btn btn-outline" onclick="cerrarNuevoPedido()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">✅ Crear pedido</button>
+                </div>
+            </form>
+        @endif
+    </div>
+</div>
+
 <script>
 // ── Tabs ──────────────────────────────────────────────────────────────
 function showTab(tabName, btn) {
@@ -421,20 +522,46 @@ function showTab(tabName, btn) {
     }
 }
 
-// ── Checkbox cantidad en nuevo pedido ────────────────────────────────
-function toggleCantidad(checkbox, id) {
-    const input = document.getElementById('cant-' + id);
+// ── Modal Nuevo Pedido ────────────────────────────────────────────────
+function abrirNuevoPedido(idMesa, nombreMesa) {
+    document.getElementById('np-id-mesa').value = idMesa;
+    document.getElementById('np-titulo').textContent = '🧾 Nuevo pedido — ' + nombreMesa;
+
+    // Resetear checkboxes y cantidades
+    document.querySelectorAll('#np-tabla input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+        const cant = document.getElementById('np-cant-' + cb.value);
+        if (cant) { cant.disabled = true; cant.value = 1; }
+    });
+
+    // Resetear buscador y mostrar todas las filas
+    const buscador = document.getElementById('np-buscador');
+    if (buscador) { buscador.value = ''; filtrarNP(''); }
+
+    document.getElementById('modal-np').classList.add('open');
+}
+
+function cerrarNuevoPedido() {
+    document.getElementById('modal-np').classList.remove('open');
+}
+
+function toggleNP(checkbox, id) {
+    const input = document.getElementById('np-cant-' + id);
     input.disabled = !checkbox.checked;
     if (checkbox.checked) input.focus();
 }
 
-// ── Ir a "Nuevo Pedido" preseleccionando mesa ────────────────────────
-function irACrearPedido(idMesa) {
-    showTab('nuevo-pedido', document.querySelectorAll('.tab')[2]);
-    setTimeout(() => {
-        const sel = document.getElementById('select-mesa');
-        if (sel) sel.value = idMesa;
-    }, 50);
+function filtrarNP(q) {
+    const term  = q.toLowerCase().trim();
+    const filas = document.querySelectorAll('#np-tabla tbody tr[data-np]');
+    let visibles = 0;
+    filas.forEach(fila => {
+        const match = !term || fila.dataset.np.includes(term);
+        fila.style.display = match ? '' : 'none';
+        if (match) visibles++;
+    });
+    const aviso = document.getElementById('np-sin-resultados');
+    if (aviso) aviso.style.display = visibles === 0 ? '' : 'none';
 }
 
 // ── QR Modal ─────────────────────────────────────────────────────────
@@ -499,15 +626,100 @@ function imprimirQR() {
     win.document.close();
 }
 
-// Cerrar modal al hacer clic fuera
+// Cerrar modales al hacer clic fuera
 document.getElementById('modal-qr').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
+document.getElementById('modal-np').addEventListener('click', function(e) {
+    if (e.target === this) cerrarNuevoPedido();
+});
 
-// Activar tab correcto si el flash es de pedido recién creado
-@if (session('message') && str_contains(session('message'), 'Pedido'))
-    showTab('mesas', document.querySelectorAll('.tab')[1]);
-@endif
+// ── AJAX Form Interceptor ─────────────────────────────────────────────
+document.addEventListener('submit', async function(e) {
+    const form = e.target;
+    if (!form.dataset.ajax) return;
+    e.preventDefault();
+
+    let res, data;
+    try {
+        res = await fetch(form.action, {
+            method: form.method.toUpperCase(),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept':           'application/json',
+                'X-CSRF-TOKEN':     document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: new FormData(form),
+        });
+        data = await res.json();
+    } catch {
+        showToast('❌ Error de conexión', false);
+        return;
+    }
+
+    if (res.status === 422) {
+        const msg = data.errors
+            ? Object.values(data.errors).flat().join(' · ')
+            : (data.message || 'Error de validación');
+        showToast('❌ ' + msg, false);
+        return;
+    }
+
+    showToast(data.message, data.success !== false);
+
+    if (data.success !== false) {
+        const toRefresh = (form.dataset.refresh || '').split(',').filter(Boolean);
+        if (toRefresh.length) await refreshPartials(toRefresh);
+    }
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────
+function showToast(msg, ok = true) {
+    const t = document.getElementById('panel-toast');
+    t.innerHTML = msg;
+    t.className = (ok ? 'toast-ok' : 'toast-err');
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Refresh parciales ─────────────────────────────────────────────────
+async function refreshPartials(names) {
+    await Promise.all(names.map(async name => {
+        try {
+            const res       = await fetch('/panel/partials/' + name, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const html      = await res.text();
+            const container = document.getElementById('tab-' + name);
+            if (!container) return;
+            container.innerHTML = html;
+            activarScripts(container);
+            if (name === 'inventario') actualizarBadgeStock();
+            if (name === 'estadisticas' && container.classList.contains('active')) {
+                if (typeof initEstadisticasCharts === 'function') initEstadisticasCharts();
+            }
+        } catch { /* fallo silencioso por parcial */ }
+    }));
+}
+
+function activarScripts(container) {
+    container.querySelectorAll('script').forEach(old => {
+        const s = document.createElement('script');
+        s.textContent = old.textContent;
+        document.head.appendChild(s);
+        document.head.removeChild(s);
+    });
+}
+
+function actualizarBadgeStock() {
+    const el    = document.getElementById('stock-bajo-count');
+    const badge = document.getElementById('badge-stock');
+    if (!el || !badge) return;
+    const n = parseInt(el.dataset.count || '0');
+    badge.textContent    = n;
+    badge.style.display  = n > 0 ? '' : 'none';
+}
 </script>
 
 </body>

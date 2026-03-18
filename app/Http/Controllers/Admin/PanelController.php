@@ -8,10 +8,40 @@ class PanelController extends Controller
 {
     public function index()
     {
-        $negocio  = auth()->user()->negocio;
-        $productos = $negocio->productos()->with('categoria')->orderBy('nombre')->get();
+        return view('admin.panel', $this->cargarDatos());
+    }
+
+    public function parcialInventario()
+    {
+        return view('admin.partials.inventario', $this->cargarDatos());
+    }
+
+    public function parcialMesas()
+    {
+        return view('admin.partials.mesas', $this->cargarDatos());
+    }
+
+    public function parcialNuevoPedido()
+    {
+        return view('admin.partials.nuevo-pedido', $this->cargarDatos());
+    }
+
+    public function parcialEstadisticas()
+    {
+        return view('admin.partials.estadisticas', $this->cargarDatos());
+    }
+
+    public function parcialHistorial()
+    {
+        return view('admin.partials.historial', $this->cargarDatos());
+    }
+
+    private function cargarDatos(): array
+    {
+        $negocio    = auth()->user()->negocio;
+        $productos  = $negocio->productos()->with('categoria')->orderBy('nombre')->get();
         $categorias = $negocio->categorias()->orderBy('nombre')->get();
-        $mesas     = $negocio->mesas()
+        $mesas      = $negocio->mesas()
             ->with([
                 'pedidos'      => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
                 'mesasUnidas',
@@ -27,17 +57,14 @@ class PanelController extends Controller
             fn($p) => $p->stock !== null && $p->stock <= $p->stock_minimo
         );
 
-        // ── Estadísticas ──────────────────────────────────────────────────
         $todosLosPedidos = $negocio->pedidos()
             ->with('items.producto', 'mesa')
             ->get();
 
-        // Pedidos agrupados por estado
         $pedidosPorEstado = $todosLosPedidos
             ->groupBy(fn($p) => $p->estado->value)
             ->map->count();
 
-        // Top 5 productos más pedidos (por cantidad total)
         $topProductos = $todosLosPedidos
             ->flatMap(fn($p) => $p->items)
             ->groupBy('id_producto')
@@ -49,7 +76,6 @@ class PanelController extends Controller
             ->take(5)
             ->values();
 
-        // Ingresos cobrados por mesa (solo ítems Pagado)
         $ingresosPorMesa = $todosLosPedidos
             ->filter(fn($p) => $p->mesa !== null)
             ->groupBy(fn($p) => $p->mesa->nombre)
@@ -62,13 +88,11 @@ class PanelController extends Controller
             ->sortByDesc(fn($v) => $v)
             ->take(6);
 
-        // Historial de pedidos completamente pagados
         $pedidosPagados = $todosLosPedidos
             ->filter(fn($p) => $p->estado->value === 'Pagado')
             ->sortByDesc('id_pedido')
             ->values();
 
-        // Tarjetas de resumen
         $resumen = [
             'total_pedidos'     => $todosLosPedidos->count(),
             'total_cobrado'     => (float) $todosLosPedidos
@@ -79,10 +103,10 @@ class PanelController extends Controller
             'mesas_total'       => $mesas->count(),
         ];
 
-        return view('admin.panel', compact(
+        return compact(
             'negocio', 'productos', 'mesas', 'base_url',
             'pedidosPorEstado', 'topProductos', 'ingresosPorMesa', 'resumen',
             'pedidosPagados', 'categorias', 'productosStockBajo'
-        ));
+        );
     }
 }

@@ -31,6 +31,13 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
 
     Route::get('/', [PanelController::class, 'index'])->name('index');
 
+    // Parciales AJAX
+    Route::get('/partials/inventario',   [PanelController::class, 'parcialInventario'])->name('partials.inventario');
+    Route::get('/partials/mesas',        [PanelController::class, 'parcialMesas'])->name('partials.mesas');
+    Route::get('/partials/nuevo-pedido', [PanelController::class, 'parcialNuevoPedido'])->name('partials.nuevo-pedido');
+    Route::get('/partials/estadisticas', [PanelController::class, 'parcialEstadisticas'])->name('partials.estadisticas');
+    Route::get('/partials/historial',    [PanelController::class, 'parcialHistorial'])->name('partials.historial');
+
     // Productos
     Route::post('/productos',          [ProductoController::class, 'store'])->name('productos.store');
     Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');

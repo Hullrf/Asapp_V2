@@ -17,7 +17,10 @@ class MesaController extends Controller
         $nombre  = $request->nombre_mesa;
 
         if ($negocio->mesas()->where('nombre', $nombre)->exists()) {
-            return back()->with('message', '❌ Ya existe una mesa con ese nombre en tu negocio.');
+            $msg = '❌ Ya existe una mesa con ese nombre en tu negocio.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         $negocio->mesas()->create([
@@ -25,7 +28,10 @@ class MesaController extends Controller
             'codigo_qr' => 'MESA-' . strtoupper(Str::random(8)),
         ]);
 
-        return back()->with('message', "✅ Mesa '{$nombre}' creada correctamente.");
+        $msg = "✅ Mesa '{$nombre}' creada correctamente.";
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     public function update(Request $request, Mesa $mesa)
@@ -33,23 +39,36 @@ class MesaController extends Controller
         $this->autorizarMesa($mesa);
         $request->validate(['nuevo_nombre' => ['required', 'string', 'max:50']]);
         $mesa->update(['nombre' => $request->nuevo_nombre]);
-        return back()->with('message', '✅ Mesa renombrada correctamente.');
+
+        $msg = '✅ Mesa renombrada correctamente.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
-    public function destroy(Mesa $mesa)
+    public function destroy(Request $request, Mesa $mesa)
     {
         $this->autorizarMesa($mesa);
 
         if ($mesa->estaOcupada()) {
-            return back()->with('message', '❌ No se puede eliminar: la mesa tiene un pedido activo.');
+            $msg = '❌ No se puede eliminar: la mesa tiene un pedido activo.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         if ($mesa->mesasUnidas()->exists()) {
-            return back()->with('message', '❌ No se puede eliminar: esta mesa tiene mesas unidas. Sepáralas primero.');
+            $msg = '❌ No se puede eliminar: esta mesa tiene mesas unidas. Sepáralas primero.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         $mesa->delete();
-        return back()->with('message', '✅ Mesa eliminada correctamente.');
+        $msg = '✅ Mesa eliminada correctamente.';
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     public function unir(Request $request, Mesa $mesa)
@@ -60,47 +79,54 @@ class MesaController extends Controller
         $principal = Mesa::findOrFail($request->id_mesa_principal);
         $this->autorizarMesa($principal);
 
-        if ($mesa->id_mesa === $principal->id_mesa) {
-            return back()->with('message', '❌ Una mesa no puede unirse a sí misma.');
-        }
+        $checks = [
+            $mesa->id_mesa === $principal->id_mesa     => '❌ Una mesa no puede unirse a sí misma.',
+            $mesa->estaUnida()                          => '❌ Esta mesa ya está unida a otra. Sepárala primero.',
+            $mesa->mesasUnidas()->exists()              => '❌ Esta mesa ya tiene mesas unidas. No puede unirse a otra.',
+            $principal->estaUnida()                     => '❌ La mesa seleccionada ya está unida a otra. No se pueden encadenar uniones.',
+            $mesa->estaOcupada() || $principal->estaOcupada() => '❌ Solo se pueden unir mesas que estén libres.',
+        ];
 
-        if ($mesa->estaUnida()) {
-            return back()->with('message', '❌ Esta mesa ya está unida a otra. Sepárala primero.');
-        }
-
-        if ($mesa->mesasUnidas()->exists()) {
-            return back()->with('message', '❌ Esta mesa ya tiene mesas unidas. No puede unirse a otra.');
-        }
-
-        if ($principal->estaUnida()) {
-            return back()->with('message', '❌ La mesa seleccionada ya está unida a otra. No se pueden encadenar uniones.');
-        }
-
-        if ($mesa->estaOcupada() || $principal->estaOcupada()) {
-            return back()->with('message', '❌ Solo se pueden unir mesas que estén libres.');
+        foreach ($checks as $condition => $msg) {
+            if ($condition) {
+                return $request->ajax()
+                    ? response()->json(['success' => false, 'message' => $msg], 422)
+                    : back()->with('message', $msg);
+            }
         }
 
         $mesa->update(['mesa_principal_id' => $principal->id_mesa]);
-
-        return back()->with('message', "✅ {$mesa->nombre} unida a {$principal->nombre}.");
+        $msg = "✅ {$mesa->nombre} unida a {$principal->nombre}.";
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
-    public function separar(Mesa $mesa)
+    public function separar(Request $request, Mesa $mesa)
     {
         $this->autorizarMesa($mesa);
 
         if (!$mesa->estaUnida()) {
-            return back()->with('message', '❌ Esta mesa no está unida a ninguna otra.');
+            $msg = '❌ Esta mesa no está unida a ninguna otra.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         if ($mesa->estaOcupada()) {
-            return back()->with('message', '❌ No se puede separar una mesa con pedido activo.');
+            $msg = '❌ No se puede separar una mesa con pedido activo.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
         $nombrePrincipal = $mesa->mesaPrincipal->nombre;
         $mesa->update(['mesa_principal_id' => null]);
 
-        return back()->with('message', "✅ {$mesa->nombre} separada de {$nombrePrincipal}.");
+        $msg = "✅ {$mesa->nombre} separada de {$nombrePrincipal}.";
+        return $request->ajax()
+            ? response()->json(['success' => true, 'message' => $msg])
+            : back()->with('message', $msg);
     }
 
     private function autorizarMesa(Mesa $mesa): void

@@ -1,7 +1,8 @@
 {{-- ── CREAR MESA ── --}}
 <div class="card">
     <div class="card-title">➕ Crear nueva mesa</div>
-    <form action="{{ route('panel.mesas.store') }}" method="POST">
+    <form action="{{ route('panel.mesas.store') }}" method="POST"
+          data-ajax data-refresh="mesas,estadisticas">
         @csrf
         <div class="form-row">
             <div class="form-group" style="max-width:280px">
@@ -90,7 +91,7 @@
                             @if (! $esSecundaria)
                                 {{-- Ir a crear pedido (solo mesas principales/independientes) --}}
                                 <button class="btn btn-primary btn-sm"
-                                        onclick="irACrearPedido({{ $mesa->id_mesa }})">
+                                        onclick="abrirNuevoPedido({{ $mesa->id_mesa }}, '{{ addslashes($mesa->nombre) }}')">
                                     🧾 Nuevo pedido
                                 </button>
                             @endif
@@ -98,6 +99,7 @@
 
                         {{-- Renombrar --}}
                         <form action="{{ route('panel.mesas.update', $mesa) }}" method="POST"
+                              data-ajax data-refresh="mesas"
                               style="display:flex; gap:6px; margin-top:4px; width:100%;">
                             @csrf
                             @method('PUT')
@@ -111,6 +113,7 @@
                             @if ($esSecundaria)
                                 {{-- Separar de la principal --}}
                                 <form action="{{ route('panel.mesas.separar', $mesa) }}" method="POST"
+                                      data-ajax data-refresh="mesas"
                                       onsubmit="return confirm('¿Separar {{ addslashes($mesa->nombre) }} de {{ addslashes($mesa->mesaPrincipal->nombre) }}?')">
                                     @csrf
                                     <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">
@@ -121,6 +124,7 @@
                                 {{-- Unir con otra mesa (solo si no tiene mesas unidas propias) --}}
                                 @if ($mesa->mesasUnidas->isEmpty() && $candidatas->isNotEmpty())
                                     <form action="{{ route('panel.mesas.unir', $mesa) }}" method="POST"
+                                          data-ajax data-refresh="mesas"
                                           style="display:flex; gap:6px; margin-top:4px; width:100%;">
                                         @csrf
                                         <select name="id_mesa_principal" required
@@ -139,6 +143,7 @@
 
                                 {{-- Eliminar --}}
                                 <form action="{{ route('panel.mesas.destroy', $mesa) }}" method="POST"
+                                      data-ajax data-refresh="mesas,estadisticas,historial"
                                       onsubmit="return confirm('¿Eliminar esta mesa?')">
                                     @csrf
                                     @method('DELETE')
