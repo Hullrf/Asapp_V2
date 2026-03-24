@@ -17,17 +17,37 @@ class PasarelaController extends Controller
                     ->where('id_pedido', $pedido->id_pedido)
                     ->with('producto')
                     ->get();
-        $total = $items->sum('subtotal');
+        $subtotal   = $items->sum('subtotal');
+        $ipoconsumo = round($subtotal * 0.08, 2);
+        $total      = $subtotal + $ipoconsumo;
 
-        return view('pasarela.show', compact('pedido', 'items', 'total'));
+        return view('pasarela.show', compact('pedido', 'items', 'subtotal', 'ipoconsumo', 'total'));
     }
 
     public function confirmar(Pedido $pedido, Request $request)
     {
-        $ids   = array_map('intval', (array) $request->input('items_confirmados', []));
-        $monto = 0;
+        $ids    = array_map('intval', (array) $request->input('items_confirmados', []));
+        $metodo = in_array($request->input('metodo_pago'), ['efectivo']) ? 'efectivo' : 'digital';
+        $monto  = 0;
 
-        DB::transaction(function () use ($ids, $pedido, &$monto) {
+        // Simular fallo aleatorio (15 % de probabilidad)
+        if (rand(1, 100) <= 15) {
+            $razones = [
+                'Fondos insuficientes en la cuenta.',
+                'Tarjeta declinada por el banco emisor.',
+                'Error de conexión con la entidad financiera.',
+                'Límite de transacciones diarias excedido.',
+                'Datos de pago no verificados.',
+            ];
+            return redirect()
+                ->route('pasarela.fallido', $pedido->id_pedido)
+                ->with('razon', $razones[array_rand($razones)])
+                ->with('metodo', $request->input('metodo_pago', 'tarjeta'));
+        }
+
+        DB::transaction(function () use ($ids, $pedido, $metodo, &$monto) {
+            $subtotal = 0;
+
             foreach ($ids as $id_item) {
                 // lockForUpdate: si otro request ya está procesando este ítem,
                 // espera hasta que termine. Solo procesa ítems aún Pendientes.
@@ -40,14 +60,15 @@ class PasarelaController extends Controller
                 if (!$item) continue; // ya fue pagado por otro usuario, se omite
 
                 $item->update(['estado' => 'Pagado']);
-                $monto += $item->subtotal;
+                $subtotal += $item->subtotal;
             }
 
-            if ($monto > 0) {
+            if ($subtotal > 0) {
+                $monto = $subtotal + round($subtotal * 0.08, 2);
                 Pago::create([
                     'id_pedido'   => $pedido->id_pedido,
                     'monto'       => $monto,
-                    'metodo_pago' => 'digital',
+                    'metodo_pago' => $metodo,
                     'estado'      => 'simulado',
                 ]);
             }
@@ -66,5 +87,14 @@ class PasarelaController extends Controller
         $pedidoCompleto = $pedido->estaPagado();
 
         return view('pasarela.exitoso', compact('pedido', 'monto', 'pedidoCompleto'));
+    }
+
+    public function fallido(Pedido $pedido)
+    {
+        $pedido->load(['negocio', 'mesa']);
+        $razon  = session('razon', 'El pago no pudo procesarse.');
+        $metodo = session('metodo', 'tarjeta');
+
+        return view('pasarela.fallido', compact('pedido', 'razon', 'metodo'));
     }
 }

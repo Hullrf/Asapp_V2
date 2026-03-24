@@ -20,7 +20,7 @@ class PedidoController extends Controller
             'cantidades'  => ['required', 'array'],
         ]);
 
-        $negocio = auth()->user()->negocio;
+        $negocio = auth()->user()->negocioActivo();
         $mesa    = Mesa::findOrFail($request->id_mesa);
 
         abort_unless($mesa->id_negocio === $negocio->id_negocio, 403);

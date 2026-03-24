@@ -38,11 +38,15 @@ class PanelController extends Controller
 
     private function cargarDatos(): array
     {
-        $negocio    = auth()->user()->negocio;
+        $negocio        = auth()->user()->negocioActivo();
+        $todasLasSedes  = auth()->user()->negocios()->orderBy('nombre')->get();
         $productos  = $negocio->productos()->with('categoria')->orderBy('nombre')->get();
         $categorias = $negocio->categorias()->orderBy('nombre')->get();
-        $mesas      = $negocio->mesas()
+        $pisos = $negocio->pisos()->orderBy('orden')->get();
+
+        $mesas = $negocio->mesas()
             ->with([
+                'piso',
                 'pedidos'      => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
                 'mesasUnidas',
                 'mesaPrincipal',
@@ -104,7 +108,7 @@ class PanelController extends Controller
         ];
 
         return compact(
-            'negocio', 'productos', 'mesas', 'base_url',
+            'negocio', 'todasLasSedes', 'productos', 'mesas', 'pisos', 'base_url',
             'pedidosPorEstado', 'topProductos', 'ingresosPorMesa', 'resumen',
             'pedidosPagados', 'categorias', 'productosStockBajo'
         );

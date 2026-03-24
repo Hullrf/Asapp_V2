@@ -11,7 +11,7 @@ class CategoriaController extends Controller
     public function store(Request $request)
     {
         $request->validate(['nombre' => ['required', 'string', 'max:80']]);
-        auth()->user()->negocio->categorias()->create(['nombre' => $request->nombre]);
+        auth()->user()->negocioActivo()->categorias()->create(['nombre' => $request->nombre]);
 
         $msg = '✅ Categoría creada.';
         return $request->ajax()
@@ -21,7 +21,7 @@ class CategoriaController extends Controller
 
     public function update(Request $request, Categoria $categoria)
     {
-        abort_unless($categoria->id_negocio === auth()->user()->id_negocio, 403);
+        abort_unless($categoria->id_negocio === auth()->user()->idNegocioActivo(), 403);
         $request->validate(['nombre' => ['required', 'string', 'max:80']]);
         $categoria->update(['nombre' => $request->nombre]);
 
@@ -33,7 +33,7 @@ class CategoriaController extends Controller
 
     public function destroy(Request $request, Categoria $categoria)
     {
-        abort_unless($categoria->id_negocio === auth()->user()->id_negocio, 403);
+        abort_unless($categoria->id_negocio === auth()->user()->idNegocioActivo(), 403);
         $categoria->delete();
 
         $msg = '✅ Categoría eliminada. Los productos asociados quedaron sin categoría.';

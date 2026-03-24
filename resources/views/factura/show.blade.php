@@ -205,10 +205,21 @@
         }
 
         .total-display {
-            padding: 24px;
-            text-align: center;
+            padding: 20px 24px 16px;
             border-bottom: 1px solid var(--border);
         }
+
+        .ipo-desglose {
+            font-size: 12px;
+            color: var(--muted);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+
+        .ipo-desglose.ipo-line { color: #6B21E8; font-weight: 600; }
+
+        .ipo-divider { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
         .total-label {
             font-size: 11px;
@@ -216,14 +227,16 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             color: var(--muted);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            text-align: center;
         }
 
         .total-amount {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 800;
             font-family: var(--mono);
             color: #9B8EC4;
+            text-align: center;
         }
 
         .pago-actions { padding: 16px; }
@@ -632,7 +645,7 @@
                 @if ($pedido->mesa)
                     <div class="meta-row">
                         <span>Mesa</span>
-                        <span>{{ $pedido->mesa->nombre }}</span>
+                        <span>{{ $pedido->mesa->nombre_display }}</span>
                     </div>
                 @endif
             </div>
@@ -662,7 +675,16 @@
             @if (!$pedidoPagado)
                 <div class="pago-card">
                     <div class="total-display">
-                        <div class="total-label">Total seleccionado</div>
+                        <div class="ipo-desglose">
+                            <span>Subtotal</span>
+                            <span id="subtotal-val">$0</span>
+                        </div>
+                        <div class="ipo-desglose ipo-line">
+                            <span>Ipoconsumo (8%)</span>
+                            <span id="ipo-val">$0</span>
+                        </div>
+                        <hr class="ipo-divider">
+                        <div class="total-label">Total a pagar</div>
                         <div class="total-amount" id="total">$0</div>
                     </div>
                     <div class="pago-actions">
@@ -702,13 +724,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function actualizar() {
-        let total = 0, anyChecked = false;
+        let subtotal = 0, anyChecked = false;
         checkboxes().forEach(cb => {
             if (cb.checked && !cb.disabled) {
-                total     += parseFloat(cb.dataset.precio || 0);
+                subtotal  += parseFloat(cb.dataset.precio || 0);
                 anyChecked = true;
             }
         });
+        const ipoconsumo = subtotal * 0.08;
+        const total      = subtotal + ipoconsumo;
+
+        const subtotalSpan = document.getElementById('subtotal-val');
+        const ipoSpan      = document.getElementById('ipo-val');
+        if (subtotalSpan) subtotalSpan.textContent = formatCOP(subtotal);
+        if (ipoSpan)      ipoSpan.textContent      = formatCOP(ipoconsumo);
         if (totalSpan) {
             totalSpan.textContent = formatCOP(total);
             totalSpan.style.color = anyChecked ? '#6B21E8' : '#9B8EC4';

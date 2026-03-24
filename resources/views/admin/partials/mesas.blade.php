@@ -1,162 +1,129 @@
-{{-- ── CREAR MESA ── --}}
+@php
+    $mesasPorPiso = $mesas->groupBy('id_piso');
+    $mesasSinPiso = $mesasPorPiso->get(null, collect());
+@endphp
+
+{{-- ── CREAR PISO ── --}}
+<div class="card">
+    <div class="card-title">🏢 Crear nuevo piso</div>
+    <form action="{{ route('panel.pisos.store') }}" method="POST"
+          data-ajax data-refresh="mesas">
+        @csrf
+        <div class="form-row">
+            <div class="form-group" style="max-width:280px">
+                <label>Nombre del piso</label>
+                <input type="text" name="nombre_piso"
+                       placeholder="Ej: Piso 1, Terraza, Salón VIP" required>
+            </div>
+            <div class="form-group" style="max-width:140px; justify-content:flex-end">
+                <label>&nbsp;</label>
+                <button type="submit" class="btn btn-primary">Crear piso</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+{{-- ── CREAR MESA (solo si hay pisos) ── --}}
+@if ($pisos->isNotEmpty())
 <div class="card">
     <div class="card-title">➕ Crear nueva mesa</div>
     <form action="{{ route('panel.mesas.store') }}" method="POST"
           data-ajax data-refresh="mesas,estadisticas">
         @csrf
         <div class="form-row">
-            <div class="form-group" style="max-width:280px">
-                <label>Nombre de la mesa</label>
-                <input type="text" name="nombre_mesa" placeholder="Ej: Mesa 1, VIP, Terraza" required>
+            <div class="form-group" style="max-width:240px">
+                <label>Piso</label>
+                <select name="id_piso" required>
+                    <option value="">— Selecciona un piso —</option>
+                    @foreach ($pisos as $piso)
+                        <option value="{{ $piso->id_piso }}">{{ $piso->nombre }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="form-group" style="max-width:140px; justify-content:flex-end">
                 <label>&nbsp;</label>
-                <button type="submit" class="btn btn-primary">Crear mesa</button>
+                <button type="submit" class="btn btn-primary">+ Agregar mesa</button>
             </div>
         </div>
+        <p style="font-size:11px; color:#9B8EC4; margin-top:-4px;">
+            La mesa se creará automáticamente como "Mesa N" en el piso seleccionado.
+        </p>
     </form>
 </div>
+@endif
 
-{{-- ── GRID DE MESAS ── --}}
-<div class="card">
-    <div class="card-title">🪑 Mesas del negocio</div>
-
-    @if ($mesas->isEmpty())
+{{-- ── SIN PISOS ── --}}
+@if ($pisos->isEmpty())
+    <div class="card">
         <p style="color:#9B8EC4; font-size:14px; text-align:center; padding:24px 0;">
-            Aún no has creado ninguna mesa. Crea la primera arriba.
+            Crea tu primer piso para comenzar a agregar mesas.
         </p>
-    @else
-        <div class="mesas-grid">
-            @foreach ($mesas as $mesa)
-                @php
-                    $esSecundaria = $mesa->estaUnida();
+    </div>
 
-                    // Pedido activo: para secundarias, usar el de la principal
-                    if ($esSecundaria) {
-                        $pedidoActivo = $mesa->mesaPrincipal->pedidos->first() ?? null;
-                    } else {
-                        $pedidoActivo = $mesa->pedidos->first();
-                    }
+{{-- ── MESAS AGRUPADAS POR PISO ── --}}
+@else
+    @foreach ($pisos as $piso)
+        @php $mesasDePiso = $mesasPorPiso->get($piso->id_piso, collect()); @endphp
+        <div class="card">
 
-                    $ocupada = (bool) $pedidoActivo;
-                    $urlQr   = route('mesa.publica', $mesa->codigo_qr);
+            {{-- Header del piso --}}
+            <div style="display:flex; align-items:center; justify-content:space-between;
+                        margin-bottom:16px; flex-wrap:wrap; gap:10px;">
 
-                    // Mesas candidatas a ser la principal de esta mesa:
-                    // libres, no secundarias, no la mesa misma, sin mesas unidas propias
-                    $candidatas = $mesas->filter(fn($m) =>
-                        $m->id_mesa !== $mesa->id_mesa &&
-                        ! $m->estaUnida() &&
-                        $m->pedidos->isEmpty()
-                    );
-                @endphp
+                {{-- Renombrar piso --}}
+                <form action="{{ route('panel.pisos.update', $piso) }}" method="POST"
+                      data-ajax data-refresh="mesas"
+                      style="display:flex; gap:8px; align-items:center;
+                             flex:1; min-width:180px; max-width:360px;">
+                    @csrf
+                    @method('PUT')
+                    <span style="font-size:18px; flex-shrink:0;">🏢</span>
+                    <input type="text" name="nuevo_nombre" value="{{ $piso->nombre }}"
+                           style="font-weight:700; font-size:15px; flex:1; min-width:0;
+                                  padding:5px 9px; border-radius:8px;" required>
+                    <button type="submit" class="btn btn-warning btn-sm"
+                            style="flex-shrink:0;" title="Renombrar piso">✏️</button>
+                </form>
 
-                <div class="mesa-card {{ $ocupada ? 'ocupada' : 'libre' }}"
-                     style="{{ $esSecundaria ? 'border-style: dashed; opacity: 0.85;' : '' }}">
+                {{-- Eliminar piso --}}
+                <form action="{{ route('panel.pisos.destroy', $piso) }}" method="POST"
+                      data-ajax data-refresh="mesas,estadisticas"
+                      onsubmit="return confirm('¿Eliminar {{ addslashes($piso->nombre) }}? Solo puedes eliminar un piso sin mesas.')">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Eliminar piso</button>
+                </form>
+            </div>
 
-                    <div class="mesa-icono">{{ $ocupada ? '🟡' : '🟢' }} {{ $esSecundaria ? '🔗' : '🪑' }}</div>
-                    <div class="mesa-nombre">{{ $mesa->nombre }}</div>
-
-                    <span class="mesa-estado {{ $ocupada ? 'estado-ocupada' : 'estado-libre' }}">
-                        {{ $ocupada ? 'Ocupada' : 'Libre' }}
-                    </span>
-
-                    {{-- Indicador de unión --}}
-                    @if ($esSecundaria)
-                        <div style="font-size:11px; color:#7C3AED; background:#EDE9FE; border-radius:6px;
-                                    padding:3px 8px; margin-bottom:4px; text-align:center;">
-                            🔗 Unida a: <strong>{{ $mesa->mesaPrincipal->nombre }}</strong>
-                        </div>
-                    @elseif ($mesa->mesasUnidas->isNotEmpty())
-                        <div style="font-size:11px; color:#6B21A8; background:#F3E8FF; border-radius:6px;
-                                    padding:3px 8px; margin-bottom:4px; text-align:center;">
-                            🪑 Grupo: {{ $mesa->mesasUnidas->pluck('nombre')->prepend($mesa->nombre)->join(' + ') }}
-                        </div>
-                    @endif
-
-                    <div class="mesa-acciones">
-
-                        {{-- Ver QR --}}
-                        <button class="btn btn-info btn-sm"
-                                onclick="mostrarQR('{{ addslashes($mesa->nombre) }}', '{{ $urlQr }}')">
-                            📷 Ver QR
-                        </button>
-
-                        @if ($ocupada)
-                            {{-- Ver factura del pedido activo --}}
-                            <a href="{{ route('factura.show', $pedidoActivo->id_pedido) }}"
-                               class="btn btn-success btn-sm">
-                                📄 Ver factura
-                            </a>
-                        @else
-                            @if (! $esSecundaria)
-                                {{-- Ir a crear pedido (solo mesas principales/independientes) --}}
-                                <button class="btn btn-primary btn-sm"
-                                        onclick="abrirNuevoPedido({{ $mesa->id_mesa }}, '{{ addslashes($mesa->nombre) }}')">
-                                    🧾 Nuevo pedido
-                                </button>
-                            @endif
-                        @endif
-
-                        {{-- Renombrar --}}
-                        <form action="{{ route('panel.mesas.update', $mesa) }}" method="POST"
-                              data-ajax data-refresh="mesas"
-                              style="display:flex; gap:6px; margin-top:4px; width:100%;">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="nuevo_nombre"
-                                   value="{{ $mesa->nombre }}"
-                                   style="flex:1; min-width:0; font-size:12px; padding:5px 8px;" required>
-                            <button type="submit" class="btn btn-warning btn-sm" style="flex-shrink:0;">✏️</button>
-                        </form>
-
-                        @if (! $ocupada)
-                            @if ($esSecundaria)
-                                {{-- Separar de la principal --}}
-                                <form action="{{ route('panel.mesas.separar', $mesa) }}" method="POST"
-                                      data-ajax data-refresh="mesas"
-                                      onsubmit="return confirm('¿Separar {{ addslashes($mesa->nombre) }} de {{ addslashes($mesa->mesaPrincipal->nombre) }}?')">
-                                    @csrf
-                                    <button type="submit" class="btn btn-warning btn-sm" style="width:100%;">
-                                        🔓 Separar mesa
-                                    </button>
-                                </form>
-                            @else
-                                {{-- Unir con otra mesa (solo si no tiene mesas unidas propias) --}}
-                                @if ($mesa->mesasUnidas->isEmpty() && $candidatas->isNotEmpty())
-                                    <form action="{{ route('panel.mesas.unir', $mesa) }}" method="POST"
-                                          data-ajax data-refresh="mesas"
-                                          style="display:flex; gap:6px; margin-top:4px; width:100%;">
-                                        @csrf
-                                        <select name="id_mesa_principal" required
-                                                style="flex:1; min-width:0; font-size:12px; padding:5px 8px;">
-                                            <option value="">— Unir con —</option>
-                                            @foreach ($candidatas as $c)
-                                                <option value="{{ $c->id_mesa }}">{{ $c->nombre }}</option>
-                                            @endforeach
-                                        </select>
-                                        <button type="submit" class="btn btn-info btn-sm"
-                                                style="flex-shrink:0;" title="Unir mesa">
-                                            🔗
-                                        </button>
-                                    </form>
-                                @endif
-
-                                {{-- Eliminar --}}
-                                <form action="{{ route('panel.mesas.destroy', $mesa) }}" method="POST"
-                                      data-ajax data-refresh="mesas,estadisticas,historial"
-                                      onsubmit="return confirm('¿Eliminar esta mesa?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">
-                                        🗑️ Eliminar
-                                    </button>
-                                </form>
-                            @endif
-                        @endif
-
-                    </div>
+            @if ($mesasDePiso->isEmpty())
+                <p style="color:#9B8EC4; font-size:13px; text-align:center;
+                          padding:16px 0; border-top:1px solid var(--border);">
+                    Sin mesas en este piso. Crea una desde el formulario de arriba.
+                </p>
+            @else
+                <div class="mesas-grid">
+                    @foreach ($mesasDePiso as $mesa)
+                        @include('admin.partials._mesa-card', ['mesa' => $mesa, 'mesas' => $mesas])
+                    @endforeach
                 </div>
-            @endforeach
+            @endif
+        </div>
+    @endforeach
+
+    {{-- Mesas sin piso asignado (datos previos a la migración) --}}
+    @if ($mesasSinPiso->isNotEmpty())
+        <div class="card" style="border-color:#FECACA;">
+            <div class="card-title" style="color:#DC2626;">
+                ⚠️ Sin piso asignado
+                <span style="font-size:12px; font-weight:400; color:#9B8EC4; margin-left:8px;">
+                    Estas mesas no pertenecen a ningún piso.
+                </span>
+            </div>
+            <div class="mesas-grid">
+                @foreach ($mesasSinPiso as $mesa)
+                    @include('admin.partials._mesa-card', ['mesa' => $mesa, 'mesas' => $mesas])
+                @endforeach
+            </div>
         </div>
     @endif
-</div>
+@endif

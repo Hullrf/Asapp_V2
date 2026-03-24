@@ -59,6 +59,85 @@
 
         .btn-logout:hover { background: rgba(107,33,232,0.3); }
 
+        /* ── SEDE SWITCHER ── */
+        .sede-switcher { position: relative; }
+
+        .sede-btn {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 7px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.2s;
+            white-space: nowrap;
+            max-width: 220px;
+        }
+
+        .sede-btn:hover { background: rgba(255,255,255,0.22); }
+
+        .sede-btn-nombre {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 160px;
+        }
+
+        .sede-drop {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            background: #fff;
+            border-radius: 12px;
+            min-width: 210px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            z-index: 500;
+            overflow: hidden;
+            border: 1px solid #E0D9F5;
+        }
+
+        .sede-drop.open { display: block; }
+
+        .sede-drop-title {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #9B8EC4;
+            padding: 12px 16px 6px;
+        }
+
+        .sede-item {
+            display: block;
+            width: 100%;
+            padding: 9px 16px;
+            text-align: left;
+            font-size: 13px;
+            color: #1a1a2e;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.1s;
+        }
+
+        .sede-item:hover { background: #F5F3FF; color: #6B21E8; }
+
+        .sede-item.activa {
+            color: #6B21E8;
+            font-weight: 700;
+            background: #EDE9FE;
+        }
+
+        .sede-divider { height: 1px; background: #E0D9F5; margin: 4px 0; }
+
+        .sede-nueva { color: #6B21E8; font-weight: 600; }
+
         /* ── TABS ── */
         .tabs {
             background: #fff;
@@ -367,6 +446,35 @@
 {{-- TOPBAR --}}
 <div class="topbar">
     <div class="topbar-logo">ASAPP</div>
+
+    {{-- Sede switcher --}}
+    <div class="sede-switcher">
+        <button class="sede-btn" id="sedeBtn" type="button">
+            🏪 <span class="sede-btn-nombre">{{ $negocio->nombre }}</span>
+            <span style="opacity:0.5; font-size:10px; flex-shrink:0;">▾</span>
+        </button>
+        <div class="sede-drop" id="sedeDrop">
+            <div class="sede-drop-title">Tus sedes</div>
+            @foreach ($todasLasSedes as $sede)
+                <form action="{{ route('panel.sedes.activar', $sede) }}" method="POST" style="margin:0">
+                    @csrf
+                    <button type="submit"
+                            class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
+                        {{ $sede->nombre }}
+                        @if ($sede->id_negocio === $negocio->id_negocio)
+                            &nbsp;✓
+                        @endif
+                    </button>
+                </form>
+            @endforeach
+            <div class="sede-divider"></div>
+            <button type="button" class="sede-item sede-nueva"
+                    onclick="abrirNuevaSede(); document.getElementById('sedeDrop').classList.remove('open');">
+                + Nueva sede
+            </button>
+        </div>
+    </div>
+
     <div class="topbar-info">
         Bienvenido, <strong>{{ auth()->user()->nombre }}</strong>
     </div>
@@ -513,6 +621,51 @@
     </div>
 </div>
 
+{{-- MODAL NUEVA SEDE --}}
+<div class="modal-overlay" id="modal-sede">
+    <div class="modal" style="max-width:420px; text-align:left;">
+        <h3 style="margin-bottom:6px;">🏪 Nueva sede</h3>
+        <p style="margin-bottom:20px;">Añade una nueva sucursal o punto de venta a tu cuenta.</p>
+        <form action="{{ route('panel.sedes.store') }}" method="POST">
+            @csrf
+            <div style="margin-bottom:14px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase;
+                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                    Nombre de la sede *
+                </label>
+                <input type="text" name="nombre" required maxlength="100"
+                       placeholder="Ej: Sede Norte, Sucursal Centro"
+                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                              border-radius:10px; font-size:14px; font-family:inherit;">
+            </div>
+            <div style="margin-bottom:14px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase;
+                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                    Dirección
+                </label>
+                <input type="text" name="direccion" maxlength="150"
+                       placeholder="Calle 10 # 20-30"
+                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                              border-radius:10px; font-size:14px; font-family:inherit;">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase;
+                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                    Teléfono
+                </label>
+                <input type="text" name="telefono" maxlength="20"
+                       placeholder="300 000 0000"
+                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                              border-radius:10px; font-size:14px; font-family:inherit;">
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button" class="btn btn-outline" onclick="cerrarNuevaSede()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Crear sede →</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 // ── Tabs ──────────────────────────────────────────────────────────────
 function showTab(tabName, btn) {
@@ -591,6 +744,36 @@ function cerrarModal() {
     document.getElementById('modal-qr').classList.remove('open');
     document.getElementById('qr-container').innerHTML = '';
 }
+
+// ── Sede switcher ─────────────────────────────────────────────────────
+const sedeBtn  = document.getElementById('sedeBtn');
+const sedeDrop = document.getElementById('sedeDrop');
+
+sedeBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    sedeDrop.classList.toggle('open');
+});
+
+document.addEventListener('click', function () {
+    sedeDrop.classList.remove('open');
+});
+
+sedeDrop.addEventListener('click', function (e) {
+    e.stopPropagation();
+});
+
+// ── Modal nueva sede ──────────────────────────────────────────────────
+function abrirNuevaSede() {
+    document.getElementById('modal-sede').classList.add('open');
+}
+
+function cerrarNuevaSede() {
+    document.getElementById('modal-sede').classList.remove('open');
+}
+
+document.getElementById('modal-sede').addEventListener('click', function (e) {
+    if (e.target === this) cerrarNuevaSede();
+});
 
 function copiarLink() {
     const url = document.getElementById('qr-url').textContent;

@@ -19,7 +19,7 @@ class ProductoController extends Controller
             'stock_minimo' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        auth()->user()->negocio->productos()->create([
+        auth()->user()->negocioActivo()->productos()->create([
             ...$data,
             'disponible'   => $request->boolean('disponible'),
             'stock'        => $request->filled('stock') ? (int) $request->stock : null,
@@ -78,6 +78,6 @@ class ProductoController extends Controller
 
     private function autorizarProducto(Producto $producto): void
     {
-        abort_unless($producto->id_negocio === auth()->user()->id_negocio, 403);
+        abort_unless($producto->id_negocio === auth()->user()->idNegocioActivo(), 403);
     }
 }

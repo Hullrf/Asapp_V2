@@ -32,13 +32,16 @@ class RegisterController extends Controller
             'email'     => $request->email_negocio,
         ]);
 
-        User::create([
+        $user = User::create([
             'rol'        => 'admin',
             'nombre'     => $request->nombre_negocio,
             'email'      => $request->email_negocio,
             'password'   => $request->password,
             'id_negocio' => $negocio->id_negocio,
         ]);
+
+        // Registrar en el pivot de sedes
+        $user->negocios()->attach($negocio->id_negocio);
 
         return redirect()->route('login')->with('success', 'Cuenta creada correctamente. Inicia sesión.');
     }

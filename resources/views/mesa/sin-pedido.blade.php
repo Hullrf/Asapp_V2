@@ -77,7 +77,7 @@
 
     <div class="icono">🪑</div>
 
-    <div class="mesa-nombre">{{ $mesa->nombre }}</div>
+    <div class="mesa-nombre">{{ $mesa->nombre_display }}</div>
     <div class="negocio-nombre">{{ $mesa->negocio->nombre }}</div>
 
     <h2>Sin pedido activo</h2>

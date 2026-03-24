@@ -22,8 +22,12 @@
                     <label>Mesa</label>
                     <select name="id_mesa" id="select-mesa" required>
                         <option value="">— Selecciona una mesa —</option>
-                        @foreach ($mesasLibres as $m)
-                            <option value="{{ $m->id_mesa }}">{{ $m->nombre }}</option>
+                        @foreach ($mesasLibres->groupBy(fn($m) => $m->piso?->nombre ?? 'Sin piso') as $pisoNombre => $mesasDePiso)
+                            <optgroup label="{{ $pisoNombre }}">
+                                @foreach ($mesasDePiso as $m)
+                                    <option value="{{ $m->id_mesa }}">{{ $m->nombre_display }}</option>
+                                @endforeach
+                            </optgroup>
                         @endforeach
                     </select>
                 </div>

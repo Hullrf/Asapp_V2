@@ -41,4 +41,9 @@ class Negocio extends Model
     {
         return $this->hasMany(Categoria::class, 'id_negocio', 'id_negocio');
     }
+
+    public function pisos(): HasMany
+    {
+        return $this->hasMany(Piso::class, 'id_negocio', 'id_negocio');
+    }
 }

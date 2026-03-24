@@ -11,36 +11,44 @@ class MesaController extends Controller
 {
     public function store(Request $request)
     {
-        $request->validate(['nombre_mesa' => ['required', 'string', 'max:50']]);
+        $request->validate(['id_piso' => ['required', 'integer']]);
 
-        $negocio = auth()->user()->negocio;
-        $nombre  = $request->nombre_mesa;
+        $negocio = auth()->user()->negocioActivo();
 
-        if ($negocio->mesas()->where('nombre', $nombre)->exists()) {
-            $msg = '❌ Ya existe una mesa con ese nombre en tu negocio.';
+        $piso = $negocio->pisos()->find($request->id_piso);
+        if (! $piso) {
+            $msg = '❌ Piso no válido.';
             return $request->ajax()
                 ? response()->json(['success' => false, 'message' => $msg], 422)
                 : back()->with('message', $msg);
         }
 
+        $numero = (Mesa::where('id_piso', $piso->id_piso)->max('numero') ?? 0) + 1;
+        $nombre = 'Mesa ' . $numero;
+
         $negocio->mesas()->create([
+            'id_piso'   => $piso->id_piso,
+            'numero'    => $numero,
             'nombre'    => $nombre,
             'codigo_qr' => 'MESA-' . strtoupper(Str::random(8)),
         ]);
 
-        $msg = "✅ Mesa '{$nombre}' creada correctamente.";
+        $msg = "✅ {$nombre} creada en {$piso->nombre}.";
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
     }
 
+    /** Guarda o borra el alias de la mesa. */
     public function update(Request $request, Mesa $mesa)
     {
         $this->autorizarMesa($mesa);
-        $request->validate(['nuevo_nombre' => ['required', 'string', 'max:50']]);
-        $mesa->update(['nombre' => $request->nuevo_nombre]);
+        $request->validate(['alias' => ['nullable', 'string', 'max:50']]);
 
-        $msg = '✅ Mesa renombrada correctamente.';
+        $alias = filled($request->alias) ? trim($request->alias) : null;
+        $mesa->update(['alias' => $alias]);
+
+        $msg = $alias ? "✅ Alias '{$alias}' guardado." : '✅ Alias eliminado.';
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
@@ -64,8 +72,26 @@ class MesaController extends Controller
                 : back()->with('message', $msg);
         }
 
+        $idPiso       = $mesa->id_piso;
+        $numEliminada = $mesa->numero;
         $mesa->delete();
-        $msg = '✅ Mesa eliminada correctamente.';
+
+        // Renumerar las mesas con número mayor dentro del mismo piso
+        if ($idPiso && $numEliminada) {
+            Mesa::where('id_piso', $idPiso)
+                ->where('numero', '>', $numEliminada)
+                ->orderBy('numero')
+                ->get()
+                ->each(function (Mesa $m) {
+                    $nuevoNum = $m->numero - 1;
+                    $m->update([
+                        'numero' => $nuevoNum,
+                        'nombre' => 'Mesa ' . $nuevoNum,
+                    ]);
+                });
+        }
+
+        $msg = '✅ Mesa eliminada y mesas renumeradas.';
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
@@ -80,10 +106,10 @@ class MesaController extends Controller
         $this->autorizarMesa($principal);
 
         $checks = [
-            $mesa->id_mesa === $principal->id_mesa     => '❌ Una mesa no puede unirse a sí misma.',
-            $mesa->estaUnida()                          => '❌ Esta mesa ya está unida a otra. Sepárala primero.',
-            $mesa->mesasUnidas()->exists()              => '❌ Esta mesa ya tiene mesas unidas. No puede unirse a otra.',
-            $principal->estaUnida()                     => '❌ La mesa seleccionada ya está unida a otra. No se pueden encadenar uniones.',
+            $mesa->id_mesa === $principal->id_mesa           => '❌ Una mesa no puede unirse a sí misma.',
+            $mesa->estaUnida()                                => '❌ Esta mesa ya está unida a otra. Sepárala primero.',
+            $mesa->mesasUnidas()->exists()                    => '❌ Esta mesa ya tiene mesas unidas. No puede unirse a otra.',
+            $principal->estaUnida()                           => '❌ La mesa seleccionada ya está unida a otra. No se pueden encadenar uniones.',
             $mesa->estaOcupada() || $principal->estaOcupada() => '❌ Solo se pueden unir mesas que estén libres.',
         ];
 
@@ -96,7 +122,7 @@ class MesaController extends Controller
         }
 
         $mesa->update(['mesa_principal_id' => $principal->id_mesa]);
-        $msg = "✅ {$mesa->nombre} unida a {$principal->nombre}.";
+        $msg = "✅ {$mesa->nombre_display} unida a {$principal->nombre_display}.";
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
@@ -106,7 +132,7 @@ class MesaController extends Controller
     {
         $this->autorizarMesa($mesa);
 
-        if (!$mesa->estaUnida()) {
+        if (! $mesa->estaUnida()) {
             $msg = '❌ Esta mesa no está unida a ninguna otra.';
             return $request->ajax()
                 ? response()->json(['success' => false, 'message' => $msg], 422)
@@ -120,10 +146,10 @@ class MesaController extends Controller
                 : back()->with('message', $msg);
         }
 
-        $nombrePrincipal = $mesa->mesaPrincipal->nombre;
+        $nombrePrincipal = $mesa->mesaPrincipal->nombre_display;
         $mesa->update(['mesa_principal_id' => null]);
 
-        $msg = "✅ {$mesa->nombre} separada de {$nombrePrincipal}.";
+        $msg = "✅ {$mesa->nombre_display} separada de {$nombrePrincipal}.";
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
@@ -131,6 +157,6 @@ class MesaController extends Controller
 
     private function autorizarMesa(Mesa $mesa): void
     {
-        abort_unless($mesa->id_negocio === auth()->user()->id_negocio, 403);
+        abort_unless($mesa->id_negocio === auth()->user()->idNegocioActivo(), 403);
     }
 }

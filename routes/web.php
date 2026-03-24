@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoriaController;
+use App\Http\Controllers\Admin\SedeController;
 use App\Http\Controllers\Admin\MesaController;
 use App\Http\Controllers\Admin\PanelController;
 use App\Http\Controllers\Admin\PedidoController;
+use App\Http\Controllers\Admin\PisoController;
 use App\Http\Controllers\Admin\ProductoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -43,6 +45,15 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('productos.update');
     Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('productos.destroy');
 
+    // Sedes
+    Route::post('/sedes',                [SedeController::class, 'store'])->name('sedes.store');
+    Route::post('/sedes/{negocio}/activar', [SedeController::class, 'activar'])->name('sedes.activar');
+
+    // Pisos
+    Route::post('/pisos',              [PisoController::class, 'store'])->name('pisos.store');
+    Route::put('/pisos/{piso}',        [PisoController::class, 'update'])->name('pisos.update');
+    Route::delete('/pisos/{piso}',     [PisoController::class, 'destroy'])->name('pisos.destroy');
+
     // Mesas
     Route::post('/mesas',                    [MesaController::class, 'store'])->name('mesas.store');
     Route::put('/mesas/{mesa}',              [MesaController::class, 'update'])->name('mesas.update');
@@ -73,4 +84,5 @@ Route::get('/mesa/{qr}', [MesaPublicaController::class, 'show'])->name('mesa.pub
 // ── Pasarela de pago ─────────────────────────────────────────────────
 Route::get('/pasarela/{pedido}',  [PasarelaController::class, 'show'])->name('pasarela.show');
 Route::post('/pasarela/{pedido}', [PasarelaController::class, 'confirmar'])->name('pasarela.confirmar');
-Route::get('/pago-exitoso/{pedido}', [PasarelaController::class, 'exitoso'])->name('pago.exitoso');
+Route::get('/pago-exitoso/{pedido}',  [PasarelaController::class, 'exitoso'])->name('pago.exitoso');
+Route::get('/pago-fallido/{pedido}',  [PasarelaController::class, 'fallido'])->name('pasarela.fallido');

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago Exitoso — ASAPP</title>
+    <title>Pago Fallido — ASAPP</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -25,8 +25,8 @@
             max-width: 420px;
             width: 100%;
             text-align: center;
-            border: 1px solid #D1FAE5;
-            box-shadow: 0 8px 32px rgba(107, 33, 232, 0.1);
+            border: 1px solid #FEE2E2;
+            box-shadow: 0 8px 32px rgba(220, 38, 38, 0.08);
         }
 
         .logo {
@@ -40,11 +40,11 @@
             display: block;
         }
 
-        .check-circle {
+        .error-circle {
             width: 88px;
             height: 88px;
-            background: #EDE9FE;
-            border: 3px solid #C4B5FD;
+            background: #FEE2E2;
+            border: 3px solid #FECACA;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -60,39 +60,43 @@
             100% { transform: scale(1);   opacity: 1; }
         }
 
-        h2 { font-size: 24px; font-weight: 800; color: #3D0E8A; margin-bottom: 8px; }
+        h2 { font-size: 24px; font-weight: 800; color: #DC2626; margin-bottom: 8px; }
 
         .negocio { font-size: 13px; color: #9B8EC4; margin-bottom: 28px; }
 
-        .monto-box {
-            background: #F5F3FF;
-            border: 1px solid #E0D9F5;
+        .razon-box {
+            background: #FEF2F2;
+            border: 1px solid #FECACA;
             border-radius: 12px;
-            padding: 20px;
+            padding: 16px 20px;
             margin-bottom: 24px;
+            text-align: left;
         }
 
-        .monto-label {
-            font-size: 12px;
-            color: #9B8EC4;
+        .razon-label {
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            color: #EF4444;
             margin-bottom: 6px;
         }
 
-        .monto-valor { font-size: 36px; font-weight: 800; color: #3D0E8A; }
+        .razon-texto { font-size: 14px; color: #7F1D1D; font-weight: 500; }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 13px;
-            padding: 8px 0;
-            border-bottom: 1px solid #E0D9F5;
-            color: #9B8EC4;
+        .metodo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #F5F3FF;
+            border: 1px solid #E0D9F5;
+            color: #5B21B6;
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 28px;
         }
-
-        .info-row:last-child { border-bottom: none; }
-        .info-row span:last-child { color: #1a1a2e; font-weight: 500; }
 
         .info-box {
             background: #FAF8FF;
@@ -103,29 +107,19 @@
             border: 1px solid #E0D9F5;
         }
 
-        .badge-completo {
-            background: #3D0E8A;
-            border: 1px solid #2d0a6b;
-            color: #fff;
-            border-radius: 8px;
-            padding: 10px 14px;
+        .info-row {
+            display: flex;
+            justify-content: space-between;
             font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 24px;
+            padding: 7px 0;
+            border-bottom: 1px solid #E0D9F5;
+            color: #9B8EC4;
         }
 
-        .badge-parcial {
-            background: #EDE9FE;
-            border: 1px solid #C4B5FD;
-            color: #5B21B6;
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 24px;
-        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row span:last-child { color: #1a1a2e; font-weight: 500; }
 
-        .btn {
+        .btn-reintentar {
             display: block;
             background: #6B21E8;
             color: #fff;
@@ -138,7 +132,7 @@
             margin-bottom: 10px;
         }
 
-        .btn:hover { background: #5B18C8; }
+        .btn-reintentar:hover { background: #5B18C8; }
 
         .btn-outline {
             display: block;
@@ -161,27 +155,35 @@
 <div class="card">
     <span class="logo">ASAPP</span>
 
-    <div class="check-circle">✓</div>
+    <div class="error-circle">✗</div>
 
-    <h2>¡Pago registrado!</h2>
+    <h2>Pago rechazado</h2>
     <p class="negocio">
         {{ $pedido->negocio->nombre }}
         @if ($pedido->mesa) · {{ $pedido->mesa->nombre_display }} @endif
     </p>
 
-    <div class="monto-box">
-        <div class="monto-label">Total pagado</div>
-        <div class="monto-valor">${{ number_format($monto, 0, ',', '.') }}</div>
+    <div class="razon-box">
+        <div class="razon-label">Motivo del rechazo</div>
+        <div class="razon-texto">{{ $razon }}</div>
+    </div>
+
+    @php
+        $metodosLabel = [
+            'tarjeta' => '💳 Tarjeta',
+            'pse'     => '🏦 PSE',
+            'nequi'   => '📱 Nequi',
+        ];
+    @endphp
+    <div class="metodo-badge">
+        {{ $metodosLabel[$metodo] ?? '💳 ' . ucfirst($metodo) }}
+        &nbsp;·&nbsp; Transacción no procesada
     </div>
 
     <div class="info-box">
         <div class="info-row">
             <span>Pedido #</span>
             <span>{{ $pedido->id_pedido }}</span>
-        </div>
-        <div class="info-row">
-            <span>Estado del pedido</span>
-            <span>{{ $pedido->estado->value }}</span>
         </div>
         @if ($pedido->mesa)
             <div class="info-row">
@@ -190,18 +192,14 @@
             </div>
         @endif
         <div class="info-row">
-            <span>Tipo de pago</span>
-            <span>Digital (simulado)</span>
+            <span>Estado del pedido</span>
+            <span>{{ $pedido->estado->value }}</span>
         </div>
     </div>
 
-    @if ($pedidoCompleto)
-        <div class="badge-completo">🎉 ¡La cuenta de esta mesa quedó completamente pagada!</div>
-    @else
-        <div class="badge-parcial">⏳ Aún quedan ítems pendientes por pagar en esta mesa.</div>
-    @endif
-
-    <a href="{{ route('factura.show', $pedido->id_pedido) }}" class="btn">📄 Ver factura completa</a>
+    <a href="{{ route('factura.show', $pedido->id_pedido) }}" class="btn-reintentar">
+        🔄 Volver e intentar de nuevo
+    </a>
     <a href="javascript:window.close()" class="btn-outline">Cerrar</a>
 
     <p class="simulado-nota">

@@ -13,14 +13,28 @@ class Mesa extends Model
 
     protected $fillable = [
         'id_negocio',
+        'id_piso',
+        'numero',
         'nombre',
+        'alias',
         'codigo_qr',
         'mesa_principal_id',
     ];
 
+    /** Nombre que se muestra al usuario: alias si existe, si no el nombre canónico. */
+    public function getNombreDisplayAttribute(): string
+    {
+        return $this->alias ?: $this->nombre;
+    }
+
     public function negocio(): BelongsTo
     {
         return $this->belongsTo(Negocio::class, 'id_negocio', 'id_negocio');
+    }
+
+    public function piso(): BelongsTo
+    {
+        return $this->belongsTo(Piso::class, 'id_piso', 'id_piso');
     }
 
     public function mesaPrincipal(): BelongsTo
