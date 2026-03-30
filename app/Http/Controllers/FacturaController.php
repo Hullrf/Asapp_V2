@@ -60,16 +60,39 @@ class FacturaController extends Controller
         return redirect()->route('factura.show', $pedido->id_pedido);
     }
 
-    public function sync(Pedido $pedido)
+    public function sync(Pedido $pedido, Request $request)
     {
-        $pedido->load('items');
+        $token = $request->input('token', '');
+        $pedido->load(['items', 'items.divisionActiva.partes']);
+
+        $itemsData = $pedido->items->map(fn($i) => [
+            'id'          => $i->id_item,
+            'estado'      => $i->estado->value,
+            'en_division' => $i->divisionActiva !== null,
+        ])->values();
+
+        $divisiones = $pedido->items
+            ->map(fn($i) => $i->divisionActiva)
+            ->filter()
+            ->values()
+            ->map(fn($div) => [
+                'id_division'  => $div->id_division,
+                'id_item'      => $div->id_item,
+                'total_partes' => $div->total_partes,
+                'es_iniciador' => $token !== '' && $div->iniciador_token === $token,
+                'partes'       => $div->partes->map(fn($p) => [
+                    'id_parte'     => $p->id_parte,
+                    'numero_parte' => $p->numero_parte,
+                    'monto'        => (float) $p->monto,
+                    'estado'       => $p->estado,
+                    'es_mia'       => $token !== '' && $p->participante_token === $token,
+                ])->values(),
+            ]);
 
         return response()->json([
             'pedido_estado' => $pedido->estado->value,
-            'items'         => $pedido->items->map(fn($i) => [
-                'id'     => $i->id_item,
-                'estado' => $i->estado->value,
-            ])->values(),
+            'items'         => $itemsData,
+            'divisiones'    => $divisiones,
         ]);
     }
 

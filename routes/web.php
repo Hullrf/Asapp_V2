@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PisoController;
 use App\Http\Controllers\Admin\ProductoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\DivisionController;
 use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\MesaPublicaController;
 use App\Http\Controllers\PasarelaController;
@@ -78,6 +79,14 @@ Route::put('/factura/{pedido}/item/{item}',  [FacturaController::class, 'updateI
 Route::delete('/factura/{pedido}/item/{item}',[FacturaController::class, 'deleteItem'])->name('factura.item.delete')->middleware('admin');
 Route::post('/factura/{pedido}/reabrir',      [FacturaController::class, 'reabrir'])->name('factura.reabrir')->middleware('admin');
 
+// División de ítems
+Route::post('/factura/{pedido}/item/{item}/dividir',          [DivisionController::class, 'iniciar'])->name('division.iniciar');
+Route::post('/factura/{pedido}/division/{division}/tomar',    [DivisionController::class, 'tomar'])->name('division.tomar');
+Route::post('/factura/{pedido}/division/{division}/liberar',  [DivisionController::class, 'liberar'])->name('division.liberar');
+Route::post('/factura/{pedido}/division/{division}/cancelar', [DivisionController::class, 'cancelar'])->name('division.cancelar');
+Route::patch('/factura/{pedido}/division/{division}',         [DivisionController::class, 'actualizar'])->name('division.actualizar');
+Route::post('/factura/{pedido}/division/{division}/extraer',  [DivisionController::class, 'extraerParte'])->name('division.extraer');
+
 // ── Acceso público por QR ────────────────────────────────────────────
 Route::get('/mesa/{qr}', [MesaPublicaController::class, 'show'])->name('mesa.publica');
 
@@ -86,3 +95,6 @@ Route::get('/pasarela/{pedido}',  [PasarelaController::class, 'show'])->name('pa
 Route::post('/pasarela/{pedido}', [PasarelaController::class, 'confirmar'])->name('pasarela.confirmar');
 Route::get('/pago-exitoso/{pedido}',  [PasarelaController::class, 'exitoso'])->name('pago.exitoso');
 Route::get('/pago-fallido/{pedido}',  [PasarelaController::class, 'fallido'])->name('pasarela.fallido');
+Route::post('/factura/{pedido}/cobrar-efectivo', [PasarelaController::class, 'cobrarEfectivo'])
+    ->name('pago.efectivo')
+    ->middleware('admin');

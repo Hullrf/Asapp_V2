@@ -50,4 +50,15 @@ class ItemPedido extends Model
     {
         return $this->estado === EstadoItem::Pendiente;
     }
+
+    public function divisionActiva(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\ItemDivision::class, 'id_item', 'id_item')
+                    ->where('estado', 'pendiente');
+    }
+
+    public function divisiones(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\ItemDivision::class, 'id_item', 'id_item');
+    }
 }

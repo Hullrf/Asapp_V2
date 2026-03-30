@@ -89,6 +89,46 @@ class PasarelaController extends Controller
         return view('pasarela.exitoso', compact('pedido', 'monto', 'pedidoCompleto'));
     }
 
+    public function cobrarEfectivo(Pedido $pedido, Request $request)
+    {
+        $ids   = array_map('intval', (array) $request->input('items_confirmados', []));
+        $monto = 0;
+
+        DB::transaction(function () use ($ids, $pedido, &$monto) {
+            $subtotal = 0;
+
+            foreach ($ids as $id_item) {
+                $item = ItemPedido::where('id_item', $id_item)
+                            ->where('id_pedido', $pedido->id_pedido)
+                            ->where('estado', 'Pendiente')
+                            ->lockForUpdate()
+                            ->first();
+
+                if (!$item) continue;
+
+                $item->update(['estado' => 'Pagado']);
+                $subtotal += $item->subtotal;
+            }
+
+            if ($subtotal > 0) {
+                $monto = $subtotal + round($subtotal * 0.08, 2);
+                Pago::create([
+                    'id_pedido'   => $pedido->id_pedido,
+                    'monto'       => $monto,
+                    'metodo_pago' => 'efectivo',
+                    'estado'      => 'confirmado',
+                ]);
+            }
+
+            $pedido->refresh();
+            $pedido->update(['estado' => $pedido->estaPagado() ? 'Pagado' : 'Parcial']);
+        });
+
+        return redirect()
+            ->route('factura.show', $pedido->id_pedido)
+            ->with('success_efectivo', $monto);
+    }
+
     public function fallido(Pedido $pedido)
     {
         $pedido->load(['negocio', 'mesa']);
