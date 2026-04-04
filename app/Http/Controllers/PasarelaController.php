@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ItemPedido;
 use App\Models\Pago;
 use App\Models\Pedido;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -61,6 +62,11 @@ class PasarelaController extends Controller
 
                 $item->update(['estado' => 'Pagado']);
                 $subtotal += $item->subtotal;
+
+                // Descontar del stock solo si el producto lo rastrea
+                Producto::where('id_producto', $item->id_producto)
+                    ->whereNotNull('stock')
+                    ->update(['stock' => DB::raw('GREATEST(0, stock - ' . (int) $item->cantidad . ')')]);
             }
 
             if ($subtotal > 0) {
@@ -108,6 +114,11 @@ class PasarelaController extends Controller
 
                 $item->update(['estado' => 'Pagado']);
                 $subtotal += $item->subtotal;
+
+                // Descontar del stock solo si el producto lo rastrea
+                Producto::where('id_producto', $item->id_producto)
+                    ->whereNotNull('stock')
+                    ->update(['stock' => DB::raw('GREATEST(0, stock - ' . (int) $item->cantidad . ')')]);
             }
 
             if ($subtotal > 0) {
