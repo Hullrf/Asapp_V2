@@ -96,10 +96,10 @@
         .btn-save:hover { background: #7C3AED; }
 
         /* ── TOAST ── */
-        #toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; }
+        #toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; opacity: 0; transform: translateY(8px); transition: all 0.25s; pointer-events: none; z-index: 999; max-width: 360px; }
         #toast.show { opacity: 1; transform: translateY(0); }
         #toast.ok  { background: #1a2e1a; color: #4ade80; border: 1px solid #166534; }
-        #toast.err { background: #2e1a1a; color: #f87171; border: 1px solid #991b1b; }
+        #toast.err { background: #2e1a1a; color: #f87171; border: 1px solid #991b1b; pointer-events: all; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -337,18 +337,25 @@ async function eliminar(id, nombre) {
         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
         body: (() => { const f = new FormData(); f.append('_method', 'DELETE'); return f; })(),
     });
-    const data = await res.json();
+    const data = res.ok ? await res.json() : { success: false, message: 'Error del servidor (' + res.status + ').' };
     toast(data.message, data.success !== false);
     if (data.success !== false) setTimeout(() => location.reload(), 800);
 }
 
 function toast(msg, ok = true) {
     const t = document.getElementById('toast');
-    t.textContent = msg;
+    t.textContent = ok ? msg : '⚠️ ' + msg + '  ✕';
     t.className = ok ? 'ok show' : 'err show';
     clearTimeout(t._t);
-    t._t = setTimeout(() => t.classList.remove('show'), 3000);
+    if (ok) {
+        t._t = setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    // Los errores persisten hasta que el usuario haga clic
 }
+
+document.getElementById('toast').addEventListener('click', function() {
+    if (this.classList.contains('err')) this.classList.remove('show');
+});
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarEditar(); });
 </script>

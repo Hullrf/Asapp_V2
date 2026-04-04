@@ -70,7 +70,14 @@ class SuperAdminController extends Controller
 
     public function destroy(Negocio $negocio)
     {
-        $negocio->delete();
+        try {
+            $negocio->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No se puede eliminar: el negocio tiene datos relacionados (pedidos, mesas, productos). Elimínalos primero o usa la opción de suspender.',
+            ], 422);
+        }
 
         return response()->json(['success' => true, 'message' => 'Negocio eliminado.']);
     }
