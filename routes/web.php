@@ -98,9 +98,9 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
 // ── Factura (accesible por admin y por cliente vía QR) ───────────────
 Route::get('/factura/{pedido}',              [FacturaController::class, 'show'])->name('factura.show');
 Route::get('/factura/{pedido}/sync',         [FacturaController::class, 'sync'])->name('factura.sync');
-Route::post('/factura/{pedido}/item',        [FacturaController::class, 'addItem'])->name('factura.item.add')->middleware('admin');
-Route::put('/factura/{pedido}/item/{item}',  [FacturaController::class, 'updateItem'])->name('factura.item.update')->middleware('admin');
-Route::delete('/factura/{pedido}/item/{item}',[FacturaController::class, 'deleteItem'])->name('factura.item.delete')->middleware('admin');
+Route::post('/factura/{pedido}/item',        [FacturaController::class, 'addItem'])->name('factura.item.add')->middleware('personal');
+Route::put('/factura/{pedido}/item/{item}',  [FacturaController::class, 'updateItem'])->name('factura.item.update')->middleware('personal');
+Route::delete('/factura/{pedido}/item/{item}',[FacturaController::class, 'deleteItem'])->name('factura.item.delete')->middleware('personal');
 Route::post('/factura/{pedido}/reabrir',      [FacturaController::class, 'reabrir'])->name('factura.reabrir')->middleware('admin');
 
 // División de ítems

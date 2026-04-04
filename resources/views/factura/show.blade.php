@@ -98,8 +98,8 @@
             align-items: start;
         }
 
-        .panel-main { display: flex; flex-direction: column; gap: 20px; }
-        .panel-side  { display: flex; flex-direction: column; gap: 16px; }
+        .panel-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+        .panel-side  { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 
         .card {
             background: var(--surface);
@@ -780,13 +780,13 @@
                 <table>
                     <thead>
                         <tr>
-                            @if (!$es_admin || ($es_admin && !$pedidoPagado))<th></th>@endif
+                            @if ($es_admin ? !$pedidoPagado : !$es_mesero)<th></th>@endif
                             <th>Producto</th>
                             <th class="center">Cant.</th>
                             <th class="right">Precio unit.</th>
                             <th class="right">Subtotal</th>
                             <th class="center">Estado</th>
-                            @if ($es_admin && !$pedidoBloqueado)
+                            @if (($es_admin || $es_mesero) && !$pedidoBloqueado)
                                 <th class="right">Acciones</th>
                             @endif
                         </tr>
@@ -794,7 +794,7 @@
                     <tbody>
                         @if ($pedido->items->isEmpty())
                             <tr>
-                                <td colspan="{{ $es_admin ? ($pedidoBloqueado ? 5 : 7) : 6 }}">
+                                <td colspan="{{ ($es_admin || $es_mesero) ? ($pedidoBloqueado ? 5 : 7) : 6 }}">
                                     <div class="empty-state">
                                         <span class="empty-icon">🧾</span>
                                         <p>No hay ítems en este pedido aún.</p>
@@ -804,15 +804,15 @@
                         @else
                             @foreach ($pedido->items as $item)
                                 <tr data-item-id="{{ $item->id_item }}">
-                                    {{-- Checkbox --}}
-                                    @if (!$es_admin || ($es_admin && !$pedidoPagado))
+                                    {{-- Checkbox (admin cuando no pagado; cliente; no mesero) --}}
+                                    @if ($es_admin ? !$pedidoPagado : !$es_mesero)
                                     <td>
                                         @if ($item->estado->value === 'Pendiente')
                                             <div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
                                                 <input type="checkbox" class="pay-checkbox"
                                                        value="{{ $item->id_item }}"
                                                        data-precio="{{ $item->subtotal }}">
-                                                @if (!$es_admin)
+                                                @if (!$es_admin && !$es_mesero)
                                                 <button class="btn-dividir"
                                                         data-item-id="{{ $item->id_item }}"
                                                         data-subtotal="{{ $item->subtotal }}"
@@ -854,8 +854,8 @@
                                         <span class="estado-badge {{ $itemEstadoClass }}">{{ $item->estado->value }}</span>
                                     </td>
 
-                                    {{-- Acciones (solo admin, pedido no bloqueado) --}}
-                                    @if ($es_admin && !$pedidoBloqueado)
+                                    {{-- Acciones (admin o mesero, pedido no bloqueado) --}}
+                                    @if (($es_admin || $es_mesero) && !$pedidoBloqueado)
                                         <td>
                                             <div class="actions-cell">
                                                 {{-- Editar cantidad --}}
@@ -890,8 +890,8 @@
             </div>
         </div>
 
-        {{-- Agregar producto (solo admin, pedido no bloqueado) --}}
-        @if ($es_admin && !$pedidoBloqueado)
+        {{-- Agregar producto (admin o mesero, pedido no bloqueado) --}}
+        @if (($es_admin || $es_mesero) && !$pedidoBloqueado)
             <div class="card">
                 <div class="card-header">
                     <span class="card-title">Agregar producto</span>
@@ -967,8 +967,8 @@
             </div>
         </div>
 
-        {{-- Reabrir pedido (solo admin, pedido pagado) --}}
-        @if ($pedidoBloqueado)
+        {{-- Reabrir pedido (solo admin) --}}
+        @if ($es_admin && $pedidoBloqueado)
             <div class="card">
                 <div class="card-body" style="text-align:center;">
                     <div class="alert-pagado" style="margin-bottom:16px;">🎉 Pedido completamente pagado</div>
@@ -1011,8 +1011,8 @@
             </div>
         @endif
 
-        {{-- Pago (solo clientes) --}}
-        @if (!$es_admin)
+        {{-- Pago (solo clientes, no admin ni mesero) --}}
+        @if (!$es_admin && !$es_mesero)
             @if (!$pedidoPagado)
                 <div class="pago-card">
                     <div class="total-display">

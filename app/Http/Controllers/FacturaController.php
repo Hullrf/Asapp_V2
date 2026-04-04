@@ -13,13 +13,14 @@ class FacturaController extends Controller
     {
         $pedido->load(['negocio', 'mesa', 'items.producto']);
         $es_admin        = auth()->check() && auth()->user()->esAdmin();
+        $es_mesero       = auth()->check() && auth()->user()->esMesero();
         $pedidoPagado    = $pedido->estaPagado();
-        $pedidoBloqueado = $es_admin && $pedido->estado === EstadoPedido::Pagado;
-        $productos       = $es_admin
+        $pedidoBloqueado = ($es_admin || $es_mesero) && $pedido->estado === EstadoPedido::Pagado;
+        $productos       = ($es_admin || $es_mesero)
             ? $pedido->negocio->productos()->orderBy('nombre')->get()
             : collect();
 
-        return view('factura.show', compact('pedido', 'es_admin', 'pedidoPagado', 'pedidoBloqueado', 'productos'));
+        return view('factura.show', compact('pedido', 'es_admin', 'es_mesero', 'pedidoPagado', 'pedidoBloqueado', 'productos'));
     }
 
     public function addItem(Pedido $pedido, Request $request)
