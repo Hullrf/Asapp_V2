@@ -337,7 +337,9 @@ async function eliminar(id, nombre) {
         headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
         body: (() => { const f = new FormData(); f.append('_method', 'DELETE'); return f; })(),
     });
-    const data = res.ok ? await res.json() : { success: false, message: 'Error del servidor (' + res.status + ').' };
+    let data;
+    try { data = await res.json(); } catch { data = { success: false, message: 'Error del servidor (' + res.status + ').' }; }
+    if (!res.ok && data.success === undefined) data.success = false;
     toast(data.message, data.success !== false);
     if (data.success !== false) setTimeout(() => location.reload(), 800);
 }
