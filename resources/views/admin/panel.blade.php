@@ -662,7 +662,7 @@
                        style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
                               border-radius:10px; font-size:14px; font-family:inherit;">
             </div>
-            <div style="margin-bottom:20px;">
+            <div style="margin-bottom:14px;">
                 <label style="font-size:11px; font-weight:700; text-transform:uppercase;
                                letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
                     Teléfono
@@ -672,6 +672,27 @@
                        style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
                               border-radius:10px; font-size:14px; font-family:inherit;">
             </div>
+            @if($todasLasSedes->count() > 0)
+            <div style="margin-bottom:20px; padding:14px; background:#F5F0FF; border-radius:10px; border:1.5px solid #E0D9F5;">
+                <label style="font-size:11px; font-weight:700; text-transform:uppercase;
+                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:8px;">
+                    Importar catálogo desde otra sede
+                </label>
+                <p style="font-size:12px; color:#6B7280; margin:0 0 10px;">
+                    Copia las categorías y productos de una sede existente a esta nueva sede.
+                </p>
+                <select name="importar_desde"
+                        style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                               border-radius:10px; font-size:14px; font-family:inherit; background:#fff;">
+                    <option value="">— No importar —</option>
+                    @foreach($todasLasSedes as $sede)
+                        <option value="{{ $sede->id_negocio }}">{{ $sede->nombre }}</option>
+                    @endforeach
+                </select>
+            </div>
+            @else
+            <input type="hidden" name="importar_desde" value="">
+            @endif
             <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <button type="button" class="btn btn-outline" onclick="cerrarNuevaSede()">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Crear sede →</button>

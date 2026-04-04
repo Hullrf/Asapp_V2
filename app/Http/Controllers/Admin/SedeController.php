@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Categoria;
 use App\Models\Negocio;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 
 class SedeController extends Controller
@@ -12,9 +14,10 @@ class SedeController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'    => ['required', 'string', 'max:100'],
-            'direccion' => ['nullable', 'string', 'max:150'],
-            'telefono'  => ['nullable', 'string', 'max:20'],
+            'nombre'         => ['required', 'string', 'max:100'],
+            'direccion'      => ['nullable', 'string', 'max:150'],
+            'telefono'       => ['nullable', 'string', 'max:20'],
+            'importar_desde' => ['nullable', 'integer', 'exists:negocios,id_negocio'],
         ]);
 
         $negocio = Negocio::create([
@@ -27,22 +30,66 @@ class SedeController extends Controller
         // Asociar con el usuario en el pivot
         auth()->user()->negocios()->attach($negocio->id_negocio);
 
+        // Importar categorías y productos desde otra sede
+        if ($request->filled('importar_desde')) {
+            $origen = auth()->user()->negocios()->find($request->importar_desde);
+
+            if ($origen) {
+                // Mapa id_categoria_origen => id_categoria_nueva
+                $mapaCateg = [];
+                foreach ($origen->categorias as $cat) {
+                    $nueva = Categoria::create([
+                        'id_negocio' => $negocio->id_negocio,
+                        'nombre'     => $cat->nombre,
+                    ]);
+                    $mapaCateg[$cat->id_categoria] = $nueva->id_categoria;
+                }
+
+                foreach ($origen->productos as $prod) {
+                    Producto::create([
+                        'id_negocio'   => $negocio->id_negocio,
+                        'id_categoria' => $mapaCateg[$prod->id_categoria] ?? null,
+                        'nombre'       => $prod->nombre,
+                        'descripcion'  => $prod->descripcion,
+                        'precio'       => $prod->precio,
+                        'disponible'   => $prod->disponible,
+                        'stock'        => $prod->stock,
+                        'stock_minimo' => $prod->stock_minimo,
+                    ]);
+                }
+
+                $mensaje = "✅ Sede '{$negocio->nombre}' creada con " . count($mapaCateg) . " categorías y {$origen->productos->count()} productos importados.";
+            } else {
+                $mensaje = "✅ Sede '{$negocio->nombre}' creada y activada.";
+            }
+        } else {
+            $mensaje = "✅ Sede '{$negocio->nombre}' creada y activada.";
+        }
+
         // Activar la nueva sede
         session(['sede_activa_id' => $negocio->id_negocio]);
 
         return redirect()
             ->route('panel.index')
-            ->with('message', "✅ Sede '{$negocio->nombre}' creada y activada.");
+            ->with('message', $mensaje);
     }
 
     /** Cambia la sede activa en sesión. */
     public function activar(Request $request, Negocio $negocio)
     {
+        $user = auth()->user();
+
         // Verificar que el usuario tiene acceso a esta sede
-        abort_unless(
-            auth()->user()->negocios()->where('id_negocio', $negocio->id_negocio)->exists(),
-            403
-        );
+        // (vía pivot O vía FK directa en caso de cuentas creadas manualmente)
+        $tieneAcceso = $user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()
+                    || $user->id_negocio === $negocio->id_negocio;
+
+        abort_unless($tieneAcceso, 403);
+
+        // Si la sede estaba en FK pero no en pivot, agregarla para futuras consultas
+        if (!$user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()) {
+            $user->negocios()->attach($negocio->id_negocio);
+        }
 
         session(['sede_activa_id' => $negocio->id_negocio]);
 

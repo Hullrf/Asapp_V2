@@ -65,11 +65,32 @@ class User extends Authenticatable
         if ($idActivo) {
             $negocio = $this->negocios()->find($idActivo);
             if ($negocio) return $negocio;
+
+            // Si la sede de sesión está en FK directa, la añadimos al pivot y la devolvemos
+            if ($this->id_negocio == $idActivo) {
+                $sede = $this->negocio;
+                if ($sede) {
+                    $this->negocios()->syncWithoutDetaching([$sede->id_negocio]);
+                    return $sede;
+                }
+            }
         }
 
-        // Fallback: sede principal
-        session(['sede_activa_id' => $this->id_negocio]);
-        return $this->negocio;
+        // Fallback: sede principal por FK directa
+        if ($this->negocio) {
+            session(['sede_activa_id' => $this->id_negocio]);
+            $this->negocios()->syncWithoutDetaching([$this->id_negocio]);
+            return $this->negocio;
+        }
+
+        // Último recurso: primera sede del pivot
+        $primera = $this->negocios()->first();
+        if ($primera) {
+            session(['sede_activa_id' => $primera->id_negocio]);
+            return $primera;
+        }
+
+        abort(403, 'No tienes ninguna sede activa asociada a tu cuenta.');
     }
 
     /** ID de la sede activa (shorthand para comparaciones de autorización). */
