@@ -19,6 +19,12 @@ class EsAdmin
             return redirect()->route('login');
         }
 
+        if (auth()->user()->negocioActivo()->suspendido) {
+            auth()->logout();
+            return redirect()->route('login')
+                ->withErrors(['email' => 'Tu cuenta ha sido suspendida. Contacta al administrador de ASAPP.']);
+        }
+
         $response = $next($request);
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $response->headers->set('Pragma', 'no-cache');

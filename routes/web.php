@@ -26,8 +26,9 @@ Route::post('/superadmin/logout',[SuperAdminController::class, 'logout'])->name(
 
 Route::middleware('superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/',                          [SuperAdminController::class, 'panel'])->name('panel');
-    Route::put('/negocios/{negocio}',        [SuperAdminController::class, 'update'])->name('negocios.update');
-    Route::delete('/negocios/{negocio}',     [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
+    Route::put('/negocios/{negocio}',         [SuperAdminController::class, 'update'])->name('negocios.update');
+    Route::delete('/negocios/{negocio}',      [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
+    Route::post('/negocios/{negocio}/toggle', [SuperAdminController::class, 'toggleSuspendido'])->name('negocios.toggle');
 });
 
 // ── Auth ─────────────────────────────────────────────────────────────

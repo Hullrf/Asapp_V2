@@ -74,4 +74,13 @@ class SuperAdminController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Negocio eliminado.']);
     }
+
+    public function toggleSuspendido(Negocio $negocio)
+    {
+        $negocio->update(['suspendido' => !$negocio->suspendido]);
+
+        $mensaje = $negocio->suspendido ? 'Negocio suspendido.' : 'Negocio reactivado.';
+
+        return response()->json(['success' => true, 'message' => $mensaje, 'suspendido' => $negocio->suspendido]);
+    }
 }

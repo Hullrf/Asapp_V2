@@ -15,6 +15,7 @@ class Negocio extends Model
         'direccion',
         'telefono',
         'email',
+        'suspendido',
     ];
 
     public function usuarios(): HasMany

@@ -74,6 +74,12 @@
         .btn-edit:hover { background: rgba(107,33,232,0.4); }
         .btn-del  { background: rgba(200,16,46,0.15); color: #f87171; border: 1px solid rgba(200,16,46,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-del:hover { background: rgba(200,16,46,0.3); }
+        .btn-suspend   { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-suspend:hover { background: rgba(234,179,8,0.3); }
+        .btn-reactivar { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-reactivar:hover { background: rgba(34,197,94,0.3); }
+        .badge-suspendido { background: rgba(200,16,46,0.2); color: #f87171; border: 1px solid rgba(200,16,46,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
+        .badge-activo     { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
 
         /* ── MODAL ── */
         .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
@@ -146,6 +152,7 @@
                     <th>Negocio</th>
                     <th>Admin</th>
                     <th>Teléfono</th>
+                    <th style="text-align:center">Estado</th>
                     <th class="center" style="text-align:center">Productos</th>
                     <th class="center" style="text-align:center">Mesas</th>
                     <th class="center" style="text-align:center">Pedidos</th>
@@ -178,6 +185,11 @@
                             <span style="color:#3D0E8A;">—</span>
                         @endif
                     </td>
+                    <td style="text-align:center;">
+                        <span class="{{ $negocio->suspendido ? 'badge-suspendido' : 'badge-activo' }}">
+                            {{ $negocio->suspendido ? 'Suspendido' : 'Activo' }}
+                        </span>
+                    </td>
                     <td style="text-align:center;"><span class="chip">{{ $negocio->productos_count }}</span></td>
                     <td style="text-align:center;"><span class="chip">{{ $negocio->mesas_count }}</span></td>
                     <td style="text-align:center;"><span class="chip">{{ $negocio->pedidos_count }}</span></td>
@@ -190,6 +202,10 @@
                                 '{{ addslashes($negocio->telefono ?? '') }}',
                                 '{{ addslashes($negocio->email ?? '') }}'
                             )">✏️ Editar</button>
+                            <button class="{{ $negocio->suspendido ? 'btn-reactivar' : 'btn-suspend' }}"
+                                    onclick="toggleSuspendido({{ $negocio->id_negocio }}, '{{ addslashes($negocio->nombre) }}', {{ $negocio->suspendido ? 'true' : 'false' }})">
+                                {{ $negocio->suspendido ? '✅ Reactivar' : '⏸ Suspender' }}
+                            </button>
                             <button class="btn-del" onclick="eliminar({{ $negocio->id_negocio }}, '{{ addslashes($negocio->nombre) }}')">🗑 Eliminar</button>
                         </div>
                     </td>
@@ -230,6 +246,10 @@ const RUTAS_DELETE = @json($negocios->mapWithKeys(fn($n) => [
     $n->id_negocio => route('superadmin.negocios.destroy', $n)
 ]));
 
+const RUTAS_TOGGLE = @json($negocios->mapWithKeys(fn($n) => [
+    $n->id_negocio => route('superadmin.negocios.toggle', $n)
+]));
+
 function filtrar(q) {
     const term = q.toLowerCase().trim();
     document.querySelectorAll('#tabla-negocios tbody tr').forEach(tr => {
@@ -262,6 +282,18 @@ document.getElementById('form-editar').addEventListener('submit', async function
     toast(data.message, data.success !== false);
     if (data.success !== false) setTimeout(() => location.reload(), 800);
 });
+
+async function toggleSuspendido(id, nombre, suspendido) {
+    const accion = suspendido ? 'reactivar' : 'suspender';
+    if (!confirm(`¿${accion.charAt(0).toUpperCase() + accion.slice(1)} el negocio «${nombre}»?`)) return;
+    const res  = await fetch(RUTAS_TOGGLE[id], {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+    });
+    const data = await res.json();
+    toast(data.message, data.success !== false);
+    if (data.success !== false) setTimeout(() => location.reload(), 800);
+}
 
 async function eliminar(id, nombre) {
     if (!confirm(`¿Eliminar el negocio «${nombre}»? Esta acción eliminará todos sus datos.`)) return;
