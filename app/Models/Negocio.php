@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Negocio extends Model
@@ -21,6 +22,12 @@ class Negocio extends Model
     public function usuarios(): HasMany
     {
         return $this->hasMany(User::class, 'id_negocio', 'id_negocio');
+    }
+
+    /** Usuarios asociados vía pivot (incluye sedes creadas con "Nueva sede"). */
+    public function administradores(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_negocio', 'id_negocio', 'id_user');
     }
 
     public function productos(): HasMany

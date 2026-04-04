@@ -48,7 +48,7 @@ class SuperAdminController extends Controller
     public function panel()
     {
         $negocios = Negocio::withCount(['productos', 'mesas', 'pedidos'])
-            ->with(['usuarios' => fn($q) => $q->where('rol', 'admin')->limit(1)])
+            ->with(['administradores' => fn($q) => $q->where('rol', 'admin')->limit(1)])
             ->get();
 
         return view('superadmin.panel', compact('negocios'));

@@ -161,7 +161,7 @@
             </thead>
             <tbody>
                 @foreach ($negocios as $i => $negocio)
-                @php $admin = $negocio->usuarios->first(); @endphp
+                @php $admin = $negocio->administradores->first(); @endphp
                 <tr data-busqueda="{{ strtolower($negocio->nombre . ' ' . ($negocio->email ?? '') . ' ' . ($admin?->email ?? '')) }}">
                     <td style="color:#7C3AED;">{{ $i + 1 }}</td>
                     <td>
