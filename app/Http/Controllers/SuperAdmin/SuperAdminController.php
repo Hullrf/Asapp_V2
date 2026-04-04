@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ItemPedido;
 use App\Models\Negocio;
+use App\Models\Pago;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class SuperAdminController extends Controller
@@ -70,16 +73,29 @@ class SuperAdminController extends Controller
 
     public function destroy(Negocio $negocio)
     {
-        try {
-            $negocio->delete();
-        } catch (\Illuminate\Database\QueryException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No se puede eliminar: el negocio tiene datos relacionados (pedidos, mesas, productos). Elimínalos primero o usa la opción de suspender.',
-            ], 422);
-        }
+        DB::transaction(function () use ($negocio) {
+            $pedidoIds = $negocio->pedidos()->pluck('id_pedido');
 
-        return response()->json(['success' => true, 'message' => 'Negocio eliminado.']);
+            // 1. Pagos (FK a pedidos sin cascade)
+            Pago::whereIn('id_pedido', $pedidoIds)->delete();
+
+            // 2. Items (cascade elimina item_divisiones y division_partes)
+            ItemPedido::whereIn('id_pedido', $pedidoIds)->delete();
+
+            // 3. Pedidos (FK a negocio sin cascade)
+            $negocio->pedidos()->delete();
+
+            // 4. Productos (FK a negocio sin cascade; items ya eliminados)
+            $negocio->productos()->delete();
+
+            // 5. Limpiar auto-referencia de mesas antes del cascade
+            $negocio->mesas()->update(['mesa_principal_id' => null]);
+
+            // 6. Eliminar negocio — cascade: mesas, categorias, pisos, user_negocio
+            $negocio->delete();
+        });
+
+        return response()->json(['success' => true, 'message' => 'Negocio y todos sus datos eliminados.']);
     }
 
     public function toggleSuspendido(Request $request, Negocio $negocio)
