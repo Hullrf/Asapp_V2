@@ -219,6 +219,8 @@
 
         input[type="text"],
         input[type="number"],
+        input[type="email"],
+        input[type="password"],
         select,
         textarea {
             padding: 9px 13px;
