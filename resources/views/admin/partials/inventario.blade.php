@@ -274,7 +274,7 @@
 </div>
 
 <script>
-const RUTAS_PRODUCTOS = @json($productos->mapWithKeys(fn($p) => [
+window.RUTAS_PRODUCTOS = @json($productos->mapWithKeys(fn($p) => [
     $p->id_producto => route('panel.productos.update', $p)
 ]));
 
