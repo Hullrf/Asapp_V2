@@ -143,7 +143,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($productos as $producto)
+                    @foreach ($productos as $i => $producto)
                     @php $busqueda = strtolower($producto->nombre . ' ' . $producto->descripcion . ' ' . ($producto->categoria?->nombre ?? '')); @endphp
                         @php
                             $sinStock  = $producto->stock === null;
@@ -151,7 +151,7 @@
                             $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
                         @endphp
                         <tr data-busqueda="{{ $busqueda }}">
-                            <td style="color:#9B8EC4;" data-val="{{ $producto->id_producto }}">{{ $producto->id_producto }}</td>
+                            <td style="color:#9B8EC4;" data-val="{{ $i + 1 }}">{{ $i + 1 }}</td>
                             <td style="font-weight:600;" data-val="{{ strtolower($producto->nombre) }}">{{ $producto->nombre }}</td>
                             <td style="color:#9B8EC4; font-size:12px;">{{ $producto->descripcion }}</td>
                             <td data-val="{{ strtolower($producto->categoria?->nombre ?? '') }}">
