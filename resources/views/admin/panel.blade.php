@@ -25,11 +25,22 @@
             height: 60px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 16px;
             position: sticky;
             top: 0;
             z-index: 100;
             box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        .topbar-center {
+            flex: 1;
+            text-align: center;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
         .topbar-logo {
@@ -447,41 +458,44 @@
 <div class="topbar">
     <div class="topbar-logo">ASAPP</div>
 
-    {{-- Sede switcher --}}
-    <div class="sede-switcher">
-        <button class="sede-btn" id="sedeBtn" type="button">
-            🏪 <span class="sede-btn-nombre">{{ $negocio->nombre }}</span>
-            <span style="opacity:0.5; font-size:10px; flex-shrink:0;">▾</span>
-        </button>
-        <div class="sede-drop" id="sedeDrop">
-            <div class="sede-drop-title">Tus sedes</div>
-            @foreach ($todasLasSedes as $sede)
-                <form action="{{ route('panel.sedes.activar', $sede) }}" method="POST" style="margin:0">
-                    @csrf
-                    <button type="submit"
-                            class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
-                        {{ $sede->nombre }}
-                        @if ($sede->id_negocio === $negocio->id_negocio)
-                            &nbsp;✓
-                        @endif
-                    </button>
-                </form>
-            @endforeach
-            <div class="sede-divider"></div>
-            <button type="button" class="sede-item sede-nueva"
-                    onclick="abrirNuevaSede(); document.getElementById('sedeDrop').classList.remove('open');">
-                + Nueva sede
-            </button>
-        </div>
-    </div>
-
-    <div class="topbar-info">
+    <div class="topbar-center topbar-info">
         Bienvenido, <strong>{{ auth()->user()->nombre }}</strong>
     </div>
-    <form action="{{ route('logout') }}" method="POST" style="margin:0">
-        @csrf
-        <button type="submit" class="btn-logout">Cerrar sesión</button>
-    </form>
+
+    <div class="topbar-right">
+        {{-- Sede switcher --}}
+        <div class="sede-switcher">
+            <button class="sede-btn" id="sedeBtn" type="button">
+                🏪 <span class="sede-btn-nombre">{{ $negocio->nombre }}</span>
+                <span style="opacity:0.5; font-size:10px; flex-shrink:0;">▾</span>
+            </button>
+            <div class="sede-drop" id="sedeDrop">
+                <div class="sede-drop-title">Tus sedes</div>
+                @foreach ($todasLasSedes as $sede)
+                    <form action="{{ route('panel.sedes.activar', $sede) }}" method="POST" style="margin:0">
+                        @csrf
+                        <button type="submit"
+                                class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
+                            {{ $sede->nombre }}
+                            @if ($sede->id_negocio === $negocio->id_negocio)
+                                &nbsp;✓
+                            @endif
+                        </button>
+                    </form>
+                @endforeach
+                <div class="sede-divider"></div>
+                <button type="button" class="sede-item sede-nueva"
+                        onclick="abrirNuevaSede(); document.getElementById('sedeDrop').classList.remove('open');">
+                    + Nueva sede
+                </button>
+            </div>
+        </div>
+
+        <form action="{{ route('logout') }}" method="POST" style="margin:0">
+            @csrf
+            <button type="submit" class="btn-logout">Cerrar sesión</button>
+        </form>
+    </div>
 </div>
 
 {{-- TABS --}}
