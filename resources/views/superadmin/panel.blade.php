@@ -100,6 +100,26 @@
         #toast.show { opacity: 1; transform: translateY(0); }
         #toast.ok  { background: #1a2e1a; color: #4ade80; border: 1px solid #166534; }
         #toast.err { background: #2e1a1a; color: #f87171; border: 1px solid #991b1b; pointer-events: all; cursor: pointer; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 640px) {
+            .topbar { padding: 0 14px; }
+            .badge-sa { display: none; }
+            .container { padding: 20px 14px; }
+            .card-header { flex-wrap: wrap; gap: 10px; }
+            input[type="text"].buscador { width: 100%; }
+            .stats { gap: 10px; }
+            .stat-card { padding: 16px; min-width: 120px; }
+            .stat-val { font-size: 24px; }
+            .acciones { flex-wrap: wrap; }
+            #toast { right: 12px; left: 12px; max-width: none; }
+        }
+
+        @media (max-width: 400px) {
+            .topbar { height: 54px; }
+            .logo { font-size: 18px; }
+            .btn-logout { padding: 6px 10px; font-size: 12px; }
+        }
     </style>
 </head>
 <body>
@@ -145,6 +165,7 @@
             <div class="card-title">Negocios</div>
             <input type="text" class="buscador" placeholder="🔍 Buscar negocio..." oninput="filtrar(this.value)">
         </div>
+        <div style="overflow-x:auto;">
         <table id="tabla-negocios">
             <thead>
                 <tr>
@@ -213,6 +234,7 @@
                 @endforeach
             </tbody>
         </table>
+        </div>{{-- /overflow-x:auto --}}
     </div>
 </div>
 

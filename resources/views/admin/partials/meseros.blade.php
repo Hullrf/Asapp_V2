@@ -33,6 +33,7 @@
             No hay meseros registrados. Crea uno desde el formulario de arriba.
         </p>
     @else
+        <div style="overflow-x:auto;">
         <table>
             <thead>
                 <tr>
@@ -60,5 +61,6 @@
                 @endforeach
             </tbody>
         </table>
+        </div>{{-- /overflow-x:auto --}}
     @endif
 </div>

@@ -149,6 +149,13 @@
         .btn-outline:hover { border-color: #C4B5FD; color: #6B21E8; }
 
         .simulado-nota { margin-top: 20px; font-size: 11px; color: #C4A0FF; }
+
+        .btn-reintentar, .btn-outline { min-height: 48px; display: flex; align-items: center; justify-content: center; }
+
+        @media (max-width: 480px) {
+            body { padding: 16px; align-items: flex-start; padding-top: 24px; }
+            .card { padding: 32px 20px; }
+        }
     </style>
 </head>
 <body>

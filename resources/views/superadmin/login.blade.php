@@ -87,6 +87,12 @@
             transition: background 0.2s;
         }
         button:hover { background: #7C3AED; }
+        button { min-height: 48px; }
+
+        @media (max-width: 480px) {
+            body { padding: 20px; align-items: flex-start; padding-top: 40px; }
+            .card { padding: 36px 22px; }
+        }
     </style>
 </head>
 <body>

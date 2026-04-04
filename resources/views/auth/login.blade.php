@@ -141,6 +141,14 @@
         border-top: 1px solid #E0D9F5;
         margin: 20px 0;
     }
+
+    .btn-submit { min-height: 48px; }
+
+    @media (max-width: 480px) {
+        body { padding: 16px; align-items: flex-start; padding-top: 32px; }
+        .card { padding: 28px 18px 24px; }
+        .logo { font-size: 40px; }
+    }
 </style>
 
 <script>

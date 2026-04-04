@@ -137,8 +137,11 @@
 
     .card-footer a:hover { text-decoration: underline; }
 
+    .btn-submit { min-height: 48px; }
+
     @media (max-width: 480px) {
-        .card { padding: 28px 20px; }
+        body { padding: 24px 14px 40px; }
+        .card { padding: 28px 18px; }
         .logo { font-size: 36px; }
     }
 </style>

@@ -452,6 +452,30 @@
         .pedido-tabla td { padding: 9px 10px; border-bottom: 1px solid #EDE9F8; vertical-align: middle; }
         .pedido-tabla input[type="number"] { width: 65px; }
         .pedido-tabla input[type="checkbox"] { width: 18px; height: 18px; accent-color: #6B21E8; cursor: pointer; }
+
+        /* ── RESPONSIVE ── */
+        .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { white-space: nowrap; flex-shrink: 0; }
+
+        @media (max-width: 640px) {
+            .topbar { padding: 0 14px; gap: 10px; }
+            .topbar-center { display: none; }
+            .sede-btn-nombre { max-width: 90px; }
+            .tabs { padding: 0 14px; gap: 0; }
+            .tab { padding: 12px 12px; font-size: 13px; }
+            .content { padding: 0 12px; margin: 16px auto; }
+            #panel-toast { right: 12px; left: 12px; max-width: none; bottom: 16px; }
+            .btn { min-height: 40px; }
+        }
+
+        @media (max-width: 400px) {
+            .topbar-logo { font-size: 18px; }
+            .btn-logout { padding: 6px 10px; font-size: 12px; }
+            .topbar-info { font-size: 12px; }
+            .sede-btn { font-size: 12px; padding: 6px 10px; }
+            .sede-btn-nombre { max-width: 70px; }
+        }
     </style>
 </head>
 <body>

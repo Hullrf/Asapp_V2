@@ -69,6 +69,11 @@
             font-size: 11px;
             color: #C4B5FD;
         }
+
+        @media (max-width: 480px) {
+            body { padding: 16px; }
+            .card { padding: 32px 20px; }
+        }
     </style>
 </head>
 <body>

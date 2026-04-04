@@ -38,6 +38,7 @@
                     No hay productos disponibles. Agrégalos en la pestaña de Inventario.
                 </p>
             @else
+                <div style="overflow-x:auto;">
                 <table class="pedido-tabla">
                     <thead>
                         <tr>
@@ -68,6 +69,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>{{-- /overflow-x:auto --}}
 
                 <div style="margin-top:20px; display:flex; justify-content:flex-end;">
                     <button type="submit" class="btn btn-primary">✅ Crear Pedido</button>

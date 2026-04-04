@@ -197,6 +197,15 @@
 
         .sin-items { text-align: center; color: #9B8EC4; padding: 20px 0; font-size: 14px; }
 
+        .btn-pagar { min-height: 48px; }
+
+        @media (max-width: 480px) {
+            body { padding: 16px 12px 32px; }
+            .card { padding: 20px 16px; }
+            .metodo-tabs { gap: 6px; }
+            .metodo-tab { padding: 8px 4px; font-size: 11px; }
+        }
+
         /* ── Processing overlay ── */
         .overlay {
             display: none;

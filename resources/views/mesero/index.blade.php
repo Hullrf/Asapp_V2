@@ -47,7 +47,6 @@
             font-size: 13px;
             color: rgba(255,255,255,0.7);
         }
-
         .topbar-center strong { color: #fff; }
 
         .topbar-right {
@@ -57,11 +56,7 @@
             flex-shrink: 0;
         }
 
-        .topbar-info {
-            font-size: 13px;
-            color: rgba(255,255,255,0.7);
-        }
-
+        .topbar-info { font-size: 13px; color: rgba(255,255,255,0.7); }
         .topbar-info strong { color: #fff; }
 
         .btn-logout {
@@ -75,8 +70,8 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            white-space: nowrap;
         }
-
         .btn-logout:hover { background: rgba(107,33,232,0.3); }
 
         /* ── CONTENIDO ── */
@@ -90,9 +85,9 @@
         .card {
             background: #fff;
             border-radius: 14px;
-            padding: 24px;
+            padding: 20px;
             border: 1px solid #E0D9F5;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             box-shadow: 0 2px 8px rgba(107,33,232,0.06);
         }
 
@@ -100,7 +95,7 @@
             font-size: 16px;
             font-weight: 700;
             color: #3D0E8A;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -108,23 +103,27 @@
 
         /* ── BOTONES ── */
         .btn {
-            padding: 9px 18px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 600;
             border: none;
             cursor: pointer;
             text-decoration: none;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
             transition: opacity 0.2s;
             white-space: nowrap;
+            min-height: 40px;
         }
-
         .btn:hover { opacity: 0.85; }
-        .btn-primary  { background: #6B21E8; color: #fff; }
-        .btn-success  { background: #3D0E8A; color: #fff; }
-        .btn-outline  { background: transparent; color: #6B21E8; border: 1px solid #6B21E8; }
-        .btn-sm       { padding: 6px 12px; font-size: 12px; }
+        .btn-primary { background: #6B21E8; color: #fff; }
+        .btn-success { background: #3D0E8A; color: #fff; }
+        .btn-outline { background: transparent; color: #6B21E8; border: 1px solid #6B21E8; }
+        .btn-sm      { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+        .btn-block   { width: 100%; }
 
         /* ── GRID MESAS ── */
         .mesas-grid {
@@ -137,16 +136,16 @@
             background: #FAF8FF;
             border: 2px solid #E0D9F5;
             border-radius: 14px;
-            padding: 20px;
+            padding: 20px 16px;
             text-align: center;
             transition: border-color 0.2s, box-shadow 0.2s;
+            cursor: default;
         }
-
         .mesa-card.ocupada { border-color: #8B5CF6; background: #EDE9FE; }
         .mesa-card.libre   { border-color: #D4C9F0; background: #F5F3FF; }
         .mesa-card:hover   { box-shadow: 0 4px 16px rgba(107,33,232,0.12); }
 
-        .mesa-icono  { font-size: 32px; margin-bottom: 8px; }
+        .mesa-icono  { font-size: 30px; margin-bottom: 8px; }
         .mesa-nombre { font-size: 15px; font-weight: 700; color: #3D0E8A; margin-bottom: 6px; }
 
         .mesa-estado {
@@ -155,133 +154,11 @@
             padding: 3px 10px;
             border-radius: 20px;
             display: inline-block;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
-
         .estado-libre   { background: #F5F3FF; color: #9B8EC4; }
         .estado-ocupada { background: #C4B5FD; color: #3D0E8A; }
         .mesa-acciones  { display: flex; flex-direction: column; gap: 6px; }
-
-        /* ── MODAL ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 999;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open { display: flex; }
-
-        .modal {
-            background: #fff;
-            border-radius: 20px;
-            padding: 32px;
-            max-width: 600px;
-            width: 94%;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
-        }
-
-        .modal-np { text-align: left; max-height: 90vh; display: flex; flex-direction: column; }
-
-        .np-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 14px;
-        }
-
-        .np-header h3 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #3D0E8A;
-        }
-
-        .np-close {
-            background: none;
-            border: none;
-            font-size: 16px;
-            color: #9B8EC4;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .np-close:hover { background: #F5F3FF; color: #3D0E8A; }
-
-        .np-body {
-            overflow-y: auto;
-            flex: 1;
-            margin-bottom: 16px;
-        }
-
-        .np-body::-webkit-scrollbar { width: 4px; }
-        .np-body::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
-        .np-body::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
-
-        .pedido-tabla { width: 100%; font-size: 13px; border-collapse: collapse; }
-        .pedido-tabla th {
-            text-align: left;
-            padding: 8px 10px;
-            color: #6B21E8;
-            font-weight: 600;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 2px solid #E0D9F5;
-            position: sticky;
-            top: 0;
-            background: #fff;
-        }
-        .pedido-tabla td { padding: 9px 10px; border-bottom: 1px solid #EDE9F8; vertical-align: middle; }
-        .pedido-tabla input[type="number"] { width: 65px; padding: 5px 8px; border: 1px solid #D4C9F0; border-radius: 6px; font-size: 13px; }
-        .pedido-tabla input[type="checkbox"] { width: 18px; height: 18px; accent-color: #6B21E8; cursor: pointer; }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="number"],
-        select {
-            padding: 9px 13px;
-            border: 1px solid #D4C9F0;
-            border-radius: 8px;
-            font-size: 14px;
-            background: #FAF8FF;
-            color: #1a1a2e;
-            outline: none;
-            transition: border-color 0.2s;
-            font-family: inherit;
-        }
-
-        input:focus, select:focus { border-color: #6B21E8; }
-
-        /* ── TOAST ── */
-        #mesero-toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            padding: 14px 22px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-            z-index: 9999;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.25s, transform 0.25s;
-            pointer-events: none;
-        }
-
-        #mesero-toast.show      { opacity: 1; transform: translateY(0); pointer-events: auto; }
-        #mesero-toast.toast-ok  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
-        #mesero-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
-
-        .toast-inner { display: flex; align-items: center; gap: 14px; }
-        .toast-close { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; color: inherit; padding: 0; line-height: 1; flex-shrink: 0; }
-        .toast-close:hover { opacity: 1; }
 
         /* ── PISO LABEL ── */
         .piso-label {
@@ -294,19 +171,215 @@
             gap: 6px;
         }
 
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            text-align: center;
-            color: #9B8EC4;
-            font-size: 14px;
-            padding: 48px 0;
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 999;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: #fff;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px 20px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 92dvh;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
         }
 
-        @media (max-width: 640px) {
-            .topbar { padding: 0 14px; }
+        .np-handle {
+            width: 40px; height: 4px;
+            background: #D4C9F0;
+            border-radius: 4px;
+            margin: 0 auto 16px;
+            flex-shrink: 0;
+        }
+
+        .np-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .np-header h3 { font-size: 17px; font-weight: 700; color: #3D0E8A; }
+
+        .np-close {
+            background: #F5F3FF;
+            border: none;
+            font-size: 15px;
+            color: #6B21E8;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 8px;
+            line-height: 1;
+            min-width: 36px;
+            min-height: 36px;
+        }
+
+        /* buscador */
+        #np-buscador {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #D4C9F0;
+            border-radius: 10px;
+            font-size: 15px;
+            background: #FAF8FF;
+            color: #1a1a2e;
+            outline: none;
+            font-family: inherit;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        #np-buscador:focus { border-color: #6B21E8; }
+
+        .np-body {
+            overflow-y: auto;
+            flex: 1;
+            -webkit-overflow-scrolling: touch;
+        }
+        .np-body::-webkit-scrollbar { width: 4px; }
+        .np-body::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
+
+        /* Lista de productos — tarjetas táctiles */
+        .prod-lista { display: flex; flex-direction: column; gap: 2px; }
+
+        .prod-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 10px;
+            border-radius: 10px;
+            border-bottom: 1px solid #F0EBF8;
+            transition: background 0.15s;
+            cursor: pointer;
+            user-select: none;
+        }
+        .prod-item:active  { background: #F5F3FF; }
+        .prod-item.selected { background: #EDE9FE; }
+        .prod-item.hidden  { display: none; }
+
+        .prod-check {
+            width: 22px; height: 22px;
+            accent-color: #6B21E8;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .prod-info { flex: 1; min-width: 0; }
+        .prod-nombre { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+        .prod-cat    { font-size: 12px; color: #9B8EC4; }
+
+        .prod-precio { font-size: 13px; font-weight: 700; color: #6B21E8; white-space: nowrap; flex-shrink: 0; }
+
+        .prod-cant {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        .cant-btn {
+            width: 30px; height: 30px;
+            background: #EDE9FE;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            color: #6B21E8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            font-weight: 700;
+        }
+        .cant-btn:active { background: #C4B5FD; }
+        .cant-num {
+            width: 32px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #3D0E8A;
+        }
+        .prod-cant-wrap { display: none; }
+        .prod-item.selected .prod-cant-wrap { display: flex; }
+
+        .np-footer {
+            display: flex;
+            gap: 10px;
+            padding-top: 14px;
+            flex-shrink: 0;
+            border-top: 1px solid #E0D9F5;
+            margin-top: 10px;
+        }
+
+        /* ── TOAST ── */
+        #mesero-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(12px);
+            padding: 13px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            width: calc(100% - 32px);
+            max-width: 420px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+        }
+        #mesero-toast.show      { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+        #mesero-toast.toast-ok  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+        #mesero-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
+
+        .toast-inner { display: flex; align-items: center; gap: 12px; }
+        .toast-close { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; color: inherit; padding: 0; flex-shrink: 0; }
+        .toast-close:hover { opacity: 1; }
+
+        /* ── EMPTY STATE ── */
+        .empty-state { text-align: center; color: #9B8EC4; font-size: 14px; padding: 48px 0; }
+
+        /* ── TABLET (≥ 640px) ── */
+        @media (min-width: 640px) {
+            .modal {
+                border-radius: 20px;
+                max-width: 580px;
+                margin-bottom: 40px;
+                max-height: 88vh;
+            }
+            .modal-overlay { align-items: center; }
+            .np-handle { display: none; }
+            .mesas-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        }
+
+        /* ── DESKTOP (≥ 1024px) ── */
+        @media (min-width: 1024px) {
+            .mesas-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+            .content { margin: 32px auto; }
+        }
+
+        /* ── MÓVIL PEQUEÑO (< 400px) ── */
+        @media (max-width: 400px) {
+            .topbar { padding: 0 12px; height: 54px; }
+            .topbar-logo { font-size: 18px; }
             .topbar-center { display: none; }
-            .content { padding: 0 12px; margin: 16px auto; }
-            .mesas-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+            .topbar-info  { display: none; }
+            .content { padding: 0 10px; margin: 12px auto; }
+            .mesas-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .mesa-card { padding: 14px 10px; }
+            .mesa-icono { font-size: 24px; }
+            .mesa-nombre { font-size: 13px; }
+            .card { padding: 14px; }
         }
     </style>
 </head>
@@ -463,6 +536,7 @@
 {{-- MODAL NUEVO PEDIDO --}}
 <div class="modal-overlay" id="modal-np">
     <div class="modal modal-np">
+        <div class="np-handle"></div>
         <div class="np-header">
             <h3 id="np-titulo">🧾 Nuevo pedido</h3>
             <button class="np-close" onclick="cerrarNuevoPedido()">✕</button>
@@ -476,53 +550,43 @@
             </p>
         @else
             <input type="text" id="np-buscador" placeholder="🔍 Buscar producto…"
-                   oninput="filtrarNP(this.value)"
-                   style="width:100%; margin-bottom:12px; font-size:13px;">
+                   oninput="filtrarNP(this.value)">
 
             <input type="hidden" id="np-id-mesa">
 
-            <div class="np-body" style="max-height:340px;">
-                <table class="pedido-tabla" id="np-tabla">
-                    <thead>
-                        <tr>
-                            <th>Agregar</th>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Cantidad</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($productosDisp as $p)
-                            <tr data-np="{{ strtolower($p->nombre . ' ' . ($p->categoria?->nombre ?? '')) }}">
-                                <td>
-                                    <input type="checkbox"
-                                           data-id="{{ $p->id_producto }}"
-                                           onchange="toggleNP(this, {{ $p->id_producto }})">
-                                </td>
-                                <td>
-                                    <div style="font-weight:600; color:#1a1a2e;">{{ $p->nombre }}</div>
-                                    @if ($p->categoria)
-                                        <div style="font-size:11px; color:#9B8EC4;">{{ $p->categoria->nombre }}</div>
-                                    @endif
-                                </td>
-                                <td style="white-space:nowrap;">${{ number_format($p->precio, 0, ',', '.') }}</td>
-                                <td>
-                                    <input type="number"
-                                           id="np-cant-{{ $p->id_producto }}"
-                                           value="1" min="1" disabled>
-                                </td>
-                            </tr>
-                        @endforeach
-                        <tr id="np-sin-resultados" style="display:none;">
-                            <td colspan="4" style="text-align:center; color:#9B8EC4; padding:16px; font-size:13px;">
-                                Sin productos que coincidan.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="np-body">
+                <div class="prod-lista" id="np-lista">
+                    @foreach ($productosDisp as $p)
+                        <div class="prod-item"
+                             data-np="{{ strtolower($p->nombre . ' ' . ($p->categoria?->nombre ?? '')) }}"
+                             onclick="toggleNP(this, {{ $p->id_producto }})">
+                            <input type="checkbox"
+                                   class="prod-check"
+                                   data-id="{{ $p->id_producto }}"
+                                   onclick="event.stopPropagation()">
+                            <div class="prod-info">
+                                <div class="prod-nombre">{{ $p->nombre }}</div>
+                                @if ($p->categoria)
+                                    <div class="prod-cat">{{ $p->categoria->nombre }}</div>
+                                @endif
+                            </div>
+                            <span class="prod-precio">${{ number_format($p->precio, 0, ',', '.') }}</span>
+                            <div class="prod-cant-wrap prod-cant">
+                                <button type="button" class="cant-btn"
+                                        onclick="event.stopPropagation(); cambiarCant({{ $p->id_producto }}, -1)">−</button>
+                                <span class="cant-num" id="np-cant-{{ $p->id_producto }}">1</span>
+                                <button type="button" class="cant-btn"
+                                        onclick="event.stopPropagation(); cambiarCant({{ $p->id_producto }}, 1)">+</button>
+                            </div>
+                        </div>
+                    @endforeach
+                    <div id="np-sin-resultados" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:13px;">
+                        Sin productos que coincidan.
+                    </div>
+                </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; padding-top:4px;">
+            <div class="np-footer">
                 <button type="button" class="btn btn-outline" onclick="cerrarNuevoPedido()">Cancelar</button>
                 <button type="button" class="btn btn-primary" id="btn-crear-pedido" onclick="crearPedido()">✅ Crear pedido</button>
             </div>
@@ -538,11 +602,13 @@ function abrirNuevoPedido(idMesa, nombreMesa) {
     document.getElementById('np-id-mesa').value = idMesa;
     document.getElementById('np-titulo').textContent = '🧾 Nuevo pedido — ' + nombreMesa;
 
-    // Resetear checkboxes y cantidades
-    document.querySelectorAll('#np-tabla input[type="checkbox"]').forEach(cb => {
-        cb.checked = false;
-        const cant = document.getElementById('np-cant-' + cb.dataset.id);
-        if (cant) { cant.disabled = true; cant.value = 1; }
+    // Resetear selecciones y cantidades
+    document.querySelectorAll('#np-lista .prod-item').forEach(item => {
+        item.classList.remove('selected');
+        item.querySelector('.prod-check').checked = false;
+        const id  = item.querySelector('.prod-check').dataset.id;
+        const num = document.getElementById('np-cant-' + id);
+        if (num) num.textContent = '1';
     });
 
     // Resetear buscador
@@ -556,19 +622,27 @@ function cerrarNuevoPedido() {
     document.getElementById('modal-np').classList.remove('open');
 }
 
-function toggleNP(checkbox, id) {
-    const input = document.getElementById('np-cant-' + id);
-    input.disabled = !checkbox.checked;
-    if (checkbox.checked) input.focus();
+function toggleNP(item, id) {
+    const checkbox = item.querySelector('.prod-check');
+    checkbox.checked = !checkbox.checked;
+    item.classList.toggle('selected', checkbox.checked);
+}
+
+function cambiarCant(id, delta) {
+    const span = document.getElementById('np-cant-' + id);
+    if (!span) return;
+    let val = parseInt(span.textContent) + delta;
+    if (val < 1) val = 1;
+    span.textContent = val;
 }
 
 function filtrarNP(q) {
     const term  = q.toLowerCase().trim();
-    const filas = document.querySelectorAll('#np-tabla tbody tr[data-np]');
+    const items = document.querySelectorAll('#np-lista .prod-item');
     let visibles = 0;
-    filas.forEach(fila => {
-        const match = !term || fila.dataset.np.includes(term);
-        fila.style.display = match ? '' : 'none';
+    items.forEach(item => {
+        const match = !term || item.dataset.np.includes(term);
+        item.classList.toggle('hidden', !match);
         if (match) visibles++;
     });
     const aviso = document.getElementById('np-sin-resultados');
@@ -581,7 +655,7 @@ async function crearPedido() {
     if (!idMesa) return;
 
     // Recolectar productos seleccionados
-    const checkboxes = document.querySelectorAll('#np-tabla input[type="checkbox"]:checked');
+    const checkboxes = document.querySelectorAll('#np-lista .prod-check:checked');
     if (checkboxes.length === 0) {
         showToast('⚠️ Selecciona al menos un producto.', false);
         return;
@@ -594,8 +668,8 @@ async function crearPedido() {
     checkboxes.forEach(cb => {
         const id = cb.dataset.id;
         formData.append('productos[]', id);
-        const cant = document.getElementById('np-cant-' + id);
-        formData.append('cantidades[' + id + ']', cant ? cant.value : 1);
+        const num = document.getElementById('np-cant-' + id);
+        formData.append('cantidades[' + id + ']', num ? num.textContent : 1);
     });
 
     const btn = document.getElementById('btn-crear-pedido');
