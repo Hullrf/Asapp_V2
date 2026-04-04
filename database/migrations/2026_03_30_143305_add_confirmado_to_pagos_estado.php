@@ -7,11 +7,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE pagos MODIFY COLUMN estado ENUM('exitoso','fallido','simulado','confirmado') NOT NULL DEFAULT 'simulado'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE pagos MODIFY COLUMN estado ENUM('exitoso','fallido','simulado','confirmado') NOT NULL DEFAULT 'simulado'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE pagos MODIFY COLUMN estado ENUM('exitoso','fallido','simulado') NOT NULL DEFAULT 'simulado'");
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE pagos MODIFY COLUMN estado ENUM('exitoso','fallido','simulado') NOT NULL DEFAULT 'simulado'");
+        }
     }
 };
