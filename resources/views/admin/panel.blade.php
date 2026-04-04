@@ -472,16 +472,13 @@
             <div class="sede-drop" id="sedeDrop">
                 <div class="sede-drop-title">Tus sedes</div>
                 @foreach ($todasLasSedes as $sede)
-                    <form action="{{ route('panel.sedes.activar', $sede) }}" method="POST" style="margin:0">
-                        @csrf
-                        <button type="submit"
-                                class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
-                            {{ $sede->nombre }}
-                            @if ($sede->id_negocio === $negocio->id_negocio)
-                                &nbsp;✓
-                            @endif
-                        </button>
-                    </form>
+                    <a href="{{ route('panel.sedes.activar', $sede) }}"
+                       class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
+                        {{ $sede->nombre }}
+                        @if ($sede->id_negocio === $negocio->id_negocio)
+                            &nbsp;✓
+                        @endif
+                    </a>
                 @endforeach
                 <div class="sede-divider"></div>
                 <button type="button" class="sede-item sede-nueva"

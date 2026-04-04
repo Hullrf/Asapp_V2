@@ -61,7 +61,7 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
 
     // Sedes
     Route::post('/sedes',                [SedeController::class, 'store'])->name('sedes.store');
-    Route::post('/sedes/{negocio}/activar', [SedeController::class, 'activar'])->name('sedes.activar');
+    Route::get('/sedes/{negocio}/activar', [SedeController::class, 'activar'])->name('sedes.activar');
 
     // Pisos
     Route::post('/pisos',              [PisoController::class, 'store'])->name('pisos.store');

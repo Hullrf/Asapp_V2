@@ -75,19 +75,18 @@ class SedeController extends Controller
     }
 
     /** Cambia la sede activa en sesión. */
-    public function activar(Request $request, Negocio $negocio)
+    public function activar(Negocio $negocio)
     {
         $user = auth()->user();
 
-        // Verificar que el usuario tiene acceso a esta sede
-        // (vía pivot O vía FK directa en caso de cuentas creadas manualmente)
+        // Verificar acceso: vía pivot O vía FK directa (cuentas creadas manualmente)
         $tieneAcceso = $user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()
-                    || $user->id_negocio === $negocio->id_negocio;
+                    || $user->id_negocio == $negocio->id_negocio;
 
         abort_unless($tieneAcceso, 403);
 
-        // Si la sede estaba en FK pero no en pivot, agregarla para futuras consultas
-        if (!$user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()) {
+        // Auto-registrar en pivot si faltaba
+        if ($user->id_negocio == $negocio->id_negocio && !$user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()) {
             $user->negocios()->attach($negocio->id_negocio);
         }
 
