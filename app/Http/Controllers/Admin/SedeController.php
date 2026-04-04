@@ -80,13 +80,13 @@ class SedeController extends Controller
         $user = auth()->user();
 
         // Verificar acceso: vía pivot O vía FK directa (cuentas creadas manualmente)
-        $tieneAcceso = $user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()
+        $tieneAcceso = $user->negocios()->where('negocios.id_negocio', $negocio->id_negocio)->exists()
                     || $user->id_negocio == $negocio->id_negocio;
 
         abort_unless($tieneAcceso, 403);
 
         // Auto-registrar en pivot si faltaba
-        if ($user->id_negocio == $negocio->id_negocio && !$user->negocios()->where('id_negocio', $negocio->id_negocio)->exists()) {
+        if ($user->id_negocio == $negocio->id_negocio && !$user->negocios()->where('negocios.id_negocio', $negocio->id_negocio)->exists()) {
             $user->negocios()->attach($negocio->id_negocio);
         }
 
