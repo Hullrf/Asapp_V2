@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\Admin\SedeController;
 use App\Http\Controllers\Admin\MesaController;
@@ -17,6 +18,17 @@ use Illuminate\Support\Facades\Route;
 
 // ── Raíz ────────────────────────────────────────────────────────────
 Route::get('/', fn() => redirect()->route('login'));
+
+// ── Superadmin ───────────────────────────────────────────────────────
+Route::get('/superadmin/login',  [SuperAdminController::class, 'showLogin'])->name('superadmin.login');
+Route::post('/superadmin/login', [SuperAdminController::class, 'login'])->name('superadmin.login.submit');
+Route::post('/superadmin/logout',[SuperAdminController::class, 'logout'])->name('superadmin.logout');
+
+Route::middleware('superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {
+    Route::get('/',                          [SuperAdminController::class, 'panel'])->name('panel');
+    Route::put('/negocios/{negocio}',        [SuperAdminController::class, 'update'])->name('negocios.update');
+    Route::delete('/negocios/{negocio}',     [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
+});
 
 // ── Auth ─────────────────────────────────────────────────────────────
 Route::get('/login',    [LoginController::class,    'show'])->name('login');
