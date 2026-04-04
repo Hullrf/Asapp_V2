@@ -129,10 +129,7 @@
         <div class="logo">ASAPP</div>
         <span class="badge-sa">Superadmin</span>
     </div>
-    <form action="{{ route('superadmin.logout') }}" method="POST" style="margin:0">
-        @csrf
-        <button type="submit" class="btn-logout">Cerrar sesión</button>
-    </form>
+    <a href="{{ route('superadmin.logout') }}" class="btn-logout">Cerrar sesión</a>
 </div>
 
 <div class="container">

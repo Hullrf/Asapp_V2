@@ -22,7 +22,7 @@ Route::get('/', fn() => redirect()->route('login'));
 // ── Superadmin ───────────────────────────────────────────────────────
 Route::get('/superadmin/login',  [SuperAdminController::class, 'showLogin'])->name('superadmin.login');
 Route::post('/superadmin/login', [SuperAdminController::class, 'login'])->name('superadmin.login.submit');
-Route::post('/superadmin/logout',[SuperAdminController::class, 'logout'])->name('superadmin.logout');
+Route::get('/superadmin/logout', [SuperAdminController::class, 'logout'])->name('superadmin.logout');
 
 Route::middleware('superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/',                          [SuperAdminController::class, 'panel'])->name('panel');
