@@ -284,15 +284,50 @@ document.getElementById('form-editar').addEventListener('submit', async function
 });
 
 async function toggleSuspendido(id, nombre, suspendido) {
-    const accion = suspendido ? 'reactivar' : 'suspender';
-    if (!confirm(`¿${accion.charAt(0).toUpperCase() + accion.slice(1)} el negocio «${nombre}»?`)) return;
-    const res  = await fetch(RUTAS_TOGGLE[id], {
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+    if (suspendido) {
+        if (!confirm(`¿Reactivar el negocio «${nombre}»?`)) return;
+        const res  = await fetch(RUTAS_TOGGLE[id], {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        });
+        const data = await res.json();
+        toast(data.message, data.success !== false);
+        if (data.success !== false) setTimeout(() => location.reload(), 800);
+        return;
+    }
+
+    // Primera llamada: verifica pedidos activos
+    const res1  = await fetch(RUTAS_TOGGLE[id], {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' },
+        headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
     });
-    const data = await res.json();
-    toast(data.message, data.success !== false);
-    if (data.success !== false) setTimeout(() => location.reload(), 800);
+    const data1 = await res1.json();
+
+    if (data1.advertencia) {
+        const ok = confirm(
+            `⚠️ «${nombre}» tiene ${data1.pedidos_activos} pedido(s) activo(s).\n\n` +
+            `Si suspendes el negocio ahora, el administrador perderá acceso inmediatamente.\n\n` +
+            `¿Deseas suspenderlo de todas formas?`
+        );
+        if (!ok) return;
+
+        // Segunda llamada: confirma la suspensión
+        const res2  = await fetch(RUTAS_TOGGLE[id] + '?confirmar=1', {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' },
+        });
+        const data2 = await res2.json();
+        toast(data2.message, data2.success !== false);
+        if (data2.success !== false) setTimeout(() => location.reload(), 800);
+        return;
+    }
+
+    // Sin pedidos activos: suspende directo
+    if (!confirm(`¿Suspender el negocio «${nombre}»?`)) return;
+    toast(data1.message, data1.success !== false);
+    if (data1.success !== false) setTimeout(() => location.reload(), 800);
 }
 
 async function eliminar(id, nombre) {

@@ -75,8 +75,23 @@ class SuperAdminController extends Controller
         return response()->json(['success' => true, 'message' => 'Negocio eliminado.']);
     }
 
-    public function toggleSuspendido(Negocio $negocio)
+    public function toggleSuspendido(Request $request, Negocio $negocio)
     {
+        // Si va a suspender y no confirmó la advertencia, devuelve conteo de pedidos activos
+        if (!$negocio->suspendido) {
+            $pedidosActivos = $negocio->pedidos()
+                ->whereIn('estado', ['Pendiente', 'Parcial'])
+                ->count();
+
+            if ($pedidosActivos > 0 && !$request->boolean('confirmar')) {
+                return response()->json([
+                    'success'        => false,
+                    'advertencia'    => true,
+                    'pedidos_activos' => $pedidosActivos,
+                ]);
+            }
+        }
+
         $negocio->update(['suspendido' => !$negocio->suspendido]);
 
         $mensaje = $negocio->suspendido ? 'Negocio suspendido.' : 'Negocio reactivado.';
