@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Mesero;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mesa;
@@ -9,9 +9,28 @@ use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
-class PedidoController extends Controller
+class MeseroController extends Controller
 {
-    public function store(Request $request)
+    public function index()
+    {
+        $negocio   = auth()->user()->negocio;
+        $pisos     = $negocio->pisos()->orderBy('orden')->get();
+        $productos = $negocio->productos()->where('disponible', true)->with('categoria')->orderBy('nombre')->get();
+        $mesas     = $negocio->mesas()
+            ->with([
+                'piso',
+                'pedidos'      => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
+                'mesasUnidas',
+                'mesaPrincipal',
+                'mesaPrincipal.pedidos' => fn($q) => $q->whereIn('estado', ['Pendiente', 'Parcial'])->latest('id_pedido')->limit(1),
+            ])
+            ->orderByRaw('LENGTH(nombre), nombre')
+            ->get();
+
+        return view('mesero.index', compact('negocio', 'mesas', 'pisos', 'productos'));
+    }
+
+    public function storePedido(Request $request)
     {
         $request->validate([
             'id_mesa'     => ['required', 'integer', 'exists:mesas,id_mesa'],
@@ -20,20 +39,19 @@ class PedidoController extends Controller
             'cantidades'  => ['required', 'array'],
         ]);
 
-        $negocio = auth()->user()->negocioActivo();
+        $negocio = auth()->user()->negocio;
         $mesa    = Mesa::findOrFail($request->id_mesa);
 
         abort_unless($mesa->id_negocio === $negocio->id_negocio, 403);
 
         if ($mesa->estaOcupada()) {
-            $activo = $mesa->pedidoActivo()->first();
-            return back()->with('message', "❌ Esta mesa ya tiene un pedido activo (Pedido #{$activo->id_pedido}).");
+            return response()->json(['success' => false, 'message' => 'Esta mesa ya tiene un pedido activo.']);
         }
 
         $pedido = Pedido::create([
             'id_negocio' => $negocio->id_negocio,
             'id_mesa'    => $mesa->id_mesa,
-            'id_mesero'  => null,
+            'id_mesero'  => auth()->id(),
             'codigo_qr'  => 'PED-' . strtoupper(Str::random(6)),
             'estado'     => 'Pendiente',
         ]);
@@ -57,7 +75,10 @@ class PedidoController extends Controller
             ]);
         }
 
-        $url = route('factura.show', $pedido->id_pedido);
-        return back()->with('message', "✅ Pedido #{$pedido->id_pedido} creado. <a href='{$url}'>Ver factura →</a>");
+        return response()->json([
+            'success'     => true,
+            'message'     => "Pedido #{$pedido->id_pedido} creado.",
+            'factura_url' => route('factura.show', $pedido->id_pedido),
+        ]);
     }
 }

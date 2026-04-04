@@ -39,6 +39,10 @@ class LoginController extends Controller
             return redirect()->route('panel.index');
         }
 
+        if ($user->esMesero()) {
+            return redirect()->route('mesero.index');
+        }
+
         // Cliente: requiere negocio seleccionado
         $id_negocio = $request->integer('id_negocio');
         if (!$id_negocio) {

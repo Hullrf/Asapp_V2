@@ -36,6 +36,11 @@ class PanelController extends Controller
         return view('admin.partials.historial', $this->cargarDatos());
     }
 
+    public function parcialMeseros()
+    {
+        return view('admin.partials.meseros', $this->cargarDatos());
+    }
+
     private function cargarDatos(): array
     {
         $negocio        = auth()->user()->negocioActivo();
@@ -107,10 +112,12 @@ class PanelController extends Controller
             'mesas_total'       => $mesas->count(),
         ];
 
+        $meseros = $negocio->usuarios()->where('rol', 'mesero')->orderBy('nombre')->get();
+
         return compact(
             'negocio', 'todasLasSedes', 'productos', 'mesas', 'pisos', 'base_url',
             'pedidosPorEstado', 'topProductos', 'ingresosPorMesa', 'resumen',
-            'pedidosPagados', 'categorias', 'productosStockBajo'
+            'pedidosPagados', 'categorias', 'productosStockBajo', 'meseros'
         );
     }
 }

@@ -42,6 +42,12 @@ Route::post('/register',[RegisterController::class, 'register'])->name('register
 // AJAX: verificar rol por email (para mostrar/ocultar selector de negocio)
 Route::post('/verificar-rol', [LoginController::class, 'verificarRol'])->name('verificar.rol');
 
+// ── Mesero ───────────────────────────────────────────────────────────
+Route::middleware('mesero')->prefix('mesero')->name('mesero.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Mesero\MeseroController::class, 'index'])->name('index');
+    Route::post('/pedidos', [\App\Http\Controllers\Mesero\MeseroController::class, 'storePedido'])->name('pedidos.store');
+});
+
 // ── Admin (protegido con middleware 'admin') ──────────────────────────
 Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
 
@@ -53,6 +59,7 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::get('/partials/nuevo-pedido', [PanelController::class, 'parcialNuevoPedido'])->name('partials.nuevo-pedido');
     Route::get('/partials/estadisticas', [PanelController::class, 'parcialEstadisticas'])->name('partials.estadisticas');
     Route::get('/partials/historial',    [PanelController::class, 'parcialHistorial'])->name('partials.historial');
+    Route::get('/partials/meseros',      [PanelController::class, 'parcialMeseros'])->name('partials.meseros');
 
     // Productos
     Route::post('/productos',          [ProductoController::class, 'store'])->name('productos.store');
@@ -82,6 +89,10 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::post('/categorias',              [CategoriaController::class, 'store'])->name('categorias.store');
     Route::put('/categorias/{categoria}',   [CategoriaController::class, 'update'])->name('categorias.update');
     Route::delete('/categorias/{categoria}',[CategoriaController::class, 'destroy'])->name('categorias.destroy');
+
+    // Meseros
+    Route::post('/meseros',          [\App\Http\Controllers\Admin\MeseroAdminController::class, 'store'])->name('meseros.store');
+    Route::delete('/meseros/{user}', [\App\Http\Controllers\Admin\MeseroAdminController::class, 'destroy'])->name('meseros.destroy');
 });
 
 // ── Factura (accesible por admin y por cliente vía QR) ───────────────

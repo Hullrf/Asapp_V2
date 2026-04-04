@@ -15,6 +15,7 @@ class Pedido extends Model
     protected $fillable = [
         'id_negocio',
         'id_mesa',
+        'id_mesero',
         'codigo_qr',
         'estado',
     ];
@@ -34,6 +35,11 @@ class Pedido extends Model
     public function mesa(): BelongsTo
     {
         return $this->belongsTo(Mesa::class, 'id_mesa', 'id_mesa');
+    }
+
+    public function mesero(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_mesero', 'id_usuario');
     }
 
     public function items(): HasMany

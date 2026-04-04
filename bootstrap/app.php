@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'      => \App\Http\Middleware\EsAdmin::class,
             'cliente'    => \App\Http\Middleware\EsCliente::class,
             'superadmin' => \App\Http\Middleware\EsSuperAdmin::class,
+            'mesero'     => \App\Http\Middleware\EsMesero::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

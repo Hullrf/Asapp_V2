@@ -103,4 +103,9 @@ class User extends Authenticatable
     {
         return $this->rol === RolUsuario::Admin;
     }
+
+    public function esMesero(): bool
+    {
+        return $this->rol === RolUsuario::Mesero;
+    }
 }

@@ -502,9 +502,10 @@
         <span class="tab-badge" id="badge-stock"
               style="{{ $productosStockBajo->isEmpty() ? 'display:none' : '' }}">{{ $productosStockBajo->count() }}</span>
     </button>
-    <button class="tab"        onclick="showTab('mesas', this)">🪑 Mesas</button>
-    <button class="tab"        onclick="showTab('estadisticas', this)">📊 Estadísticas</button>
-    <button class="tab"        onclick="showTab('historial', this)">✅ Historial</button>
+    <button class="tab" onclick="showTab('mesas', this)">🪑 Mesas</button>
+    <button class="tab" onclick="showTab('estadisticas', this)">📊 Estadísticas</button>
+    <button class="tab" onclick="showTab('historial', this)">✅ Historial</button>
+    <button class="tab" onclick="showTab('meseros', this)">👤 Meseros</button>
 </div>
 
 {{-- CONTENIDO --}}
@@ -536,6 +537,11 @@
     {{-- TAB: HISTORIAL --}}
     <div id="tab-historial" class="section">
         @include('admin.partials.historial')
+    </div>
+
+    {{-- TAB: MESEROS --}}
+    <div id="tab-meseros" class="section">
+        @include('admin.partials.meseros')
     </div>
 
 </div>
