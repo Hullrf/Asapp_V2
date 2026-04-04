@@ -275,7 +275,7 @@
 
 <style>
 .th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
-.th-sort:hover { background: rgba(255,255,255,0.12); }
+.th-sort:hover { background: #7C3AED; }
 .sort-icon { font-size: 11px; color: #C4B5FD; margin-left: 3px; }
 .th-sort.asc  .sort-icon { color: #6B21E8; }
 .th-sort.desc .sort-icon { color: #6B21E8; }
