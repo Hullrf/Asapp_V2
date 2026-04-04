@@ -132,13 +132,13 @@
             <table id="tabla-productos">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Nombre</th>
+                        <th data-col="0" data-tipo="num" class="th-sort"># <span class="sort-icon">↕</span></th>
+                        <th data-col="1" data-tipo="txt" class="th-sort">Nombre <span class="sort-icon">↕</span></th>
                         <th>Descripción</th>
-                        <th>Categoría</th>
-                        <th class="right">Precio</th>
-                        <th class="center">Stock</th>
-                        <th class="center">Disp.</th>
+                        <th data-col="3" data-tipo="txt" class="th-sort">Categoría <span class="sort-icon">↕</span></th>
+                        <th data-col="4" data-tipo="num" class="th-sort right">Precio <span class="sort-icon">↕</span></th>
+                        <th data-col="5" data-tipo="num" class="th-sort center">Stock <span class="sort-icon">↕</span></th>
+                        <th data-col="6" data-tipo="txt" class="th-sort center">Disp. <span class="sort-icon">↕</span></th>
                         <th class="center">Acciones</th>
                     </tr>
                 </thead>
@@ -151,18 +151,18 @@
                             $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
                         @endphp
                         <tr data-busqueda="{{ $busqueda }}">
-                            <td style="color:#9B8EC4;">{{ $producto->id_producto }}</td>
-                            <td style="font-weight:600;">{{ $producto->nombre }}</td>
+                            <td style="color:#9B8EC4;" data-val="{{ $producto->id_producto }}">{{ $producto->id_producto }}</td>
+                            <td style="font-weight:600;" data-val="{{ strtolower($producto->nombre) }}">{{ $producto->nombre }}</td>
                             <td style="color:#9B8EC4; font-size:12px;">{{ $producto->descripcion }}</td>
-                            <td>
+                            <td data-val="{{ strtolower($producto->categoria?->nombre ?? '') }}">
                                 @if ($producto->categoria)
                                     <span class="cat-chip">{{ $producto->categoria->nombre }}</span>
                                 @else
                                     <span style="color:#D4C9F0;">—</span>
                                 @endif
                             </td>
-                            <td class="right">${{ number_format($producto->precio, 0, ',', '.') }}</td>
-                            <td class="center">
+                            <td class="right" data-val="{{ $producto->precio }}">${{ number_format($producto->precio, 0, ',', '.') }}</td>
+                            <td class="center" data-val="{{ $producto->stock ?? -1 }}">
                                 @if ($sinStock)
                                     <span style="color:#D4C9F0;">—</span>
                                 @elseif ($agotado)
@@ -173,7 +173,7 @@
                                     <span class="stock-badge stock-ok">{{ $producto->stock }}</span>
                                 @endif
                             </td>
-                            <td class="center">
+                            <td class="center" data-val="{{ $producto->disponible ? '1' : '0' }}">
                                 <span class="{{ $producto->disponible ? 'badge-disponible' : 'badge-no' }}">
                                     {{ $producto->disponible ? 'Sí' : 'No' }}
                                 </span>
@@ -273,6 +273,17 @@
     </div>
 </div>
 
+<style>
+.th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
+.th-sort:hover { background: #f0ebff; }
+.sort-icon { font-size: 11px; color: #C4B5FD; margin-left: 3px; }
+.th-sort.asc  .sort-icon { color: #6B21E8; }
+.th-sort.desc .sort-icon { color: #6B21E8; }
+.th-sort.asc  .sort-icon::before { content: '▲'; }
+.th-sort.desc .sort-icon::before { content: '▼'; }
+.th-sort:not(.asc):not(.desc) .sort-icon::before { content: '↕'; }
+</style>
+
 <script>
 window.RUTAS_PRODUCTOS = @json($productos->mapWithKeys(fn($p) => [
     $p->id_producto => route('panel.productos.update', $p)
@@ -309,6 +320,49 @@ function filtrarProductos(q) {
     const aviso = document.getElementById('sin-resultados');
     if (aviso) aviso.style.display = visibles === 0 ? '' : 'none';
 }
+
+// ── Sorting ────────────────────────────────────────────────────────────
+(function () {
+    let sortCol = null, sortDir = 1;
+
+    function sortTabla(th) {
+        const col  = parseInt(th.dataset.col);
+        const tipo = th.dataset.tipo;
+
+        if (sortCol === col) {
+            sortDir = -sortDir;
+        } else {
+            sortCol = col;
+            sortDir = 1;
+        }
+
+        document.querySelectorAll('#tabla-productos thead .th-sort').forEach(h => {
+            h.classList.remove('asc', 'desc');
+        });
+        th.classList.add(sortDir === 1 ? 'asc' : 'desc');
+
+        const tbody = document.querySelector('#tabla-productos tbody');
+        const filas = Array.from(tbody.querySelectorAll('tr'));
+
+        filas.sort((a, b) => {
+            const celdaA = a.querySelectorAll('td')[col];
+            const celdaB = b.querySelectorAll('td')[col];
+            const valA   = celdaA ? (celdaA.dataset.val ?? celdaA.textContent.trim()) : '';
+            const valB   = celdaB ? (celdaB.dataset.val ?? celdaB.textContent.trim()) : '';
+
+            if (tipo === 'num') {
+                return (parseFloat(valA) - parseFloat(valB)) * sortDir;
+            }
+            return valA.localeCompare(valB, 'es') * sortDir;
+        });
+
+        filas.forEach(f => tbody.appendChild(f));
+    }
+
+    document.querySelectorAll('#tabla-productos thead .th-sort').forEach(th => {
+        th.addEventListener('click', () => sortTabla(th));
+    });
+})();
 </script>
 
 <style>
