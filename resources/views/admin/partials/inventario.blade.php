@@ -128,7 +128,72 @@
             Aún no has agregado productos. Usa el formulario de arriba.
         </p>
     @else
-        <div style="overflow-x:auto; max-height:420px; overflow-y:auto;">
+
+        {{-- Vista móvil: tarjetas (oculta en desktop) --}}
+        <div id="productos-cards" class="productos-cards-lista">
+            @foreach ($productos as $producto)
+            @php
+                $sinStock  = $producto->stock === null;
+                $agotado   = !$sinStock && $producto->stock === 0;
+                $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
+            @endphp
+            <div class="prod-card" data-busqueda="{{ strtolower($producto->nombre . ' ' . $producto->descripcion . ' ' . ($producto->categoria?->nombre ?? '')) }}">
+                <div class="prod-card-top">
+                    <div>
+                        <div class="prod-card-nombre">{{ $producto->nombre }}</div>
+                        @if ($producto->descripcion)
+                            <div class="prod-card-desc">{{ $producto->descripcion }}</div>
+                        @endif
+                    </div>
+                    <div class="prod-card-precio">${{ number_format($producto->precio, 0, ',', '.') }}</div>
+                </div>
+                <div class="prod-card-chips">
+                    @if ($producto->categoria)
+                        <span class="cat-chip">{{ $producto->categoria->nombre }}</span>
+                    @endif
+                    @if ($sinStock)
+                        <span class="stock-badge stock-ok" style="background:#F5F3FF; color:#9B8EC4;">Sin stock</span>
+                    @elseif ($agotado)
+                        <span class="stock-badge stock-agotado">Agotado</span>
+                    @elseif ($stockBajo)
+                        <span class="stock-badge stock-bajo">⚠ {{ $producto->stock }}</span>
+                    @else
+                        <span class="stock-badge stock-ok">{{ $producto->stock }} ud.</span>
+                    @endif
+                    <span class="{{ $producto->disponible ? 'badge-disponible' : 'badge-no' }}">
+                        {{ $producto->disponible ? 'Disponible' : 'No disponible' }}
+                    </span>
+                </div>
+                <div class="prod-card-acciones">
+                    <button class="btn btn-warning btn-sm" style="flex:1;"
+                            onclick="abrirModalProducto(
+                                {{ $producto->id_producto }},
+                                '{{ addslashes($producto->nombre) }}',
+                                '{{ addslashes($producto->descripcion) }}',
+                                {{ $producto->precio }},
+                                {{ $producto->id_categoria ?? 'null' }},
+                                {{ $producto->stock ?? 'null' }},
+                                {{ $producto->stock_minimo }},
+                                {{ $producto->disponible ? 'true' : 'false' }}
+                            )">✏️ Editar</button>
+                    <form action="{{ route('panel.productos.destroy', $producto) }}" method="POST"
+                          data-ajax data-refresh="inventario,estadisticas"
+                          onsubmit="return confirm('¿Eliminar «{{ addslashes($producto->nombre) }}»?')"
+                          style="flex:1;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">🗑 Eliminar</button>
+                    </form>
+                </div>
+            </div>
+            @endforeach
+            <div id="sin-resultados-cards" style="display:none; text-align:center; color:#9B8EC4; padding:20px; font-size:13px;">
+                Sin productos que coincidan.
+            </div>
+        </div>
+
+        {{-- Vista desktop: tabla (oculta en móvil) --}}
+        <div id="productos-tabla-wrap" style="overflow-x:auto; max-height:420px; overflow-y:auto;">
             <table id="tabla-productos">
                 <thead>
                     <tr>
@@ -212,7 +277,8 @@
                     </tr>
                 </tbody>
             </table>
-        </div>
+        </div>{{-- /productos-tabla-wrap --}}
+
     @endif
 </div>
 
@@ -309,16 +375,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalP
 
 function filtrarProductos(q) {
     const term = q.toLowerCase().trim();
-    const filas = document.querySelectorAll('#tabla-productos tbody tr');
-    let visibles = 0;
-    filas.forEach(fila => {
-        const texto = fila.dataset.busqueda || '';
-        const match = !term || texto.includes(term);
+    let visiblesTabla = 0, visiblesCards = 0;
+
+    // Tabla (desktop)
+    document.querySelectorAll('#tabla-productos tbody tr[data-busqueda]').forEach(fila => {
+        const match = !term || (fila.dataset.busqueda || '').includes(term);
         fila.style.display = match ? '' : 'none';
-        if (match) visibles++;
+        if (match) visiblesTabla++;
     });
-    const aviso = document.getElementById('sin-resultados');
-    if (aviso) aviso.style.display = visibles === 0 ? '' : 'none';
+    const avisoTabla = document.getElementById('sin-resultados');
+    if (avisoTabla) avisoTabla.style.display = visiblesTabla === 0 ? '' : 'none';
+
+    // Tarjetas (móvil)
+    document.querySelectorAll('.prod-card').forEach(card => {
+        const match = !term || (card.dataset.busqueda || '').includes(term);
+        card.style.display = match ? '' : 'none';
+        if (match) visiblesCards++;
+    });
+    const avisoCards = document.getElementById('sin-resultados-cards');
+    if (avisoCards) avisoCards.style.display = visiblesCards === 0 ? '' : 'none';
 }
 
 // ── Sorting ────────────────────────────────────────────────────────────
@@ -556,5 +631,63 @@ function filtrarProductos(q) {
     @media (max-width: 640px) {
         .inv-form-grid { grid-template-columns: 1fr; }
         .form-group[style*="span 2"] { grid-column: span 1 !important; }
+
+        /* Mostrar tarjetas, ocultar tabla */
+        #productos-tabla-wrap { display: none; }
+        #productos-cards      { display: flex !important; }
+    }
+
+    /* ── Tarjetas de productos (móvil) ── */
+    .productos-cards-lista {
+        display: none; /* visible solo en móvil via media query */
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .prod-card {
+        background: #fff;
+        border: 1px solid #E0D9F5;
+        border-radius: 14px;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .prod-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .prod-card-nombre {
+        font-weight: 700;
+        font-size: 15px;
+        color: #1a1a2e;
+    }
+
+    .prod-card-desc {
+        font-size: 12px;
+        color: #9B8EC4;
+        margin-top: 2px;
+    }
+
+    .prod-card-precio {
+        font-size: 16px;
+        font-weight: 800;
+        color: #3D0E8A;
+        white-space: nowrap;
+    }
+
+    .prod-card-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .prod-card-acciones {
+        display: flex;
+        gap: 8px;
     }
 </style>
