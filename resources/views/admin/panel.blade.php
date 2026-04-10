@@ -469,6 +469,31 @@
             .btn { min-height: 40px; }
         }
 
+        /* ── DOTS INDICADOR (solo móvil) ── */
+        #swipe-dots {
+            display: none;
+        }
+        @media (max-width: 640px) {
+            #swipe-dots {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 7px;
+                padding: 14px 0 8px;
+            }
+            .swipe-dot {
+                width: 7px;
+                height: 7px;
+                border-radius: 50%;
+                background: #C4B5FD;
+                transition: background 0.2s, transform 0.2s;
+            }
+            .swipe-dot.active {
+                background: #6B21E8;
+                transform: scale(1.35);
+            }
+        }
+
         @media (max-width: 400px) {
             .topbar-logo { font-size: 18px; }
             .btn-logout { padding: 6px 10px; font-size: 12px; }
@@ -570,6 +595,15 @@
         @include('admin.partials.meseros')
     </div>
 
+</div>
+
+{{-- Indicador de posición (solo visible en móvil) --}}
+<div id="swipe-dots">
+    <span class="swipe-dot active"></span>
+    <span class="swipe-dot"></span>
+    <span class="swipe-dot"></span>
+    <span class="swipe-dot"></span>
+    <span class="swipe-dot"></span>
 </div>
 
 {{-- TOAST --}}
@@ -732,15 +766,62 @@
 
 <script>
 // ── Tabs ──────────────────────────────────────────────────────────────
+const TAB_ORDER = ['inventario', 'mesas', 'estadisticas', 'historial', 'meseros'];
+let currentTabIndex = 0;
+
 function showTab(tabName, btn) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + tabName).classList.add('active');
-    if (btn) btn.classList.add('active');
+
+    // Activar botón de tab y scrollear hacia él
+    const tabBtn = btn || document.querySelectorAll('.tab')[TAB_ORDER.indexOf(tabName)];
+    if (tabBtn) {
+        tabBtn.classList.add('active');
+        tabBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    currentTabIndex = TAB_ORDER.indexOf(tabName);
+    actualizarDots(currentTabIndex);
+
     if (tabName === 'estadisticas' && typeof initEstadisticasCharts === 'function') {
         initEstadisticasCharts();
     }
 }
+
+function actualizarDots(index) {
+    document.querySelectorAll('.swipe-dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+    });
+}
+
+// ── Swipe entre tabs (solo móvil) ─────────────────────────────────────
+(function() {
+    let startX = 0, startY = 0;
+    const content = document.querySelector('.content');
+    if (!content) return;
+
+    content.addEventListener('touchstart', e => {
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+    }, { passive: true });
+
+    content.addEventListener('touchend', e => {
+        const deltaX = e.changedTouches[0].clientX - startX;
+        const deltaY = e.changedTouches[0].clientY - startY;
+
+        // Ignorar si el gesto es más vertical que horizontal, o muy corto
+        if (Math.abs(deltaX) < 60 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+
+        const nextIndex = deltaX < 0
+            ? Math.min(currentTabIndex + 1, TAB_ORDER.length - 1)  // swipe izquierda → siguiente
+            : Math.max(currentTabIndex - 1, 0);                     // swipe derecha  → anterior
+
+        if (nextIndex !== currentTabIndex) {
+            showTab(TAB_ORDER[nextIndex]);
+        }
+    }, { passive: true });
+})();
 
 // ── Modal Nuevo Pedido ────────────────────────────────────────────────
 function abrirNuevoPedido(idMesa, nombreMesa) {
