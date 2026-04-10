@@ -530,6 +530,7 @@ function filtrarProductos(q) {
     .categorias-lista {
         display: flex;
         flex-direction: column;
+        gap: 8px;
         max-height: 260px;
         overflow-y: auto;
         padding-right: 4px;
@@ -542,12 +543,12 @@ function filtrarProductos(q) {
     .categoria-item {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        padding: 10px 0;
-        border-bottom: 1px solid #EDE9F8;
+        gap: 8px;
+        padding: 12px 14px;
+        background: #fff;
+        border: 1px solid #E0D9F5;
+        border-radius: 14px;
     }
-
-    .categoria-item:last-child { border-bottom: none; }
 
     .cat-item-header {
         display: flex;
@@ -566,6 +567,12 @@ function filtrarProductos(q) {
         min-width: 0;
         font-size: 12px;
         padding: 5px 8px;
+    }
+
+    @media (max-width: 640px) {
+        .categorias-lista { max-height: none; }
+        .cat-item-rename { flex-direction: column; }
+        .cat-item-rename button { width: 100%; }
     }
 
     /* Modal */
