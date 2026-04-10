@@ -36,6 +36,7 @@ class PedidoController extends Controller
             'id_mesero'  => null,
             'codigo_qr'  => 'PED-' . strtoupper(Str::random(6)),
             'estado'     => 'Pendiente',
+            'fecha'      => now(),
         ]);
 
         foreach ($request->productos as $id_producto) {

@@ -18,6 +18,7 @@ class Pedido extends Model
         'id_mesero',
         'codigo_qr',
         'estado',
+        'fecha',
     ];
 
     protected function casts(): array

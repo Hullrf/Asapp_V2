@@ -54,6 +54,7 @@ class MeseroController extends Controller
             'id_mesero'  => auth()->id(),
             'codigo_qr'  => 'PED-' . strtoupper(Str::random(6)),
             'estado'     => 'Pendiente',
+            'fecha'      => now(),
         ]);
 
         foreach ($request->productos as $id_producto) {
