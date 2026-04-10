@@ -28,7 +28,9 @@ class PasarelaController extends Controller
     public function confirmar(Pedido $pedido, Request $request)
     {
         $ids    = array_map('intval', (array) $request->input('items_confirmados', []));
-        $metodo = in_array($request->input('metodo_pago'), ['efectivo']) ? 'efectivo' : 'digital';
+        $metodo = in_array($request->input('metodo_pago'), ['tarjeta', 'pse', 'nequi', 'efectivo'])
+                    ? $request->input('metodo_pago')
+                    : 'tarjeta';
         $monto  = 0;
 
         // Simular fallo aleatorio (15 % de probabilidad)

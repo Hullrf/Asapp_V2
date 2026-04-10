@@ -57,7 +57,8 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::get('/partials/inventario',   [PanelController::class, 'parcialInventario'])->name('partials.inventario');
     Route::get('/partials/mesas',        [PanelController::class, 'parcialMesas'])->name('partials.mesas');
     Route::get('/partials/nuevo-pedido', [PanelController::class, 'parcialNuevoPedido'])->name('partials.nuevo-pedido');
-    Route::get('/partials/estadisticas', [PanelController::class, 'parcialEstadisticas'])->name('partials.estadisticas');
+    Route::get('/partials/estadisticas',       [PanelController::class, 'parcialEstadisticas'])->name('partials.estadisticas');
+    Route::get('/partials/estadisticas-pagos', [PanelController::class, 'estadisticasPagos'])->name('partials.estadisticas-pagos');
     Route::get('/partials/historial',    [PanelController::class, 'parcialHistorial'])->name('partials.historial');
     Route::get('/partials/meseros',      [PanelController::class, 'parcialMeseros'])->name('partials.meseros');
 

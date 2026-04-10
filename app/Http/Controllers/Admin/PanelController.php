@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pago;
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class PanelController extends Controller
 {
@@ -39,6 +42,38 @@ class PanelController extends Controller
     public function parcialMeseros()
     {
         return view('admin.partials.meseros', $this->cargarDatos());
+    }
+
+    public function estadisticasPagos(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $periodo = $request->input('periodo', 'semana');
+
+        $desde = match($periodo) {
+            'dia'  => Carbon::today(),
+            'mes'  => Carbon::now()->subDays(30),
+            'anio' => Carbon::now()->subYear(),
+            default => Carbon::now()->subDays(7), // semana
+        };
+
+        $pagos = Pago::whereHas('pedido', fn($q) => $q->where('id_negocio', $negocio->id_negocio))
+            ->where('estado', '!=', 'fallido')
+            ->where('fecha', '>=', $desde)
+            ->selectRaw('metodo_pago, SUM(monto) as total, COUNT(*) as cantidad')
+            ->groupBy('metodo_pago')
+            ->get()
+            ->keyBy('metodo_pago');
+
+        $metodos = ['tarjeta', 'pse', 'nequi', 'efectivo', 'digital'];
+        $resultado = [];
+        foreach ($metodos as $m) {
+            $resultado[$m] = [
+                'total'    => (float) ($pagos[$m]->total ?? 0),
+                'cantidad' => (int)   ($pagos[$m]->cantidad ?? 0),
+            ];
+        }
+
+        return response()->json($resultado);
     }
 
     private function cargarDatos(): array
