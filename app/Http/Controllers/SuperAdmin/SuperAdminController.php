@@ -103,11 +103,18 @@ class SuperAdminController extends Controller
     {
         $pedidos = $negocio->pedidos()->with('items.producto', 'mesa')->get();
 
+        $itemsPagados   = $pedidos->flatMap->items->filter(fn($i) => $i->estado->value === 'Pagado');
+        $pedidosPagados = $pedidos->filter(fn($p) => $p->items->contains(fn($i) => $i->estado->value === 'Pagado'));
+        $ticketPromedio = $pedidosPagados->count() > 0
+            ? round($pedidosPagados->map(fn($p) => $p->items->filter(fn($i) => $i->estado->value === 'Pagado')->sum('subtotal'))->average(), 0)
+            : 0;
+
         $resumen = [
             'total_pedidos'     => $pedidos->count(),
-            'total_cobrado'     => (float) $pedidos->flatMap->items->filter(fn($i) => $i->estado->value === 'Pagado')->sum('subtotal'),
+            'total_cobrado'     => (float) $itemsPagados->sum('subtotal'),
             'productos_activos' => $negocio->productos()->where('disponible', true)->count(),
             'mesas_total'       => $negocio->mesas()->count(),
+            'ticket_promedio'   => $ticketPromedio,
         ];
 
         $pedidosPorEstado = $pedidos
@@ -150,13 +157,55 @@ class SuperAdminController extends Controller
             $meses[$key] = $ingresosPorMes[$key] ?? 0;
         }
 
+        // Rendimiento por mesero
+        $rendimientoMeseros = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->join('users', 'pedidos.id_mesero', '=', 'users.id_usuario')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->whereNotNull('pedidos.id_mesero')
+            ->selectRaw('users.nombre as mesero, SUM(items_pedido.subtotal) as total')
+            ->groupBy('users.nombre')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn($r) => ['mesero' => $r->mesero, 'total' => (float) $r->total]);
+
+        // Horas pico
+        $horasPicoRaw = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->selectRaw('HOUR(pedidos.fecha) as hora, SUM(items_pedido.subtotal) as total')
+            ->groupBy('hora')
+            ->get();
+        $horasPico = collect(range(0, 23))->mapWithKeys(fn($h) => [$h => 0.0]);
+        foreach ($horasPicoRaw as $row) {
+            $horasPico[(int) $row->hora] = (float) $row->total;
+        }
+
+        // Ingresos por categoría
+        $ingresosCategorias = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->join('productos', 'items_pedido.id_producto', '=', 'productos.id_producto')
+            ->leftJoin('categorias', 'productos.id_categoria', '=', 'categorias.id_categoria')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->selectRaw("COALESCE(categorias.nombre, 'Sin categoría') as categoria, SUM(items_pedido.subtotal) as total")
+            ->groupBy('categorias.nombre')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn($r) => ['categoria' => $r->categoria, 'total' => (float) $r->total]);
+
         return response()->json([
-            'negocio'          => ['nombre' => $negocio->nombre, 'direccion' => $negocio->direccion, 'fecha_registro' => $negocio->fecha_registro],
-            'resumen'          => $resumen,
-            'pedidos_por_estado' => $pedidosPorEstado,
-            'top_productos'    => $topProductos,
-            'fuentes_pago'     => $fuentesPago,
-            'ingresos_por_mes' => $meses,
+            'negocio'               => ['nombre' => $negocio->nombre, 'direccion' => $negocio->direccion, 'fecha_registro' => $negocio->fecha_registro],
+            'resumen'               => $resumen,
+            'pedidos_por_estado'    => $pedidosPorEstado,
+            'top_productos'         => $topProductos,
+            'fuentes_pago'          => $fuentesPago,
+            'ingresos_por_mes'      => $meses,
+            'rendimiento_meseros'   => $rendimientoMeseros,
+            'horas_pico'            => array_values($horasPico->toArray()),
+            'ingresos_categorias'   => $ingresosCategorias,
         ]);
     }
 

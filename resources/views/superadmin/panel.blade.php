@@ -124,7 +124,7 @@
         .btn-close-stats { background: rgba(255,255,255,0.07); color: #9B8EC4; border: 1px solid rgba(255,255,255,0.1); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
         .btn-close-stats:hover { background: rgba(255,255,255,0.12); }
 
-        .resumen-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+        .resumen-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 24px; }
         .resumen-card { background: #0f0720; border: 1px solid #3D0E8A; border-radius: 12px; padding: 16px; text-align: center; }
         .resumen-val { font-size: 24px; font-weight: 800; color: #C4A0FF; }
         .resumen-lbl { font-size: 11px; color: #7C3AED; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
@@ -319,6 +319,7 @@
                 <div class="resumen-card"><div class="resumen-val" id="r-cobrado">—</div><div class="resumen-lbl">Total cobrado</div></div>
                 <div class="resumen-card"><div class="resumen-val" id="r-productos">—</div><div class="resumen-lbl">Productos activos</div></div>
                 <div class="resumen-card"><div class="resumen-val" id="r-mesas">—</div><div class="resumen-lbl">Mesas registradas</div></div>
+                <div class="resumen-card"><div class="resumen-val" id="r-ticket">—</div><div class="resumen-lbl">Ticket promedio</div></div>
             </div>
 
             <div class="charts-grid">
@@ -337,6 +338,18 @@
                 <div class="chart-box">
                     <div class="chart-box-title">Ingresos últimos 6 meses</div>
                     <div id="chart-meses-wrap"><p class="chart-empty-sa">Sin datos</p></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-box-title">👤 Rendimiento por mesero</div>
+                    <div id="chart-meseros-wrap"><p class="chart-empty-sa">Sin datos de meseros</p></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-box-title">🕐 Horas pico</div>
+                    <div id="chart-horas-wrap"><p class="chart-empty-sa">Sin ventas registradas</p></div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-box-title">🏷️ Ingresos por categoría</div>
+                    <div id="chart-categorias-wrap"><p class="chart-empty-sa">Sin ventas registradas</p></div>
                 </div>
             </div>
         </div>
@@ -533,6 +546,7 @@ async function verMetricas(id, nombre) {
     document.getElementById('r-cobrado').textContent   = '$' + Number(data.resumen.total_cobrado).toLocaleString('es-CO', {minimumFractionDigits:0});
     document.getElementById('r-productos').textContent = data.resumen.productos_activos;
     document.getElementById('r-mesas').textContent     = data.resumen.mesas_total;
+    document.getElementById('r-ticket').textContent    = '$' + Number(data.resumen.ticket_promedio).toLocaleString('es-CO', {minimumFractionDigits:0});
 
     const purple = ['#3D0E8A','#6B21E8','#8B5CF6','#A78BFA','#C4B5FD'];
     const tooltipOpts = { backgroundColor:'#1a1a2e', titleColor:'#C4A0FF', bodyColor:'#fff', cornerRadius:8, padding:10 };
@@ -629,6 +643,65 @@ async function verMetricas(id, nombre) {
             }
         }
     });
+
+    // Rendimiento por mesero
+    if (data.rendimiento_meseros.length) {
+        const labels = data.rendimiento_meseros.map(r => r.mesero);
+        const values = data.rendimiento_meseros.map(r => r.total);
+        const h = Math.max(120, labels.length * 48);
+        document.getElementById('chart-meseros-wrap').innerHTML = `<div style="position:relative;height:${h}px;"><canvas id="sa-chart-meseros"></canvas></div>`;
+        chartInstances.meseros = new Chart(document.getElementById('sa-chart-meseros'), {
+            type: 'bar',
+            data: { labels, datasets: [{ label:'Ingresos', data: values, backgroundColor: purple.slice(0, labels.length), borderRadius:6, borderSkipped:false }] },
+            options: {
+                indexAxis: 'y', responsive:true, maintainAspectRatio:false,
+                plugins: { legend:{ display:false }, tooltip:{ ...tooltipOpts, callbacks:{ label: ctx => ' $'+Number(ctx.raw).toLocaleString('es-CO',{minimumFractionDigits:0}) } } },
+                scales: {
+                    x: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: v => '$'+Number(v).toLocaleString('es-CO',{minimumFractionDigits:0}) }, grid:{ color:'rgba(61,14,138,0.4)' } },
+                    y: { ticks:{ color:'#e2d9f3', font:{ size:12 } }, grid:{ display:false } },
+                }
+            }
+        });
+    }
+
+    // Horas pico
+    const horasData = data.horas_pico;
+    if (horasData.reduce((s, v) => s + v, 0) > 0) {
+        const horasLabels = Array.from({length:24}, (_, i) => String(i).padStart(2,'0')+':00');
+        const maxVal = Math.max(...horasData);
+        const bgColors = horasData.map(v => `rgba(107,33,232,${(0.2+(maxVal>0?v/maxVal:0)*0.75).toFixed(2)})`);
+        document.getElementById('chart-horas-wrap').innerHTML = '<canvas id="sa-chart-horas" style="max-height:180px;"></canvas>';
+        chartInstances.horas = new Chart(document.getElementById('sa-chart-horas'), {
+            type: 'bar',
+            data: { labels: horasLabels, datasets: [{ label:'Ingresos', data: horasData, backgroundColor: bgColors, borderRadius:3, borderSkipped:false }] },
+            options: {
+                responsive:true, maintainAspectRatio:true,
+                plugins: { legend:{ display:false }, tooltip:{ ...tooltipOpts, callbacks:{ label: ctx => ' $'+Number(ctx.raw).toLocaleString('es-CO',{minimumFractionDigits:0}) } } },
+                scales: {
+                    x: { ticks:{ color:'#9B8EC4', font:{ size:8 }, maxRotation:0 }, grid:{ display:false } },
+                    y: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: v => '$'+Number(v).toLocaleString('es-CO',{minimumFractionDigits:0}) }, grid:{ color:'rgba(61,14,138,0.4)' } },
+                }
+            }
+        });
+    }
+
+    // Ingresos por categoría
+    if (data.ingresos_categorias.length) {
+        const catLabels = data.ingresos_categorias.map(c => c.categoria);
+        const catValues = data.ingresos_categorias.map(c => c.total);
+        document.getElementById('chart-categorias-wrap').innerHTML = '<canvas id="sa-chart-categorias" style="max-height:200px;"></canvas>';
+        chartInstances.categorias = new Chart(document.getElementById('sa-chart-categorias'), {
+            type: 'doughnut',
+            data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: purple.slice(0, catLabels.length), borderColor:'#1a0f35', borderWidth:3 }] },
+            options: {
+                responsive:true, maintainAspectRatio:true,
+                plugins: {
+                    legend: { position:'bottom', labels:{ color:'#e2d9f3', font:{ size:11 }, padding:10 } },
+                    tooltip: { ...tooltipOpts, callbacks:{ label: ctx => ' '+ctx.label+': $'+Number(ctx.raw).toLocaleString('es-CO',{minimumFractionDigits:0}) } },
+                }
+            }
+        });
+    }
 
     document.getElementById('stats-loading').style.display = 'none';
     document.getElementById('stats-body').style.display    = '';
