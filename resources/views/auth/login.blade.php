@@ -144,6 +144,32 @@
 
     .btn-submit { min-height: 48px; }
 
+    .remember-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .remember-row input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #6B21E8;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .remember-row label {
+        display: inline;
+        font-size: 13px;
+        font-weight: 500;
+        color: #4a4a6a;
+        text-transform: none;
+        letter-spacing: 0;
+        cursor: pointer;
+        margin: 0;
+    }
+
     @media (max-width: 480px) {
         body { padding: 16px; align-items: flex-start; padding-top: 32px; }
         .card { padding: 28px 18px 24px; }
@@ -238,6 +264,11 @@
                 @error('id_negocio')
                     <span class="error-text">⚠ {{ $message }}</span>
                 @enderror
+            </div>
+
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                <label for="remember">Recordarme en este dispositivo</label>
             </div>
 
             <button type="submit" class="btn-submit">Ingresar →</button>
