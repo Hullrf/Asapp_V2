@@ -8,6 +8,7 @@ use App\Models\Negocio;
 use App\Models\Pago;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -96,6 +97,67 @@ class SuperAdminController extends Controller
         });
 
         return response()->json(['success' => true, 'message' => 'Negocio y todos sus datos eliminados.']);
+    }
+
+    public function negocioStats(Negocio $negocio)
+    {
+        $pedidos = $negocio->pedidos()->with('items.producto', 'mesa')->get();
+
+        $resumen = [
+            'total_pedidos'     => $pedidos->count(),
+            'total_cobrado'     => (float) $pedidos->flatMap->items->filter(fn($i) => $i->estado->value === 'Pagado')->sum('subtotal'),
+            'productos_activos' => $negocio->productos()->where('disponible', true)->count(),
+            'mesas_total'       => $negocio->mesas()->count(),
+        ];
+
+        $pedidosPorEstado = $pedidos
+            ->groupBy(fn($p) => $p->estado->value)
+            ->map->count();
+
+        $topProductos = $pedidos
+            ->flatMap(fn($p) => $p->items)
+            ->groupBy('id_producto')
+            ->map(fn($items) => [
+                'nombre'   => $items->first()->producto?->nombre ?? 'Eliminado',
+                'cantidad' => (int) $items->sum('cantidad'),
+            ])
+            ->sortByDesc('cantidad')
+            ->take(5)
+            ->values();
+
+        $pedidoIds = $pedidos->pluck('id_pedido');
+        $fuentesPago = Pago::whereIn('id_pedido', $pedidoIds)
+            ->where('estado', '!=', 'fallido')
+            ->selectRaw('metodo_pago, SUM(monto) as total, COUNT(*) as cantidad')
+            ->groupBy('metodo_pago')
+            ->get()
+            ->mapWithKeys(fn($p) => [$p->metodo_pago => ['total' => (float)$p->total, 'cantidad' => (int)$p->cantidad]]);
+
+        // Ingresos por mes — últimos 6 meses
+        $ingresosPorMes = Pago::whereIn('id_pedido', $pedidoIds)
+            ->where('estado', '!=', 'fallido')
+            ->where('fecha', '>=', Carbon::now()->subMonths(5)->startOfMonth())
+            ->selectRaw("DATE_FORMAT(fecha, '%Y-%m') as mes, SUM(monto) as total")
+            ->groupBy('mes')
+            ->orderBy('mes')
+            ->get()
+            ->mapWithKeys(fn($p) => [$p->mes => (float)$p->total]);
+
+        // Rellenar meses sin datos con 0
+        $meses = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $key = Carbon::now()->subMonths($i)->format('Y-m');
+            $meses[$key] = $ingresosPorMes[$key] ?? 0;
+        }
+
+        return response()->json([
+            'negocio'          => ['nombre' => $negocio->nombre, 'direccion' => $negocio->direccion, 'fecha_registro' => $negocio->fecha_registro],
+            'resumen'          => $resumen,
+            'pedidos_por_estado' => $pedidosPorEstado,
+            'top_productos'    => $topProductos,
+            'fuentes_pago'     => $fuentesPago,
+            'ingresos_por_mes' => $meses,
+        ]);
     }
 
     public function toggleSuspendido(Request $request, Negocio $negocio)

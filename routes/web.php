@@ -25,10 +25,11 @@ Route::post('/superadmin/login', [SuperAdminController::class, 'login'])->name('
 Route::get('/superadmin/logout', [SuperAdminController::class, 'logout'])->name('superadmin.logout');
 
 Route::middleware('superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {
-    Route::get('/',                          [SuperAdminController::class, 'panel'])->name('panel');
-    Route::put('/negocios/{negocio}',         [SuperAdminController::class, 'update'])->name('negocios.update');
-    Route::delete('/negocios/{negocio}',      [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
-    Route::post('/negocios/{negocio}/toggle', [SuperAdminController::class, 'toggleSuspendido'])->name('negocios.toggle');
+    Route::get('/',                           [SuperAdminController::class, 'panel'])->name('panel');
+    Route::put('/negocios/{negocio}',          [SuperAdminController::class, 'update'])->name('negocios.update');
+    Route::delete('/negocios/{negocio}',       [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
+    Route::post('/negocios/{negocio}/toggle',  [SuperAdminController::class, 'toggleSuspendido'])->name('negocios.toggle');
+    Route::get('/negocios/{negocio}/stats',    [SuperAdminController::class, 'negocioStats'])->name('negocios.stats');
 });
 
 // ── Auth ─────────────────────────────────────────────────────────────
