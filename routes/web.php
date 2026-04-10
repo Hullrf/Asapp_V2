@@ -60,6 +60,7 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::get('/partials/nuevo-pedido', [PanelController::class, 'parcialNuevoPedido'])->name('partials.nuevo-pedido');
     Route::get('/partials/estadisticas',       [PanelController::class, 'parcialEstadisticas'])->name('partials.estadisticas');
     Route::get('/partials/estadisticas-pagos', [PanelController::class, 'estadisticasPagos'])->name('partials.estadisticas-pagos');
+    Route::get('/partials/estadisticas-mesas', [PanelController::class, 'estadisticasMesas'])->name('partials.estadisticas-mesas');
     Route::get('/partials/historial',    [PanelController::class, 'parcialHistorial'])->name('partials.historial');
     Route::get('/partials/meseros',      [PanelController::class, 'parcialMeseros'])->name('partials.meseros');
 

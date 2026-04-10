@@ -103,6 +103,71 @@ class PanelController extends Controller
         ]);
     }
 
+    public function estadisticasMesas(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $periodo = $request->input('periodo', 'semana');
+
+        [$desde, $formatoDb, $buckets, $displayLabels] = match($periodo) {
+            'dia' => [
+                Carbon::today(),
+                '%H:00',
+                collect(range(0, 23))->mapWithKeys(fn($h) => [str_pad($h, 2, '0', STR_PAD_LEFT).':00' => 0.0]),
+                collect(range(0, 23))->map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT).':00')->toArray(),
+            ],
+            'mes' => [
+                Carbon::now()->subDays(29)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(29, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => 0.0]),
+                collect(range(29, 0))->map(fn($i) => Carbon::now()->subDays($i)->format('d/m'))->toArray(),
+            ],
+            'anio' => [
+                Carbon::now()->subMonths(11)->startOfMonth(),
+                '%Y-%m',
+                collect(range(11, 0))->mapWithKeys(fn($i) => [Carbon::now()->subMonths($i)->format('Y-m') => 0.0]),
+                collect(range(11, 0))->map(fn($i) => Carbon::now()->subMonths($i)->translatedFormat('M y'))->toArray(),
+            ],
+            default => [
+                Carbon::now()->subDays(6)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(6, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => 0.0]),
+                collect(range(6, 0))->map(fn($i) => Carbon::now()->subDays($i)->translatedFormat('D d/m'))->toArray(),
+            ],
+        };
+
+        // Ingresos por mesa agrupados por bucket de tiempo
+        $rows = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->join('mesas', 'pedidos.id_mesa', '=', 'mesas.id_mesa')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->where('pedidos.fecha', '>=', $desde)
+            ->whereNotNull('pedidos.id_mesa')
+            ->selectRaw("mesas.nombre as mesa, DATE_FORMAT(pedidos.fecha, '{$formatoDb}') as bucket, SUM(items_pedido.subtotal) as total")
+            ->groupBy('mesas.nombre', 'bucket')
+            ->get();
+
+        $mesas  = $rows->pluck('mesa')->unique()->sort()->values();
+        $series = [];
+
+        foreach ($mesas as $mesa) {
+            $data = $buckets->toArray();
+            foreach ($rows->where('mesa', $mesa) as $row) {
+                if (array_key_exists($row->bucket, $data)) {
+                    $data[$row->bucket] = (float) $row->total;
+                }
+            }
+            if (array_sum($data) > 0) {
+                $series[$mesa] = array_values($data);
+            }
+        }
+
+        return response()->json([
+            'labels' => $displayLabels,
+            'series' => $series,
+        ]);
+    }
+
     private function cargarDatos(): array
     {
         $negocio        = auth()->user()->negocioActivo();

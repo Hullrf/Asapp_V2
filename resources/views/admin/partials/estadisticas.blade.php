@@ -116,12 +116,25 @@
 </style>
 
 {{-- Barras horizontales: ingresos por mesa --}}
-@if ($ingresosPorMesa->isNotEmpty())
 <div class="card">
-    <div class="card-title">💵 Ingresos cobrados por mesa</div>
-    <div class="chart-wrap chart-wrap-wide"><canvas id="chart-mesas"></canvas></div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">💵 Ingresos por mesa</div>
+        <div id="mesas-periodos" style="display:flex; gap:6px;">
+            <button class="periodo-btn active" data-periodo="dia">Hoy</button>
+            <button class="periodo-btn" data-periodo="semana">7 días</button>
+            <button class="periodo-btn" data-periodo="mes">30 días</button>
+            <button class="periodo-btn" data-periodo="anio">1 año</button>
+        </div>
+    </div>
+    <div id="mesas-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+        Sin ingresos registrados en este período.
+    </div>
+    <div id="mesas-contenido" style="display:none;">
+        <div style="position:relative; height:220px;">
+            <canvas id="chart-mesas"></canvas>
+        </div>
+    </div>
 </div>
-@endif
 
 @php
     $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values();
@@ -350,46 +363,102 @@ function initEstadisticasCharts() {
     })();
     @endif
 
-    // ── Barras horizontales: ingresos por mesa ───────────────────────────
-    @if ($ingresosPorMesa->isNotEmpty())
+    // ── Líneas: ingresos por mesa ────────────────────────────────────────
     (function() {
-        const raw    = @json($ingresosPorMesa);
-        const labels = Object.keys(raw);
-        const values = Object.values(raw);
+        const url = '{{ route('panel.partials.estadisticas-mesas') }}';
+        const palette = [
+            purple.dk, purple.md, purple.lt, purple.llt, purple.pale,
+            '#1D4ED8','#0891B2','#059669','#D97706','#DC2626',
+        ];
+        let chartMesas = null;
 
-        new Chart(document.getElementById('chart-mesas'), {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Ingresos ($)',
-                    data: values,
-                    backgroundColor: purple.md,
-                    hoverBackgroundColor: purple.dk,
-                    borderRadius: 6,
-                    borderSkipped: false,
-                }]
-            },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: { ...baseOpts.plugins, legend: { display: false } },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: '#9B8EC4',
-                            callback: v => '$' + Number(v).toLocaleString('es-CO'),
-                        },
-                        grid: { color: '#E0D9F5' },
-                        beginAtZero: true,
-                    },
-                    y: { ticks: { color: '#1a1a2e' }, grid: { display: false } },
-                }
-            }
+        function cargarMesas(periodo) {
+            fetch(url + '?periodo=' + periodo)
+                .then(r => r.json())
+                .then(({ labels, series }) => {
+                    const empty     = document.getElementById('mesas-empty');
+                    const contenido = document.getElementById('mesas-contenido');
+
+                    if (!series || Object.keys(series).length === 0) {
+                        empty.style.display     = '';
+                        contenido.style.display = 'none';
+                        if (chartMesas) { chartMesas.destroy(); chartMesas = null; }
+                        return;
+                    }
+
+                    empty.style.display     = 'none';
+                    contenido.style.display = '';
+
+                    const datasets = Object.entries(series).map(([mesa, valores], i) => ({
+                        label:            mesa,
+                        data:             valores,
+                        borderColor:      palette[i % palette.length],
+                        backgroundColor:  palette[i % palette.length] + '14',
+                        borderWidth:      2,
+                        pointRadius:      labels.length <= 12 ? 4 : 2,
+                        pointHoverRadius: 6,
+                        tension:          0.35,
+                        fill:             false,
+                    }));
+
+                    if (chartMesas) {
+                        chartMesas.data.labels   = labels;
+                        chartMesas.data.datasets = datasets;
+                        chartMesas.update();
+                    } else {
+                        chartMesas = new Chart(document.getElementById('chart-mesas'), {
+                            type: 'line',
+                            data: { labels, datasets },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                interaction: { mode: 'index', intersect: false },
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                        labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 }, padding: 14 }
+                                    },
+                                    tooltip: {
+                                        backgroundColor: '#1a1a2e',
+                                        titleColor: '#C4B5FD',
+                                        bodyColor: '#fff',
+                                        cornerRadius: 8,
+                                        padding: 10,
+                                        callbacks: {
+                                            label: ctx => ' ' + ctx.dataset.label + ': $' + Number(ctx.raw).toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                        }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: '#9B8EC4', maxTicksLimit: 10, maxRotation: 30 },
+                                        grid:  { color: '#E0D9F5' },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            color: '#9B8EC4',
+                                            callback: v => '$' + Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                        },
+                                        grid: { color: '#E0D9F5' },
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+        }
+
+        cargarMesas('dia');
+
+        document.querySelectorAll('#mesas-periodos .periodo-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#mesas-periodos .periodo-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                cargarMesas(this.dataset.periodo);
+            });
         });
     })();
-    @endif
 
     // ── Barras: stock por producto ────────────────────────────────────────
     @php $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values(); @endphp
