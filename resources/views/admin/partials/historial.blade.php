@@ -17,10 +17,10 @@
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Mesa</th>
+                        <th class="hist-col-mesa">Mesa</th>
                         <th>Fecha</th>
-                        <th>Ítems</th>
-                        <th style="text-align:right;">Total cobrado</th>
+                        <th class="hist-col-items">Ítems</th>
+                        <th style="text-align:right;">Total</th>
                         <th style="text-align:center;">Factura</th>
                     </tr>
                 </thead>
@@ -31,19 +31,20 @@
                             $fecha = \Carbon\Carbon::parse($p->fecha)->format('d/m/Y H:i');
                         @endphp
                         <tr>
-                            <td style="font-weight:700; color:#3D0E8A;">{{ $p->id_pedido }}</td>
-                            <td>{{ $p->mesa?->nombre ?? '—' }}</td>
+                            <td style="font-weight:700; color:#3D0E8A;">
+                                #{{ $p->id_pedido }}
+                                <div class="hist-mesa-sub">{{ $p->mesa?->nombre ?? '—' }}</div>
+                            </td>
+                            <td class="hist-col-mesa">{{ $p->mesa?->nombre ?? '—' }}</td>
                             <td style="font-size:12px; color:#9B8EC4; white-space:nowrap;">{{ $fecha }}</td>
-                            <td style="text-align:center;">{{ $p->items->count() }}</td>
+                            <td class="hist-col-items" style="text-align:center;">{{ $p->items->count() }}</td>
                             <td style="text-align:right; font-weight:700; color:#6B21E8;">
                                 ${{ number_format($total, 0, ',', '.') }}
                             </td>
                             <td style="text-align:center;">
                                 <a href="{{ route('factura.show', $p->id_pedido) }}"
                                    class="btn btn-primary btn-sm"
-                                   target="_blank">
-                                    Ver
-                                </a>
+                                   target="_blank">Ver</a>
                             </td>
                         </tr>
 
@@ -94,5 +95,27 @@
         font-style: normal;
         font-weight: 700;
         color: #6B21E8;
+    }
+
+    /* Mesa inline bajo el # en móvil (oculto en desktop) */
+    .hist-mesa-sub { display: none; }
+
+    @media (max-width: 640px) {
+        /* Ocultar columnas que caben dentro de otras */
+        .hist-col-mesa,
+        .hist-col-items { display: none; }
+
+        /* Mostrar mesa bajo el número de pedido */
+        .hist-mesa-sub {
+            display: block;
+            font-size: 11px;
+            font-weight: 500;
+            color: #9B8EC4;
+            margin-top: 2px;
+        }
+
+        /* Compactar celdas */
+        table td, table th { padding: 10px 8px; font-size: 12px; }
+        .detalle-items { padding: 8px 10px; }
     }
 </style>
