@@ -395,6 +395,14 @@
         .chart-wrap-wide { position: relative; height: 200px; }
         .chart-empty { text-align: center; color: #9B8EC4; font-size: 13px; padding: 48px 0; }
 
+        /* Leyenda top productos */
+        .chart-leyenda { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+        .leyenda-item  { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+        .leyenda-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .leyenda-num   { font-weight: 700; color: #9B8EC4; font-size: 12px; min-width: 14px; }
+        .leyenda-nombre{ flex: 1; color: #1a1a2e; }
+        .leyenda-cant  { color: #6B21E8; font-weight: 600; white-space: nowrap; }
+
         @media (max-width: 700px) { .charts-row { grid-template-columns: 1fr; } }
 
         .tab-badge {

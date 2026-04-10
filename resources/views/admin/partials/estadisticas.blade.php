@@ -62,6 +62,7 @@
             <p class="chart-empty">Sin datos de productos aún.</p>
         @else
             <div class="chart-wrap"><canvas id="chart-productos"></canvas></div>
+            <div id="chart-productos-leyenda" class="chart-leyenda"></div>
         @endif
     </div>
 
@@ -307,19 +308,19 @@ function initEstadisticasCharts() {
     // ── Barras: top productos ────────────────────────────────────────────
     @if ($topProductos->isNotEmpty())
     (function() {
-        const data     = @json($topProductos);
-        const labels   = data.map(d => d.nombre);
-        const values   = data.map(d => d.cantidad);
-        const colors   = [purple.dk, purple.md, purple.lt, purple.llt, purple.pale];
+        const data   = @json($topProductos);
+        const values = data.map(d => d.cantidad);
+        const colors = [purple.dk, purple.md, purple.lt, purple.llt, purple.pale];
+        const indices = data.map((_, i) => i + 1); // 1, 2, 3, 4, 5
 
         new Chart(document.getElementById('chart-productos'), {
             type: 'bar',
             data: {
-                labels,
+                labels: indices,
                 datasets: [{
                     label: 'Unidades pedidas',
                     data: values,
-                    backgroundColor: colors.slice(0, labels.length),
+                    backgroundColor: colors.slice(0, values.length),
                     borderRadius: 8,
                     borderSkipped: false,
                 }]
@@ -328,11 +329,24 @@ function initEstadisticasCharts() {
                 ...baseOpts,
                 plugins: { ...baseOpts.plugins, legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: '#9B8EC4', maxRotation: 30 }, grid: { display: false } },
+                    x: { ticks: { color: '#9B8EC4' }, grid: { display: false } },
                     y: { ticks: { color: '#9B8EC4', precision: 0 }, grid: { color: '#E0D9F5' }, beginAtZero: true },
                 }
             }
         });
+
+        // Leyenda de colores
+        const leyenda = document.getElementById('chart-productos-leyenda');
+        if (leyenda) {
+            leyenda.innerHTML = data.map((d, i) => `
+                <div class="leyenda-item">
+                    <span class="leyenda-dot" style="background:${colors[i]};"></span>
+                    <span class="leyenda-num">${i + 1}</span>
+                    <span class="leyenda-nombre">${d.nombre}</span>
+                    <span class="leyenda-cant">${d.cantidad} ud.</span>
+                </div>
+            `).join('');
+        }
     })();
     @endif
 
