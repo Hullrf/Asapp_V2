@@ -1,3 +1,5 @@
+@php $cp = $configPanel; @endphp
+
 {{-- ── ALERTAS DE STOCK ── --}}
 @if ($productosStockBajo->isNotEmpty())
 <div class="card" style="border-color: #FCD34D; margin-bottom: 24px;">
@@ -52,46 +54,184 @@
     </div>
 </div>
 
-{{-- ── FILA DE GRÁFICOS ── --}}
-<div class="charts-row">
+{{-- ── BOTÓN PERSONALIZAR ── --}}
+<div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
+    <button onclick="abrirPersonalizar()" class="btn-personalizar">⚙ Personalizar panel</button>
+</div>
 
-    {{-- Barras: top productos --}}
-    <div class="card chart-card" style="grid-column: 1 / -1;">
-        <div class="card-title">🏆 Top 5 productos más pedidos</div>
-        @if ($topProductos->isEmpty())
-            <p class="chart-empty">Sin datos de productos aún.</p>
-        @else
-            <div class="chart-wrap"><canvas id="chart-productos"></canvas></div>
-            <div id="chart-productos-leyenda" class="chart-leyenda"></div>
-        @endif
+{{-- ── TOP 5 PRODUCTOS ── --}}
+<div class="card chart-card" data-chart="top_productos" @if(!in_array('top_productos', $cp)) style="display:none" @endif>
+    <div class="card-title">🏆 Top 5 productos más pedidos</div>
+    @if ($topProductos->isEmpty())
+        <p class="chart-empty">Sin datos de productos aún.</p>
+    @else
+        <div class="chart-wrap"><canvas id="chart-productos"></canvas></div>
+        <div id="chart-productos-leyenda" class="chart-leyenda"></div>
+    @endif
+</div>
+
+{{-- ── FILA: FUENTES DE PAGO + INGRESOS POR MESA ── --}}
+@php $showPair1 = in_array('fuentes_pago', $cp) || in_array('ingresos_mesa', $cp); @endphp
+<div class="charts-pair" id="pair-fuentes-mesas" @if(!$showPair1) style="display:none" @endif>
+
+    {{-- Fuentes de pago --}}
+    <div class="card chart-card" data-chart="fuentes_pago" @if(!in_array('fuentes_pago', $cp)) style="display:none" @endif>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">💳 Fuentes de pago</div>
+            <div id="pagos-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="periodo-btn active" data-periodo="dia">Hoy</button>
+                <button class="periodo-btn" data-periodo="semana">7 días</button>
+                <button class="periodo-btn" data-periodo="mes">30 días</button>
+                <button class="periodo-btn" data-periodo="anio">1 año</button>
+            </div>
+        </div>
+        <div id="pagos-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+            Sin pagos registrados en este período.
+        </div>
+        <div id="pagos-contenido" style="display:none;">
+            <div style="position:relative; height:220px;"><canvas id="chart-pagos-fuente"></canvas></div>
+        </div>
+    </div>
+
+    {{-- Ingresos por mesa --}}
+    <div class="card chart-card" data-chart="ingresos_mesa" @if(!in_array('ingresos_mesa', $cp)) style="display:none" @endif>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">💵 Ingresos por mesa</div>
+            <div id="mesas-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="periodo-btn active" data-periodo="dia">Hoy</button>
+                <button class="periodo-btn" data-periodo="semana">7 días</button>
+                <button class="periodo-btn" data-periodo="mes">30 días</button>
+                <button class="periodo-btn" data-periodo="anio">1 año</button>
+            </div>
+        </div>
+        <div id="mesas-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+            Sin ingresos registrados en este período.
+        </div>
+        <div id="mesas-contenido" style="display:none;">
+            <div style="position:relative; height:220px;"><canvas id="chart-mesas"></canvas></div>
+        </div>
     </div>
 
 </div>
 
-{{-- ── TRAZABILIDAD DE PAGOS ── --}}
-<div class="card" style="margin-bottom:0;">
+{{-- ── RENDIMIENTO POR MESERO ── --}}
+<div class="card chart-card" data-chart="rendimiento_mesero" @if(!in_array('rendimiento_mesero', $cp)) style="display:none" @endif>
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-        <div class="card-title" style="margin:0;">💳 Fuentes de pago</div>
-        <div id="pagos-periodos" style="display:flex; gap:6px;">
+        <div class="card-title" style="margin:0;">👤 Rendimiento por mesero</div>
+        <div id="meseros-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button class="periodo-btn" data-periodo="dia">Hoy</button>
+            <button class="periodo-btn active" data-periodo="semana">7 días</button>
+            <button class="periodo-btn" data-periodo="mes">30 días</button>
+            <button class="periodo-btn" data-periodo="anio">1 año</button>
+        </div>
+    </div>
+    <div id="meseros-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+        Sin datos de meseros en este período.
+    </div>
+    <div id="meseros-contenido" style="display:none;">
+        <div id="meseros-wrap" style="position:relative; height:160px;"><canvas id="chart-meseros"></canvas></div>
+    </div>
+</div>
+
+{{-- ── FILA: HORAS PICO + INGRESOS POR CATEGORÍA ── --}}
+@php $showPair2 = in_array('horas_pico', $cp) || in_array('categorias', $cp); @endphp
+<div class="charts-pair" id="pair-horas-categorias" @if(!$showPair2) style="display:none" @endif>
+
+    {{-- Horas pico --}}
+    <div class="card chart-card" data-chart="horas_pico" @if(!in_array('horas_pico', $cp)) style="display:none" @endif>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">🕐 Horas pico</div>
+            <div id="horas-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="periodo-btn" data-periodo="dia">Hoy</button>
+                <button class="periodo-btn active" data-periodo="semana">7 días</button>
+                <button class="periodo-btn" data-periodo="mes">30 días</button>
+                <button class="periodo-btn" data-periodo="anio">1 año</button>
+            </div>
+        </div>
+        <div id="horas-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+            Sin ventas registradas en este período.
+        </div>
+        <div id="horas-contenido" style="display:none;">
+            <div style="position:relative; height:200px;"><canvas id="chart-horas"></canvas></div>
+        </div>
+    </div>
+
+    {{-- Ingresos por categoría --}}
+    <div class="card chart-card" data-chart="categorias" @if(!in_array('categorias', $cp)) style="display:none" @endif>
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">🏷️ Ingresos por categoría</div>
+            <div id="categorias-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="periodo-btn" data-periodo="dia">Hoy</button>
+                <button class="periodo-btn active" data-periodo="semana">7 días</button>
+                <button class="periodo-btn" data-periodo="mes">30 días</button>
+                <button class="periodo-btn" data-periodo="anio">1 año</button>
+            </div>
+        </div>
+        <div id="categorias-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+            Sin ventas registradas en este período.
+        </div>
+        <div id="categorias-contenido" style="display:none;">
+            <div style="position:relative; height:220px;"><canvas id="chart-categorias"></canvas></div>
+        </div>
+    </div>
+
+</div>
+
+{{-- ── TICKET PROMEDIO ── --}}
+<div class="card chart-card" data-chart="ticket_promedio" @if(!in_array('ticket_promedio', $cp)) style="display:none" @endif>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">🎫 Ticket promedio por pedido</div>
+        <div id="ticket-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="periodo-btn active" data-periodo="dia">Hoy</button>
             <button class="periodo-btn" data-periodo="semana">7 días</button>
             <button class="periodo-btn" data-periodo="mes">30 días</button>
             <button class="periodo-btn" data-periodo="anio">1 año</button>
         </div>
     </div>
-
-    <div id="pagos-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
-        Sin pagos registrados en este período.
+    <div id="ticket-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
+        Sin pedidos en este período.
     </div>
+    <div id="ticket-contenido" style="display:none;">
+        <div style="position:relative; height:220px;"><canvas id="chart-ticket"></canvas></div>
+    </div>
+</div>
 
-    <div id="pagos-contenido" style="display:none;">
-        <div style="position:relative; height:220px;">
-            <canvas id="chart-pagos-fuente"></canvas>
+{{-- ── STOCK ACTUAL ── --}}
+@php $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values(); @endphp
+@if ($productosConStock->isNotEmpty())
+<div class="card chart-card" data-chart="stock_productos" @if(!in_array('stock_productos', $cp)) style="display:none" @endif>
+    <div class="card-title">📦 Stock actual por producto</div>
+    <div class="chart-wrap chart-wrap-wide" style="height: {{ max(200, $productosConStock->count() * 36) }}px;">
+        <canvas id="chart-stock"></canvas>
+    </div>
+</div>
+@endif
+
+{{-- ── MODAL PERSONALIZAR ── --}}
+<div class="modal-overlay" id="personalizar-overlay">
+    <div class="modal" style="max-width:480px; text-align:left;">
+        <h3 style="margin-bottom:4px;">⚙ Personalizar estadísticas</h3>
+        <p style="font-size:13px; color:#9B8EC4; margin-bottom:20px;">Activa o desactiva las gráficas que quieres ver.</p>
+        <div id="personalizar-toggles"></div>
+        <div class="modal-acciones" style="margin-top:20px;">
+            <button class="btn-modal-sec" onclick="cerrarPersonalizar()">Cancelar</button>
+            <button class="btn-modal-pri" onclick="guardarPersonalizar()">Guardar cambios</button>
         </div>
     </div>
 </div>
 
 <style>
+.charts-pair {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+.charts-pair > .card {
+    flex: 1 1 300px;
+    min-width: 0;
+}
+
 .periodo-btn {
     background: #F5F3FF;
     border: 1.5px solid #E0D9F5;
@@ -113,211 +253,406 @@
     border-color: #C4B5FD;
     color: #5B21B6;
 }
+
+.btn-personalizar {
+    background: #F5F3FF;
+    border: 1.5px solid #E0D9F5;
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B21E8;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.btn-personalizar:hover {
+    background: #EDE9FE;
+    border-color: #6B21E8;
+}
+
+.toggle-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 4px;
+    border-bottom: 1px solid #F0EBF8;
+    cursor: pointer;
+    user-select: none;
+}
+.toggle-item:last-child { border-bottom: none; }
+.toggle-label-text {
+    font-size: 14px;
+    color: #1a1a2e;
+}
+.toggle-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.chart-toggle { display: none; }
+.toggle-switch {
+    width: 40px;
+    height: 22px;
+    background: #D4C9F0;
+    border-radius: 11px;
+    position: relative;
+    transition: background 0.2s;
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.chart-toggle:checked + .toggle-switch {
+    background: #6B21E8;
+}
+.chart-toggle:checked + .toggle-switch::after {
+    transform: translateX(18px);
+}
+
+.btn-modal-sec {
+    background: #F5F3FF;
+    border: 1.5px solid #D4C9F0;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6B21E8;
+    cursor: pointer;
+    font-family: inherit;
+}
+.btn-modal-pri {
+    background: #6B21E8;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s;
+}
+.btn-modal-pri:hover { background: #5B18C8; }
 </style>
-
-{{-- Barras horizontales: ingresos por mesa --}}
-<div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-        <div class="card-title" style="margin:0;">💵 Ingresos por mesa</div>
-        <div id="mesas-periodos" style="display:flex; gap:6px;">
-            <button class="periodo-btn active" data-periodo="dia">Hoy</button>
-            <button class="periodo-btn" data-periodo="semana">7 días</button>
-            <button class="periodo-btn" data-periodo="mes">30 días</button>
-            <button class="periodo-btn" data-periodo="anio">1 año</button>
-        </div>
-    </div>
-    <div id="mesas-empty" style="display:none; text-align:center; color:#9B8EC4; padding:24px 0; font-size:14px;">
-        Sin ingresos registrados en este período.
-    </div>
-    <div id="mesas-contenido" style="display:none;">
-        <div style="position:relative; height:220px;">
-            <canvas id="chart-mesas"></canvas>
-        </div>
-    </div>
-</div>
-
-@php
-    $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values();
-@endphp
-@if ($productosConStock->isNotEmpty())
-<div class="card" style="margin-top:0;">
-    <div class="card-title">📦 Stock actual por producto</div>
-    <div class="chart-wrap chart-wrap-wide" style="height: {{ max(200, $productosConStock->count() * 36) }}px;">
-        <canvas id="chart-stock"></canvas>
-    </div>
-</div>
-@endif
 
 <script>
 function initEstadisticasCharts() {
-    // Guard: solo inicializar una vez
     initEstadisticasCharts = function() {};
 
-    // ── Trazabilidad de pagos (líneas históricas) ────────────────────────
-    (function() {
-        const url = '{{ route('panel.partials.estadisticas-pagos') }}';
+    const habilitados  = new Set(@json($configPanel));
+    const iniciados    = {};
+    const chartInst    = {};
 
-        const nombresMetodo = { tarjeta: 'Tarjeta', pse: 'PSE', nequi: 'Nequi', efectivo: 'Efectivo', digital: 'Digital' };
-        const coloresLinea  = {
-            tarjeta:  { line: '#3D0E8A', fill: 'rgba(61,14,138,0.08)'   },
-            pse:      { line: '#6B21E8', fill: 'rgba(107,33,232,0.08)'  },
-            nequi:    { line: '#8B5CF6', fill: 'rgba(139,92,246,0.08)'  },
-            efectivo: { line: '#A78BFA', fill: 'rgba(167,139,250,0.08)' },
-            digital:  { line: '#C4B5FD', fill: 'rgba(196,181,253,0.08)' },
-        };
+    const purple = { dk:'#3D0E8A', md:'#6B21E8', lt:'#8B5CF6', llt:'#A78BFA', pale:'#C4B5FD', bg:'#EDE9FE' };
+    const palette = [purple.dk, purple.md, purple.lt, purple.llt, purple.pale, '#1D4ED8','#0891B2','#059669','#D97706','#DC2626'];
 
-        let chartPagos = null;
+    const tooltipBase = {
+        backgroundColor: '#1a1a2e',
+        titleColor: '#C4B5FD',
+        bodyColor: '#fff',
+        cornerRadius: 8,
+        padding: 10,
+    };
 
-        function cargarPagos(periodo) {
-            fetch(url + '?periodo=' + periodo)
-                .then(r => r.json())
-                .then(({ labels, series }) => {
-                    const empty     = document.getElementById('pagos-empty');
-                    const contenido = document.getElementById('pagos-contenido');
+    const fmtCOP = v => '$' + Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0 });
 
-                    if (!series || Object.keys(series).length === 0) {
-                        empty.style.display     = '';
-                        contenido.style.display = 'none';
-                        if (chartPagos) { chartPagos.destroy(); chartPagos = null; }
-                        return;
-                    }
+    // ── FUENTES DE PAGO ──────────────────────────────────────────────────
+    const urlPagos = '{{ route('panel.partials.estadisticas-pagos') }}';
+    const nombresMetodo = { tarjeta:'Tarjeta', pse:'PSE', nequi:'Nequi', efectivo:'Efectivo', digital:'Digital' };
+    const coloresLinea  = {
+        tarjeta:  { line:'#3D0E8A', fill:'rgba(61,14,138,0.08)'   },
+        pse:      { line:'#6B21E8', fill:'rgba(107,33,232,0.08)'  },
+        nequi:    { line:'#8B5CF6', fill:'rgba(139,92,246,0.08)'  },
+        efectivo: { line:'#A78BFA', fill:'rgba(167,139,250,0.08)' },
+        digital:  { line:'#C4B5FD', fill:'rgba(196,181,253,0.08)' },
+    };
 
-                    empty.style.display     = 'none';
-                    contenido.style.display = '';
-
-                    const datasets = Object.entries(series).map(([metodo, valores]) => ({
-                        label:           nombresMetodo[metodo] || metodo,
-                        data:            valores,
-                        borderColor:     coloresLinea[metodo]?.line  || '#6B21E8',
-                        backgroundColor: coloresLinea[metodo]?.fill  || 'rgba(107,33,232,0.08)',
-                        borderWidth:     2,
-                        pointRadius:     labels.length <= 12 ? 4 : 2,
-                        pointHoverRadius: 6,
-                        tension:         0.35,
-                        fill:            false,
-                    }));
-
-                    if (chartPagos) {
-                        chartPagos.data.labels   = labels;
-                        chartPagos.data.datasets = datasets;
-                        chartPagos.update();
-                    } else {
-                        chartPagos = new Chart(document.getElementById('chart-pagos-fuente'), {
-                            type: 'line',
-                            data: { labels, datasets },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                interaction: { mode: 'index', intersect: false },
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                        labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 }, padding: 16 }
-                                    },
-                                    tooltip: {
-                                        backgroundColor: '#1a1a2e',
-                                        titleColor: '#C4B5FD',
-                                        bodyColor: '#fff',
-                                        cornerRadius: 8,
-                                        padding: 10,
-                                        callbacks: {
-                                            label: ctx => ' ' + ctx.dataset.label + ': $' + Number(ctx.raw).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        ticks: { color: '#9B8EC4', maxTicksLimit: 10, maxRotation: 30 },
-                                        grid:  { color: '#E0D9F5' },
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            color: '#9B8EC4',
-                                            callback: v => '$' + Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        },
-                                        grid: { color: '#E0D9F5' },
-                                    }
-                                }
+    function cargarPagos(periodo) {
+        fetch(urlPagos + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, series }) => {
+                const empty     = document.getElementById('pagos-empty');
+                const contenido = document.getElementById('pagos-contenido');
+                if (!series || !Object.keys(series).length) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.fuentes_pago) { chartInst.fuentes_pago.destroy(); chartInst.fuentes_pago = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const datasets = Object.entries(series).map(([m, vals]) => ({
+                    label: nombresMetodo[m] || m,
+                    data: vals,
+                    borderColor:     coloresLinea[m]?.line  || purple.md,
+                    backgroundColor: coloresLinea[m]?.fill  || 'rgba(107,33,232,0.08)',
+                    borderWidth: 2, pointRadius: labels.length <= 12 ? 4 : 2,
+                    pointHoverRadius: 6, tension: 0.35, fill: false,
+                }));
+                if (chartInst.fuentes_pago) {
+                    chartInst.fuentes_pago.data.labels   = labels;
+                    chartInst.fuentes_pago.data.datasets = datasets;
+                    chartInst.fuentes_pago.update();
+                } else {
+                    chartInst.fuentes_pago = new Chart(document.getElementById('chart-pagos-fuente'), {
+                        type: 'line', data: { labels, datasets },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            interaction: { mode:'index', intersect:false },
+                            plugins: {
+                                legend: { position:'top', labels:{ color:'#1a1a2e', font:{ family:'Segoe UI', size:12 }, padding:16 } },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' ' + ctx.dataset.label + ': ' + fmtCOP(ctx.raw) } },
+                            },
+                            scales: {
+                                x: { ticks:{ color:'#9B8EC4', maxTicksLimit:10, maxRotation:30 }, grid:{ color:'#E0D9F5' } },
+                                y: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: fmtCOP }, grid:{ color:'#E0D9F5' } },
                             }
-                        });
-                    }
-                });
-        }
-
-        cargarPagos('dia');
-
-        document.querySelectorAll('#pagos-periodos .periodo-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#pagos-periodos .periodo-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                cargarPagos(this.dataset.periodo);
+                        }
+                    });
+                }
             });
-        });
-    })();
+    }
 
+    // ── INGRESOS POR MESA ────────────────────────────────────────────────
+    const urlMesas = '{{ route('panel.partials.estadisticas-mesas') }}';
 
-    const purple = {
-        dk:  '#3D0E8A',
-        md:  '#6B21E8',
-        lt:  '#8B5CF6',
-        llt: '#A78BFA',
-        pale:'#C4B5FD',
-        bg:  '#EDE9FE',
-    };
+    function cargarMesas(periodo) {
+        fetch(urlMesas + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, series }) => {
+                const empty     = document.getElementById('mesas-empty');
+                const contenido = document.getElementById('mesas-contenido');
+                if (!series || !Object.keys(series).length) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.ingresos_mesa) { chartInst.ingresos_mesa.destroy(); chartInst.ingresos_mesa = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const datasets = Object.entries(series).map(([mesa, vals], i) => ({
+                    label: mesa, data: vals,
+                    borderColor:     palette[i % palette.length],
+                    backgroundColor: palette[i % palette.length] + '14',
+                    borderWidth: 2, pointRadius: labels.length <= 12 ? 4 : 2,
+                    pointHoverRadius: 6, tension: 0.35, fill: false,
+                }));
+                if (chartInst.ingresos_mesa) {
+                    chartInst.ingresos_mesa.data.labels   = labels;
+                    chartInst.ingresos_mesa.data.datasets = datasets;
+                    chartInst.ingresos_mesa.update();
+                } else {
+                    chartInst.ingresos_mesa = new Chart(document.getElementById('chart-mesas'), {
+                        type: 'line', data: { labels, datasets },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            interaction: { mode:'index', intersect:false },
+                            plugins: {
+                                legend: { position:'top', labels:{ color:'#1a1a2e', font:{ family:'Segoe UI', size:12 }, padding:14 } },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' ' + ctx.dataset.label + ': ' + fmtCOP(ctx.raw) } },
+                            },
+                            scales: {
+                                x: { ticks:{ color:'#9B8EC4', maxTicksLimit:10, maxRotation:30 }, grid:{ color:'#E0D9F5' } },
+                                y: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: fmtCOP }, grid:{ color:'#E0D9F5' } },
+                            }
+                        }
+                    });
+                }
+            });
+    }
 
-    const baseOpts = {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 } }
-            },
-            tooltip: {
-                backgroundColor: '#1a1a2e',
-                titleColor: '#C4B5FD',
-                bodyColor: '#fff',
-                cornerRadius: 8,
-                padding: 10,
-            }
-        },
-        scales: {
-            x: { ticks: { color: '#9B8EC4' }, grid: { color: '#E0D9F5' } },
-            y: { ticks: { color: '#9B8EC4' }, grid: { color: '#E0D9F5' } },
-        }
-    };
+    // ── RENDIMIENTO MESERO ───────────────────────────────────────────────
+    const urlMeseros = '{{ route('panel.partials.estadisticas-meseros') }}';
 
-    // ── Barras: top productos ────────────────────────────────────────────
+    function cargarMeseros(periodo) {
+        fetch(urlMeseros + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, data }) => {
+                const empty     = document.getElementById('meseros-empty');
+                const contenido = document.getElementById('meseros-contenido');
+                if (!labels.length) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.rendimiento_mesero) { chartInst.rendimiento_mesero.destroy(); chartInst.rendimiento_mesero = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const wrap = document.getElementById('meseros-wrap');
+                wrap.style.height = Math.max(120, labels.length * 52) + 'px';
+                const bgColors = palette.slice(0, labels.length);
+                if (chartInst.rendimiento_mesero) {
+                    chartInst.rendimiento_mesero.data.labels              = labels;
+                    chartInst.rendimiento_mesero.data.datasets[0].data    = data;
+                    chartInst.rendimiento_mesero.data.datasets[0].backgroundColor = bgColors;
+                    chartInst.rendimiento_mesero.update();
+                } else {
+                    chartInst.rendimiento_mesero = new Chart(document.getElementById('chart-meseros'), {
+                        type: 'bar',
+                        data: { labels, datasets: [{ label:'Ingresos generados', data, backgroundColor: bgColors, borderRadius:8, borderSkipped:false }] },
+                        options: {
+                            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display:false },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' ' + fmtCOP(ctx.raw) } },
+                            },
+                            scales: {
+                                x: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: fmtCOP }, grid:{ color:'#E0D9F5' } },
+                                y: { ticks:{ color:'#1a1a2e', font:{ size:13 } }, grid:{ display:false } },
+                            }
+                        }
+                    });
+                }
+            });
+    }
+
+    // ── HORAS PICO ───────────────────────────────────────────────────────
+    const urlHoras = '{{ route('panel.partials.estadisticas-horas') }}';
+
+    function cargarHoras(periodo) {
+        fetch(urlHoras + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, data }) => {
+                const total     = data.reduce((s, v) => s + v, 0);
+                const empty     = document.getElementById('horas-empty');
+                const contenido = document.getElementById('horas-contenido');
+                if (total === 0) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.horas_pico) { chartInst.horas_pico.destroy(); chartInst.horas_pico = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const maxVal = Math.max(...data);
+                const bgColors = data.map(v => `rgba(107,33,232,${(0.15 + (maxVal > 0 ? v/maxVal : 0) * 0.75).toFixed(2)})`);
+                if (chartInst.horas_pico) {
+                    chartInst.horas_pico.data.datasets[0].data            = data;
+                    chartInst.horas_pico.data.datasets[0].backgroundColor = bgColors;
+                    chartInst.horas_pico.update();
+                } else {
+                    chartInst.horas_pico = new Chart(document.getElementById('chart-horas'), {
+                        type: 'bar',
+                        data: { labels, datasets: [{ label:'Ingresos', data, backgroundColor: bgColors, borderRadius:4, borderSkipped:false }] },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display:false },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' ' + fmtCOP(ctx.raw) } },
+                            },
+                            scales: {
+                                x: { ticks:{ color:'#9B8EC4', font:{ size:9 }, maxRotation:0 }, grid:{ display:false } },
+                                y: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: fmtCOP }, grid:{ color:'#E0D9F5' } },
+                            }
+                        }
+                    });
+                }
+            });
+    }
+
+    // ── INGRESOS POR CATEGORÍA ───────────────────────────────────────────
+    const urlCategorias = '{{ route('panel.partials.estadisticas-categorias') }}';
+
+    function cargarCategorias(periodo) {
+        fetch(urlCategorias + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, data }) => {
+                const total     = data.reduce((s, v) => s + v, 0);
+                const empty     = document.getElementById('categorias-empty');
+                const contenido = document.getElementById('categorias-contenido');
+                if (!labels.length || total === 0) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.categorias) { chartInst.categorias.destroy(); chartInst.categorias = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const bgColors = palette.slice(0, labels.length);
+                if (chartInst.categorias) {
+                    chartInst.categorias.data.labels                      = labels;
+                    chartInst.categorias.data.datasets[0].data            = data;
+                    chartInst.categorias.data.datasets[0].backgroundColor = bgColors;
+                    chartInst.categorias.update();
+                } else {
+                    chartInst.categorias = new Chart(document.getElementById('chart-categorias'), {
+                        type: 'doughnut',
+                        data: { labels, datasets: [{ data, backgroundColor: bgColors, borderWidth:2, borderColor:'#fff' }] },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: {
+                                legend: { position:'right', labels:{ color:'#1a1a2e', font:{ family:'Segoe UI', size:11 }, padding:12, boxWidth:12 } },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' ' + ctx.label + ': ' + fmtCOP(ctx.raw) } },
+                            }
+                        }
+                    });
+                }
+            });
+    }
+
+    // ── TICKET PROMEDIO ──────────────────────────────────────────────────
+    const urlTicket = '{{ route('panel.partials.estadisticas-ticket') }}';
+
+    function cargarTicket(periodo) {
+        fetch(urlTicket + '?periodo=' + periodo)
+            .then(r => r.json())
+            .then(({ labels, data }) => {
+                const total     = data.filter(v => v !== null).reduce((s, v) => s + v, 0);
+                const empty     = document.getElementById('ticket-empty');
+                const contenido = document.getElementById('ticket-contenido');
+                if (total === 0) {
+                    empty.style.display = ''; contenido.style.display = 'none';
+                    if (chartInst.ticket_promedio) { chartInst.ticket_promedio.destroy(); chartInst.ticket_promedio = null; }
+                    return;
+                }
+                empty.style.display = 'none'; contenido.style.display = '';
+                const datasets = [{
+                    label: 'Ticket promedio', data,
+                    borderColor: purple.md, backgroundColor: 'rgba(107,33,232,0.08)',
+                    borderWidth:2, pointRadius: labels.length <= 12 ? 4 : 2,
+                    pointHoverRadius:6, tension:0.35, fill:true, spanGaps:true,
+                }];
+                if (chartInst.ticket_promedio) {
+                    chartInst.ticket_promedio.data.labels   = labels;
+                    chartInst.ticket_promedio.data.datasets = datasets;
+                    chartInst.ticket_promedio.update();
+                } else {
+                    chartInst.ticket_promedio = new Chart(document.getElementById('chart-ticket'), {
+                        type: 'line', data: { labels, datasets },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            interaction: { mode:'index', intersect:false },
+                            plugins: {
+                                legend: { display:false },
+                                tooltip: { ...tooltipBase, callbacks:{ label: ctx => ' Ticket: ' + fmtCOP(ctx.raw) } },
+                            },
+                            scales: {
+                                x: { ticks:{ color:'#9B8EC4', maxTicksLimit:10, maxRotation:30 }, grid:{ color:'#E0D9F5' } },
+                                y: { beginAtZero:true, ticks:{ color:'#9B8EC4', callback: fmtCOP }, grid:{ color:'#E0D9F5' } },
+                            }
+                        }
+                    });
+                }
+            });
+    }
+
+    // ── TOP PRODUCTOS (datos estáticos) ──────────────────────────────────
     @if ($topProductos->isNotEmpty())
     (function() {
         const data   = @json($topProductos);
         const values = data.map(d => d.cantidad);
         const colors = [purple.dk, purple.md, purple.lt, purple.llt, purple.pale];
-        const indices = data.map((_, i) => i + 1); // 1, 2, 3, 4, 5
-
-        new Chart(document.getElementById('chart-productos'), {
+        chartInst['top_productos'] = new Chart(document.getElementById('chart-productos'), {
             type: 'bar',
-            data: {
-                labels: indices,
-                datasets: [{
-                    label: 'Unidades pedidas',
-                    data: values,
-                    backgroundColor: colors.slice(0, values.length),
-                    borderRadius: 8,
-                    borderSkipped: false,
-                }]
-            },
+            data: { labels: data.map((_, i) => i + 1), datasets: [{ label:'Unidades pedidas', data: values, backgroundColor: colors.slice(0, values.length), borderRadius:8, borderSkipped:false }] },
             options: {
-                ...baseOpts,
-                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                responsive: true, maintainAspectRatio: true,
+                plugins: { legend:{ display:false }, tooltip:{ ...tooltipBase } },
                 scales: {
-                    x: { ticks: { color: '#9B8EC4' }, grid: { display: false } },
-                    y: { ticks: { color: '#9B8EC4', precision: 0 }, grid: { color: '#E0D9F5' }, beginAtZero: true },
+                    x: { ticks:{ color:'#9B8EC4' }, grid:{ display:false } },
+                    y: { ticks:{ color:'#9B8EC4', precision:0 }, grid:{ color:'#E0D9F5' }, beginAtZero:true },
                 }
             }
         });
-
-        // Leyenda de colores
         const leyenda = document.getElementById('chart-productos-leyenda');
         if (leyenda) {
             leyenda.innerHTML = data.map((d, i) => `
@@ -329,166 +664,156 @@ function initEstadisticasCharts() {
                 </div>
             `).join('');
         }
+        iniciados['top_productos'] = true;
     })();
     @endif
 
-    // ── Líneas: ingresos por mesa ────────────────────────────────────────
-    (function() {
-        const url = '{{ route('panel.partials.estadisticas-mesas') }}';
-        const palette = [
-            purple.dk, purple.md, purple.lt, purple.llt, purple.pale,
-            '#1D4ED8','#0891B2','#059669','#D97706','#DC2626',
-        ];
-        let chartMesas = null;
-
-        function cargarMesas(periodo) {
-            fetch(url + '?periodo=' + periodo)
-                .then(r => r.json())
-                .then(({ labels, series }) => {
-                    const empty     = document.getElementById('mesas-empty');
-                    const contenido = document.getElementById('mesas-contenido');
-
-                    if (!series || Object.keys(series).length === 0) {
-                        empty.style.display     = '';
-                        contenido.style.display = 'none';
-                        if (chartMesas) { chartMesas.destroy(); chartMesas = null; }
-                        return;
-                    }
-
-                    empty.style.display     = 'none';
-                    contenido.style.display = '';
-
-                    const datasets = Object.entries(series).map(([mesa, valores], i) => ({
-                        label:            mesa,
-                        data:             valores,
-                        borderColor:      palette[i % palette.length],
-                        backgroundColor:  palette[i % palette.length] + '14',
-                        borderWidth:      2,
-                        pointRadius:      labels.length <= 12 ? 4 : 2,
-                        pointHoverRadius: 6,
-                        tension:          0.35,
-                        fill:             false,
-                    }));
-
-                    if (chartMesas) {
-                        chartMesas.data.labels   = labels;
-                        chartMesas.data.datasets = datasets;
-                        chartMesas.update();
-                    } else {
-                        chartMesas = new Chart(document.getElementById('chart-mesas'), {
-                            type: 'line',
-                            data: { labels, datasets },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                interaction: { mode: 'index', intersect: false },
-                                plugins: {
-                                    legend: {
-                                        position: 'top',
-                                        labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 }, padding: 14 }
-                                    },
-                                    tooltip: {
-                                        backgroundColor: '#1a1a2e',
-                                        titleColor: '#C4B5FD',
-                                        bodyColor: '#fff',
-                                        cornerRadius: 8,
-                                        padding: 10,
-                                        callbacks: {
-                                            label: ctx => ' ' + ctx.dataset.label + ': $' + Number(ctx.raw).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        }
-                                    }
-                                },
-                                scales: {
-                                    x: {
-                                        ticks: { color: '#9B8EC4', maxTicksLimit: 10, maxRotation: 30 },
-                                        grid:  { color: '#E0D9F5' },
-                                    },
-                                    y: {
-                                        beginAtZero: true,
-                                        ticks: {
-                                            color: '#9B8EC4',
-                                            callback: v => '$' + Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0 })
-                                        },
-                                        grid: { color: '#E0D9F5' },
-                                    }
-                                }
-                            }
-                        });
-                    }
-                });
-        }
-
-        cargarMesas('dia');
-
-        document.querySelectorAll('#mesas-periodos .periodo-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.querySelectorAll('#mesas-periodos .periodo-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                cargarMesas(this.dataset.periodo);
-            });
-        });
-    })();
-
-    // ── Barras: stock por producto ────────────────────────────────────────
+    // ── STOCK (datos estáticos) ──────────────────────────────────────────
     @php $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values(); @endphp
     @if ($productosConStock->isNotEmpty())
     (function() {
-        const prods = @json($productosConStock->map(fn($p) => ['nombre' => $p->nombre, 'stock' => (int)$p->stock, 'minimo' => (int)$p->stock_minimo])->values());
-
+        const prods   = @json($productosConStock->map(fn($p) => ['nombre'=>$p->nombre, 'stock'=>(int)$p->stock, 'minimo'=>(int)$p->stock_minimo])->values());
         const labels  = prods.map(p => p.nombre);
         const stocks  = prods.map(p => p.stock);
         const minimos = prods.map(p => p.minimo);
-        const colors  = stocks.map((s, i) =>
-            s === 0         ? '#FEE2E2' :
-            s <= minimos[i] ? '#FEF3C7' : purple.bg
-        );
-        const borders = stocks.map((s, i) =>
-            s === 0         ? '#FECACA' :
-            s <= minimos[i] ? '#FCD34D' : purple.pale
-        );
-
-        new Chart(document.getElementById('chart-stock'), {
+        const colors  = stocks.map((s, i) => s === 0 ? '#FEE2E2' : s <= minimos[i] ? '#FEF3C7' : purple.bg);
+        const borders = stocks.map((s, i) => s === 0 ? '#FECACA' : s <= minimos[i] ? '#FCD34D' : purple.pale);
+        chartInst['stock_productos'] = new Chart(document.getElementById('chart-stock'), {
             type: 'bar',
-            data: {
-                labels,
-                datasets: [
-                    {
-                        label: 'Stock actual',
-                        data: stocks,
-                        backgroundColor: colors,
-                        borderColor: borders,
-                        borderWidth: 1,
-                        borderRadius: 6,
-                        borderSkipped: false,
-                    },
-                    {
-                        label: 'Mínimo',
-                        data: minimos,
-                        type: 'line',
-                        borderColor: '#C8102E',
-                        borderWidth: 1.5,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        fill: false,
-                        tension: 0,
-                    }
-                ]
-            },
+            data: { labels, datasets: [
+                { label:'Stock actual', data: stocks, backgroundColor: colors, borderColor: borders, borderWidth:1, borderRadius:6, borderSkipped:false },
+                { label:'Mínimo', data: minimos, type:'line', borderColor:'#C8102E', borderWidth:1.5, borderDash:[4,4], pointRadius:0, fill:false, tension:0 },
+            ]},
             options: {
-                indexAxis: 'y',
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { labels: { color: '#1a1a2e', font: { size: 11 } } },
-                    tooltip: baseOpts.plugins.tooltip,
-                },
+                indexAxis:'y', responsive:true, maintainAspectRatio:false,
+                plugins: { legend:{ labels:{ color:'#1a1a2e', font:{ size:11 } } }, tooltip:{ ...tooltipBase } },
                 scales: {
-                    x: { ticks: { color: '#9B8EC4', precision: 0 }, grid: { color: '#E0D9F5' }, beginAtZero: true },
-                    y: { ticks: { color: '#1a1a2e', font: { size: 11 } }, grid: { display: false } },
+                    x: { ticks:{ color:'#9B8EC4', precision:0 }, grid:{ color:'#E0D9F5' }, beginAtZero:true },
+                    y: { ticks:{ color:'#1a1a2e', font:{ size:11 } }, grid:{ display:false } },
                 }
             }
         });
+        iniciados['stock_productos'] = true;
     })();
     @endif
+
+    // ── INICIALIZAR CHARTS AJAX HABILITADOS ──────────────────────────────
+    function iniciarChart(id) {
+        if (iniciados[id]) return;
+        iniciados[id] = true;
+        if (id === 'fuentes_pago')       cargarPagos('dia');
+        else if (id === 'ingresos_mesa') cargarMesas('dia');
+        else if (id === 'rendimiento_mesero') cargarMeseros('semana');
+        else if (id === 'horas_pico')    cargarHoras('semana');
+        else if (id === 'categorias')    cargarCategorias('semana');
+        else if (id === 'ticket_promedio') cargarTicket('dia');
+        else if (chartInst[id])          chartInst[id].resize();
+    }
+
+    habilitados.forEach(id => iniciarChart(id));
+
+    // ── BOTONES DE PERÍODO ───────────────────────────────────────────────
+    function setupPeriodos(groupId, fn) {
+        document.querySelectorAll('#' + groupId + ' .periodo-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#' + groupId + ' .periodo-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                fn(this.dataset.periodo);
+            });
+        });
+    }
+    setupPeriodos('pagos-periodos',      cargarPagos);
+    setupPeriodos('mesas-periodos',      cargarMesas);
+    setupPeriodos('meseros-periodos',    cargarMeseros);
+    setupPeriodos('horas-periodos',      cargarHoras);
+    setupPeriodos('categorias-periodos', cargarCategorias);
+    setupPeriodos('ticket-periodos',     cargarTicket);
+
+    // ── PERSONALIZAR ─────────────────────────────────────────────────────
+    const CHARTS_META = [
+        { id:'top_productos',       label:'🏆 Top 5 productos' },
+        { id:'fuentes_pago',        label:'💳 Fuentes de pago' },
+        { id:'ingresos_mesa',       label:'💵 Ingresos por mesa' },
+        { id:'ticket_promedio',     label:'🎫 Ticket promedio' },
+        { id:'rendimiento_mesero',  label:'👤 Rendimiento por mesero' },
+        { id:'horas_pico',          label:'🕐 Horas pico' },
+        { id:'categorias',          label:'🏷️ Ingresos por categoría' },
+        { id:'stock_productos',     label:'📦 Stock actual' },
+    ];
+
+    function actualizarPairs() {
+        const pair1 = document.getElementById('pair-fuentes-mesas');
+        if (pair1) {
+            const v1 = ['fuentes_pago','ingresos_mesa'].some(id => {
+                const el = document.querySelector('[data-chart="' + id + '"]');
+                return el && el.style.display !== 'none';
+            });
+            pair1.style.display = v1 ? '' : 'none';
+        }
+        const pair2 = document.getElementById('pair-horas-categorias');
+        if (pair2) {
+            const v2 = ['horas_pico','categorias'].some(id => {
+                const el = document.querySelector('[data-chart="' + id + '"]');
+                return el && el.style.display !== 'none';
+            });
+            pair2.style.display = v2 ? '' : 'none';
+        }
+    }
+
+    window.abrirPersonalizar = function() {
+        const container = document.getElementById('personalizar-toggles');
+        container.innerHTML = CHARTS_META.map(c => `
+            <label class="toggle-item">
+                <span class="toggle-label-text">${c.label}</span>
+                <span class="toggle-wrapper">
+                    <input type="checkbox" class="chart-toggle" value="${c.id}" ${habilitados.has(c.id) ? 'checked' : ''}>
+                    <span class="toggle-switch"></span>
+                </span>
+            </label>
+        `).join('');
+        document.getElementById('personalizar-overlay').classList.add('open');
+    };
+
+    window.cerrarPersonalizar = function() {
+        document.getElementById('personalizar-overlay').classList.remove('open');
+    };
+
+    window.guardarPersonalizar = function() {
+        const nuevos = new Set([...document.querySelectorAll('.chart-toggle:checked')].map(c => c.value));
+
+        // Mostrar nuevos charts y ocultar los desactivados
+        CHARTS_META.forEach(({ id }) => {
+            const block = document.querySelector('[data-chart="' + id + '"]');
+            if (!block) return;
+            if (nuevos.has(id) && !habilitados.has(id)) {
+                block.style.display = '';
+            } else if (!nuevos.has(id) && habilitados.has(id)) {
+                block.style.display = 'none';
+            }
+        });
+
+        actualizarPairs();
+
+        // Inicializar charts recién habilitados
+        nuevos.forEach(id => {
+            if (!habilitados.has(id)) iniciarChart(id);
+        });
+
+        habilitados.clear();
+        nuevos.forEach(id => habilitados.add(id));
+
+        fetch('{{ route('panel.config-panel.save') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: JSON.stringify({ charts: [...nuevos] }),
+        });
+
+        cerrarPersonalizar();
+    };
+
+    // Cerrar modal al click fuera
+    document.getElementById('personalizar-overlay').addEventListener('click', function(e) {
+        if (e.target === this) cerrarPersonalizar();
+    });
 }
 </script>

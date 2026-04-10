@@ -17,7 +17,15 @@ class Negocio extends Model
         'telefono',
         'email',
         'suspendido',
+        'config_panel',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'config_panel' => 'array',
+        ];
+    }
 
     public function usuarios(): HasMany
     {

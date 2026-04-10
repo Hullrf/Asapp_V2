@@ -169,6 +169,150 @@ class PanelController extends Controller
         ]);
     }
 
+    private function desdeParaPeriodo(string $periodo): \Illuminate\Support\Carbon
+    {
+        return match($periodo) {
+            'dia'   => Carbon::today(),
+            'mes'   => Carbon::now()->subDays(29)->startOfDay(),
+            'anio'  => Carbon::now()->subMonths(11)->startOfMonth(),
+            default => Carbon::now()->subDays(6)->startOfDay(),
+        };
+    }
+
+    public function estadisticasMeseros(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $desde   = $this->desdeParaPeriodo($request->input('periodo', 'semana'));
+
+        $rows = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->join('users', 'pedidos.id_mesero', '=', 'users.id_usuario')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->where('pedidos.fecha', '>=', $desde)
+            ->whereNotNull('pedidos.id_mesero')
+            ->selectRaw('users.nombre as mesero, SUM(items_pedido.subtotal) as total')
+            ->groupBy('users.nombre')
+            ->orderByDesc('total')
+            ->get();
+
+        return response()->json([
+            'labels' => $rows->pluck('mesero')->toArray(),
+            'data'   => $rows->map(fn($r) => (float) $r->total)->toArray(),
+        ]);
+    }
+
+    public function estadisticasHoras(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $desde   = $this->desdeParaPeriodo($request->input('periodo', 'semana'));
+
+        $rows = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->where('pedidos.fecha', '>=', $desde)
+            ->selectRaw('HOUR(pedidos.fecha) as hora, SUM(items_pedido.subtotal) as total')
+            ->groupBy('hora')
+            ->get();
+
+        $buckets = collect(range(0, 23))->mapWithKeys(fn($h) => [$h => 0.0]);
+        foreach ($rows as $row) {
+            $buckets[(int) $row->hora] = (float) $row->total;
+        }
+
+        return response()->json([
+            'labels' => collect(range(0, 23))->map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT).':00')->toArray(),
+            'data'   => array_values($buckets->toArray()),
+        ]);
+    }
+
+    public function estadisticasCategorias(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $desde   = $this->desdeParaPeriodo($request->input('periodo', 'semana'));
+
+        $rows = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->join('productos', 'items_pedido.id_producto', '=', 'productos.id_producto')
+            ->leftJoin('categorias', 'productos.id_categoria', '=', 'categorias.id_categoria')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->where('pedidos.fecha', '>=', $desde)
+            ->selectRaw("COALESCE(categorias.nombre, 'Sin categoría') as categoria, SUM(items_pedido.subtotal) as total")
+            ->groupBy('categorias.nombre')
+            ->orderByDesc('total')
+            ->get();
+
+        return response()->json([
+            'labels' => $rows->pluck('categoria')->toArray(),
+            'data'   => $rows->map(fn($r) => (float) $r->total)->toArray(),
+        ]);
+    }
+
+    public function estadisticasTicket(Request $request)
+    {
+        $negocio = auth()->user()->negocioActivo();
+        $periodo = $request->input('periodo', 'semana');
+
+        [$desde, $formatoDb, $buckets, $displayLabels] = match($periodo) {
+            'dia' => [
+                Carbon::today(),
+                '%H:00',
+                collect(range(0, 23))->mapWithKeys(fn($h) => [str_pad($h, 2, '0', STR_PAD_LEFT).':00' => null]),
+                collect(range(0, 23))->map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT).':00')->toArray(),
+            ],
+            'mes' => [
+                Carbon::now()->subDays(29)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(29, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => null]),
+                collect(range(29, 0))->map(fn($i) => Carbon::now()->subDays($i)->format('d/m'))->toArray(),
+            ],
+            'anio' => [
+                Carbon::now()->subMonths(11)->startOfMonth(),
+                '%Y-%m',
+                collect(range(11, 0))->mapWithKeys(fn($i) => [Carbon::now()->subMonths($i)->format('Y-m') => null]),
+                collect(range(11, 0))->map(fn($i) => Carbon::now()->subMonths($i)->translatedFormat('M y'))->toArray(),
+            ],
+            default => [
+                Carbon::now()->subDays(6)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(6, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => null]),
+                collect(range(6, 0))->map(fn($i) => Carbon::now()->subDays($i)->translatedFormat('D d/m'))->toArray(),
+            ],
+        };
+
+        $rows = DB::table('items_pedido')
+            ->join('pedidos', 'items_pedido.id_pedido', '=', 'pedidos.id_pedido')
+            ->where('pedidos.id_negocio', $negocio->id_negocio)
+            ->where('items_pedido.estado', 'Pagado')
+            ->where('pedidos.fecha', '>=', $desde)
+            ->selectRaw("pedidos.id_pedido, DATE_FORMAT(pedidos.fecha, '{$formatoDb}') as bucket, SUM(items_pedido.subtotal) as total_pedido")
+            ->groupBy('pedidos.id_pedido', 'bucket')
+            ->get();
+
+        $data = $buckets->toArray();
+        foreach ($rows->groupBy('bucket') as $bucket => $items) {
+            if (array_key_exists($bucket, $data)) {
+                $data[$bucket] = round($items->avg('total_pedido'), 0);
+            }
+        }
+
+        return response()->json([
+            'labels' => $displayLabels,
+            'data'   => array_values($data),
+        ]);
+    }
+
+    public function guardarConfigPanel(Request $request)
+    {
+        $valid  = ['top_productos','fuentes_pago','ingresos_mesa','stock_productos',
+                   'rendimiento_mesero','horas_pico','categorias','ticket_promedio'];
+        $charts = array_values(array_intersect($request->input('charts', []), $valid));
+        auth()->user()->negocioActivo()->update(['config_panel' => $charts]);
+        return response()->json(['ok' => true]);
+    }
+
     private function cargarDatos(): array
     {
         $negocio        = auth()->user()->negocioActivo();
@@ -244,10 +388,14 @@ class PanelController extends Controller
 
         $meseros = $negocio->usuarios()->where('rol', 'mesero')->orderBy('nombre')->get();
 
+        $allCharts = ['top_productos','fuentes_pago','ingresos_mesa','stock_productos',
+                      'rendimiento_mesero','horas_pico','categorias','ticket_promedio'];
+        $configPanel = $negocio->config_panel ?? $allCharts;
+
         return compact(
             'negocio', 'todasLasSedes', 'productos', 'mesas', 'pisos', 'base_url',
             'pedidosPorEstado', 'topProductos', 'ingresosPorMesa', 'resumen',
-            'pedidosPagados', 'categorias', 'productosStockBajo', 'meseros'
+            'pedidosPagados', 'categorias', 'productosStockBajo', 'meseros', 'configPanel'
         );
     }
 }
