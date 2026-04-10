@@ -16,6 +16,7 @@ class Pago extends Model
         'monto',
         'metodo_pago',
         'estado',
+        'fecha',
     ];
 
     protected function casts(): array

@@ -78,6 +78,7 @@ class PasarelaController extends Controller
                     'monto'       => $monto,
                     'metodo_pago' => $metodo,
                     'estado'      => 'simulado',
+                    'fecha'       => now(),
                 ]);
             }
 
@@ -130,6 +131,7 @@ class PasarelaController extends Controller
                     'monto'       => $monto,
                     'metodo_pago' => 'efectivo',
                     'estado'      => 'confirmado',
+                    'fecha'       => now(),
                 ]);
             }
 
