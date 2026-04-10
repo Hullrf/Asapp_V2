@@ -83,11 +83,10 @@
         Sin pagos registrados en este período.
     </div>
 
-    <div id="pagos-contenido" style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
-        <div style="flex:0 0 200px; max-width:200px;">
+    <div id="pagos-contenido" style="display:none;">
+        <div style="position:relative; height:220px;">
             <canvas id="chart-pagos-fuente"></canvas>
         </div>
-        <div id="pagos-tabla" style="flex:1; min-width:180px;"></div>
     </div>
 </div>
 
@@ -140,62 +139,67 @@ function initEstadisticasCharts() {
     // Guard: solo inicializar una vez
     initEstadisticasCharts = function() {};
 
-    // ── Trazabilidad de pagos ────────────────────────────────────────────
+    // ── Trazabilidad de pagos (líneas históricas) ────────────────────────
     (function() {
         const url = '{{ route('panel.partials.estadisticas-pagos') }}';
 
-        const labels   = { tarjeta: 'Tarjeta', pse: 'PSE', nequi: 'Nequi', efectivo: 'Efectivo', digital: 'Digital (legado)' };
-        const colores  = { tarjeta: '#3D0E8A', pse: '#6B21E8', nequi: '#8B5CF6', efectivo: '#A78BFA', digital: '#C4B5FD' };
-        const iconos   = { tarjeta: '💳', pse: '🏦', nequi: '📱', efectivo: '💵', digital: '🔷' };
+        const nombresMetodo = { tarjeta: 'Tarjeta', pse: 'PSE', nequi: 'Nequi', efectivo: 'Efectivo', digital: 'Digital' };
+        const coloresLinea  = {
+            tarjeta:  { line: '#3D0E8A', fill: 'rgba(61,14,138,0.08)'   },
+            pse:      { line: '#6B21E8', fill: 'rgba(107,33,232,0.08)'  },
+            nequi:    { line: '#8B5CF6', fill: 'rgba(139,92,246,0.08)'  },
+            efectivo: { line: '#A78BFA', fill: 'rgba(167,139,250,0.08)' },
+            digital:  { line: '#C4B5FD', fill: 'rgba(196,181,253,0.08)' },
+        };
 
         let chartPagos = null;
 
         function cargarPagos(periodo) {
             fetch(url + '?periodo=' + periodo)
                 .then(r => r.json())
-                .then(data => {
-                    const activos = Object.entries(data).filter(([, v]) => v.total > 0);
-
-                    const empty   = document.getElementById('pagos-empty');
+                .then(({ labels, series }) => {
+                    const empty     = document.getElementById('pagos-empty');
                     const contenido = document.getElementById('pagos-contenido');
 
-                    if (activos.length === 0) {
-                        empty.style.display = '';
+                    if (!series || Object.keys(series).length === 0) {
+                        empty.style.display     = '';
                         contenido.style.display = 'none';
+                        if (chartPagos) { chartPagos.destroy(); chartPagos = null; }
                         return;
                     }
 
-                    empty.style.display = 'none';
-                    contenido.style.display = 'flex';
+                    empty.style.display     = 'none';
+                    contenido.style.display = '';
 
-                    const keys   = activos.map(([k]) => k);
-                    const totals = activos.map(([, v]) => v.total);
-                    const counts = activos.map(([, v]) => v.cantidad);
-                    const bgColors = keys.map(k => colores[k] || '#9B8EC4');
+                    const datasets = Object.entries(series).map(([metodo, valores]) => ({
+                        label:           nombresMetodo[metodo] || metodo,
+                        data:            valores,
+                        borderColor:     coloresLinea[metodo]?.line  || '#6B21E8',
+                        backgroundColor: coloresLinea[metodo]?.fill  || 'rgba(107,33,232,0.08)',
+                        borderWidth:     2,
+                        pointRadius:     labels.length <= 12 ? 4 : 2,
+                        pointHoverRadius: 6,
+                        tension:         0.35,
+                        fill:            false,
+                    }));
 
-                    // Donut
                     if (chartPagos) {
-                        chartPagos.data.labels   = keys.map(k => labels[k] || k);
-                        chartPagos.data.datasets[0].data            = totals;
-                        chartPagos.data.datasets[0].backgroundColor = bgColors;
+                        chartPagos.data.labels   = labels;
+                        chartPagos.data.datasets = datasets;
                         chartPagos.update();
                     } else {
                         chartPagos = new Chart(document.getElementById('chart-pagos-fuente'), {
-                            type: 'doughnut',
-                            data: {
-                                labels: keys.map(k => labels[k] || k),
-                                datasets: [{
-                                    data: totals,
-                                    backgroundColor: bgColors,
-                                    borderColor: '#fff',
-                                    borderWidth: 3,
-                                }]
-                            },
+                            type: 'line',
+                            data: { labels, datasets },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
+                                interaction: { mode: 'index', intersect: false },
                                 plugins: {
-                                    legend: { display: false },
+                                    legend: {
+                                        position: 'top',
+                                        labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 }, padding: 16 }
+                                    },
                                     tooltip: {
                                         backgroundColor: '#1a1a2e',
                                         titleColor: '#C4B5FD',
@@ -203,48 +207,32 @@ function initEstadisticasCharts() {
                                         cornerRadius: 8,
                                         padding: 10,
                                         callbacks: {
-                                            label: ctx => ' $' + Number(ctx.raw).toLocaleString('es-CO', {minimumFractionDigits:0})
+                                            label: ctx => ' ' + ctx.dataset.label + ': $' + Number(ctx.raw).toLocaleString('es-CO', { minimumFractionDigits: 0 })
                                         }
+                                    }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: '#9B8EC4', maxTicksLimit: 10, maxRotation: 30 },
+                                        grid:  { color: '#E0D9F5' },
+                                    },
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            color: '#9B8EC4',
+                                            callback: v => '$' + Number(v).toLocaleString('es-CO', { minimumFractionDigits: 0 })
+                                        },
+                                        grid: { color: '#E0D9F5' },
                                     }
                                 }
                             }
                         });
                     }
-
-                    // Tabla lateral
-                    const totalGeneral = totals.reduce((a, b) => a + b, 0);
-                    let html = '<table style="width:100%; border-collapse:collapse; font-size:13px;">';
-                    keys.forEach((k, i) => {
-                        const pct = totalGeneral > 0 ? Math.round((totals[i] / totalGeneral) * 100) : 0;
-                        html += `<tr style="border-bottom:1px solid #F0EBF8;">
-                            <td style="padding:8px 6px; color:#1a1a2e;">
-                                <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background:${bgColors[i]}; margin-right:7px;"></span>
-                                ${iconos[k] || ''} ${labels[k] || k}
-                            </td>
-                            <td style="padding:8px 6px; color:#6B21E8; font-weight:700; text-align:right;">
-                                $${Number(totals[i]).toLocaleString('es-CO', {minimumFractionDigits:0})}
-                            </td>
-                            <td style="padding:8px 6px; color:#9B8EC4; text-align:right; font-size:11px;">
-                                ${counts[i]} pago${counts[i] !== 1 ? 's' : ''} · ${pct}%
-                            </td>
-                        </tr>`;
-                    });
-                    html += `<tr>
-                        <td style="padding:10px 6px; font-weight:700; color:#1a1a2e;">Total</td>
-                        <td style="padding:10px 6px; font-weight:800; color:#3D0E8A; text-align:right;">
-                            $${Number(totalGeneral).toLocaleString('es-CO', {minimumFractionDigits:0})}
-                        </td>
-                        <td></td>
-                    </tr>`;
-                    html += '</table>';
-                    document.getElementById('pagos-tabla').innerHTML = html;
                 });
         }
 
-        // Inicializar con período por defecto
         cargarPagos('dia');
 
-        // Botones de período
         document.querySelectorAll('#pagos-periodos .periodo-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('#pagos-periodos .periodo-btn').forEach(b => b.classList.remove('active'));

@@ -49,31 +49,58 @@ class PanelController extends Controller
         $negocio = auth()->user()->negocioActivo();
         $periodo = $request->input('periodo', 'semana');
 
-        $desde = match($periodo) {
-            'dia'  => Carbon::today(),
-            'mes'  => Carbon::now()->subDays(30),
-            'anio' => Carbon::now()->subYear(),
-            default => Carbon::now()->subDays(7), // semana
+        [$desde, $formatoDb, $buckets, $displayLabels] = match($periodo) {
+            'dia' => [
+                Carbon::today(),
+                '%H:00',
+                collect(range(0, 23))->mapWithKeys(fn($h) => [str_pad($h, 2, '0', STR_PAD_LEFT).':00' => 0.0]),
+                collect(range(0, 23))->map(fn($h) => str_pad($h, 2, '0', STR_PAD_LEFT).':00')->toArray(),
+            ],
+            'mes' => [
+                Carbon::now()->subDays(29)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(29, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => 0.0]),
+                collect(range(29, 0))->map(fn($i) => Carbon::now()->subDays($i)->format('d/m'))->toArray(),
+            ],
+            'anio' => [
+                Carbon::now()->subMonths(11)->startOfMonth(),
+                '%Y-%m',
+                collect(range(11, 0))->mapWithKeys(fn($i) => [Carbon::now()->subMonths($i)->format('Y-m') => 0.0]),
+                collect(range(11, 0))->map(fn($i) => Carbon::now()->subMonths($i)->translatedFormat('M y'))->toArray(),
+            ],
+            default => [ // semana
+                Carbon::now()->subDays(6)->startOfDay(),
+                '%Y-%m-%d',
+                collect(range(6, 0))->mapWithKeys(fn($i) => [Carbon::now()->subDays($i)->format('Y-m-d') => 0.0]),
+                collect(range(6, 0))->map(fn($i) => Carbon::now()->subDays($i)->translatedFormat('D d/m'))->toArray(),
+            ],
         };
 
         $pagos = Pago::whereHas('pedido', fn($q) => $q->where('id_negocio', $negocio->id_negocio))
             ->where('estado', '!=', 'fallido')
             ->where('fecha', '>=', $desde)
-            ->selectRaw('metodo_pago, SUM(monto) as total, COUNT(*) as cantidad')
-            ->groupBy('metodo_pago')
-            ->get()
-            ->keyBy('metodo_pago');
+            ->selectRaw("metodo_pago, DATE_FORMAT(fecha, '{$formatoDb}') as bucket, SUM(monto) as total")
+            ->groupBy('metodo_pago', 'bucket')
+            ->get();
 
         $metodos = ['tarjeta', 'pse', 'nequi', 'efectivo', 'digital'];
-        $resultado = [];
+        $series  = [];
         foreach ($metodos as $m) {
-            $resultado[$m] = [
-                'total'    => (float) ($pagos[$m]->total ?? 0),
-                'cantidad' => (int)   ($pagos[$m]->cantidad ?? 0),
-            ];
+            $data = $buckets->toArray();
+            foreach ($pagos->where('metodo_pago', $m) as $pago) {
+                if (array_key_exists($pago->bucket, $data)) {
+                    $data[$pago->bucket] = (float) $pago->total;
+                }
+            }
+            if (array_sum($data) > 0) {
+                $series[$m] = array_values($data);
+            }
         }
 
-        return response()->json($resultado);
+        return response()->json([
+            'labels' => $displayLabels,
+            'series' => $series,
+        ]);
     }
 
     private function cargarDatos(): array
