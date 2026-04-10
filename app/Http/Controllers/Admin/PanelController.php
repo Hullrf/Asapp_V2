@@ -231,6 +231,8 @@ class PanelController extends Controller
 
         $resumen = [
             'total_pedidos'     => $todosLosPedidos->count(),
+            'pedidos_pendientes' => $todosLosPedidos->filter(fn($p) => $p->estado->value === 'Pendiente')->count(),
+            'pedidos_parciales'  => $todosLosPedidos->filter(fn($p) => $p->estado->value === 'Parcial')->count(),
             'total_cobrado'     => (float) $todosLosPedidos
                 ->flatMap->items
                 ->filter(fn($i) => $i->estado->value === 'Pagado')

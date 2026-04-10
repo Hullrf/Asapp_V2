@@ -26,6 +26,16 @@
         <div class="stat-label">Pedidos totales</div>
     </div>
     <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-valor">{{ $resumen['pedidos_pendientes'] }}</div>
+        <div class="stat-label">Pendientes</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">◑</div>
+        <div class="stat-valor">{{ $resumen['pedidos_parciales'] }}</div>
+        <div class="stat-label">Parciales</div>
+    </div>
+    <div class="stat-card">
         <div class="stat-icon">💰</div>
         <div class="stat-valor">${{ number_format($resumen['total_cobrado'], 0, ',', '.') }}</div>
         <div class="stat-label">Total cobrado</div>
@@ -45,18 +55,8 @@
 {{-- ── FILA DE GRÁFICOS ── --}}
 <div class="charts-row">
 
-    {{-- Donut: pedidos por estado --}}
-    <div class="card chart-card">
-        <div class="card-title">📊 Pedidos por estado</div>
-        @if ($pedidosPorEstado->isEmpty())
-            <p class="chart-empty">Sin pedidos registrados aún.</p>
-        @else
-            <div class="chart-wrap"><canvas id="chart-estados"></canvas></div>
-        @endif
-    </div>
-
     {{-- Barras: top productos --}}
-    <div class="card chart-card">
+    <div class="card chart-card" style="grid-column: 1 / -1;">
         <div class="card-title">🏆 Top 5 productos más pedidos</div>
         @if ($topProductos->isEmpty())
             <p class="chart-empty">Sin datos de productos aún.</p>
@@ -286,37 +286,6 @@ function initEstadisticasCharts() {
             y: { ticks: { color: '#9B8EC4' }, grid: { color: '#E0D9F5' } },
         }
     };
-
-    // ── Donut: pedidos por estado ────────────────────────────────────────
-    @if ($pedidosPorEstado->isNotEmpty())
-    (function() {
-        const data = @json($pedidosPorEstado);
-        const labels = Object.keys(data);
-        const values = Object.values(data);
-
-        const colorMap = { Pendiente: purple.pale, Parcial: purple.lt, Pagado: purple.dk };
-        const colors   = labels.map(l => colorMap[l] || purple.md);
-
-        new Chart(document.getElementById('chart-estados'), {
-            type: 'doughnut',
-            data: {
-                labels,
-                datasets: [{ data: values, backgroundColor: colors, borderColor: '#fff', borderWidth: 3 }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#1a1a2e', font: { family: 'Segoe UI', size: 12 }, padding: 16 }
-                    },
-                    tooltip: baseOpts.plugins.tooltip,
-                }
-            }
-        });
-    })();
-    @endif
 
     // ── Barras: top productos ────────────────────────────────────────────
     @if ($topProductos->isNotEmpty())
