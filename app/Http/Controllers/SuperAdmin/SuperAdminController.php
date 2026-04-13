@@ -209,27 +209,56 @@ class SuperAdminController extends Controller
         ]);
     }
 
-    public function diagnostico()
+    public function backup()
     {
-        $checks = [];
+        $pdo      = DB::connection()->getPdo();
+        $dbName   = DB::connection()->getDatabaseName();
+        $tablas   = DB::select('SHOW TABLES');
+        $colTabla = 'Tables_in_' . $dbName;
 
-        // ¿mysqldump está en el PATH?
-        $which = shell_exec('which mysqldump 2>&1') ?? shell_exec('where mysqldump 2>&1');
-        $checks['mysqldump_en_path'] = trim($which ?? '—');
+        $sql  = "-- ASAPP v2 — Backup de base de datos\n";
+        $sql .= "-- Fecha: " . now()->format('Y-m-d H:i:s') . "\n";
+        $sql .= "-- Base de datos: {$dbName}\n\n";
+        $sql .= "SET FOREIGN_KEY_CHECKS=0;\n\n";
 
-        // ¿Existe en rutas comunes de Linux?
-        foreach (['/usr/bin/mysqldump', '/usr/local/bin/mysqldump', '/bin/mysqldump'] as $ruta) {
-            $checks["existe_$ruta"] = file_exists($ruta) ? 'SÍ' : 'no';
+        foreach ($tablas as $tablaRow) {
+            $tabla = $tablaRow->$colTabla;
+
+            // CREATE TABLE
+            $create = DB::select("SHOW CREATE TABLE `{$tabla}`");
+            $sql .= "DROP TABLE IF EXISTS `{$tabla}`;\n";
+            $sql .= $create[0]->{'Create Table'} . ";\n\n";
+
+            // INSERT rows
+            $filas = DB::table($tabla)->get();
+            if ($filas->isEmpty()) continue;
+
+            $columnas = '`' . implode('`, `', array_keys((array) $filas->first())) . '`';
+            $sql .= "INSERT INTO `{$tabla}` ({$columnas}) VALUES\n";
+
+            $bloques = $filas->chunk(500);
+            foreach ($bloques as $bloque) {
+                $valores = $bloque->map(function ($fila) use ($pdo) {
+                    $vals = array_map(function ($v) use ($pdo) {
+                        if (is_null($v)) return 'NULL';
+                        return $pdo->quote((string) $v);
+                    }, (array) $fila);
+                    return '(' . implode(', ', $vals) . ')';
+                })->implode(",\n");
+                $sql .= $valores . ";\n";
+            }
+
+            $sql .= "\n";
         }
 
-        // Versión si está disponible
-        $version = shell_exec('mysqldump --version 2>&1');
-        $checks['version'] = trim($version ?? '—');
+        $sql .= "SET FOREIGN_KEY_CHECKS=1;\n";
 
-        // PHP exec habilitado
-        $checks['exec_habilitado'] = function_exists('exec') ? 'SÍ' : 'no';
+        $filename = 'asapp_backup_' . now()->format('Ymd_His') . '.sql';
 
-        return response()->json($checks, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return response($sql, 200, [
+            'Content-Type'        => 'application/octet-stream',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
     }
 
     public function toggleSuspendido(Request $request, Negocio $negocio)

@@ -26,6 +26,8 @@
         .badge-sa { background: #3D0E8A; color: #C4A0FF; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase; margin-left: 10px; }
         .btn-logout { background: rgba(107,33,232,0.2); color: #C4A0FF; border: 1px solid rgba(107,33,232,0.4); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-logout:hover { background: rgba(107,33,232,0.35); }
+        .btn-backup { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-backup:hover { background: rgba(34,197,94,0.25); }
 
         /* ── CONTENIDO ── */
         .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
@@ -191,7 +193,10 @@
         <div class="logo">ASAPP</div>
         <span class="badge-sa">Superadmin</span>
     </div>
-    <a href="{{ route('superadmin.logout') }}" class="btn-logout">Cerrar sesión</a>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <a href="{{ route('superadmin.backup') }}" class="btn-backup">⬇ Backup DB</a>
+        <a href="{{ route('superadmin.logout') }}" class="btn-logout">Cerrar sesión</a>
+    </div>
 </div>
 
 <div class="container">
