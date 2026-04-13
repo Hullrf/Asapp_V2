@@ -209,6 +209,29 @@ class SuperAdminController extends Controller
         ]);
     }
 
+    public function diagnostico()
+    {
+        $checks = [];
+
+        // ¿mysqldump está en el PATH?
+        $which = shell_exec('which mysqldump 2>&1') ?? shell_exec('where mysqldump 2>&1');
+        $checks['mysqldump_en_path'] = trim($which ?? '—');
+
+        // ¿Existe en rutas comunes de Linux?
+        foreach (['/usr/bin/mysqldump', '/usr/local/bin/mysqldump', '/bin/mysqldump'] as $ruta) {
+            $checks["existe_$ruta"] = file_exists($ruta) ? 'SÍ' : 'no';
+        }
+
+        // Versión si está disponible
+        $version = shell_exec('mysqldump --version 2>&1');
+        $checks['version'] = trim($version ?? '—');
+
+        // PHP exec habilitado
+        $checks['exec_habilitado'] = function_exists('exec') ? 'SÍ' : 'no';
+
+        return response()->json($checks, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
+
     public function toggleSuspendido(Request $request, Negocio $negocio)
     {
         // Si va a suspender y no confirmó la advertencia, devuelve conteo de pedidos activos

@@ -26,6 +26,7 @@ Route::get('/superadmin/logout', [SuperAdminController::class, 'logout'])->name(
 
 Route::middleware('superadmin')->prefix('superadmin')->name('superadmin.')->group(function () {
     Route::get('/',                           [SuperAdminController::class, 'panel'])->name('panel');
+    Route::get('/diagnostico',                [SuperAdminController::class, 'diagnostico'])->name('diagnostico');
     Route::put('/negocios/{negocio}',          [SuperAdminController::class, 'update'])->name('negocios.update');
     Route::delete('/negocios/{negocio}',       [SuperAdminController::class, 'destroy'])->name('negocios.destroy');
     Route::post('/negocios/{negocio}/toggle',  [SuperAdminController::class, 'toggleSuspendido'])->name('negocios.toggle');
