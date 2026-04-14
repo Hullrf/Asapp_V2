@@ -14,7 +14,7 @@
         <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Del catálogo activo</div>
     </div>
     <div class="card" style="margin-bottom:0;padding:16px 18px;{{ $productosStockBajo->isNotEmpty() ? 'border-color:var(--warn-border);background:var(--warn-bg);' : '' }}">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:{{ $productosStockBajo->isNotEmpty() ? '#B45309' : 'var(--text-faint)' }};margin-bottom:4px;">Stock bajo</div>
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:{{ $productosStockBajo->isNotEmpty() ? 'var(--warn-text)' : 'var(--text-faint)' }};margin-bottom:4px;">Stock bajo</div>
         <div style="font-size:24px;font-weight:800;color:{{ $productosStockBajo->isNotEmpty() ? 'var(--warn-text)' : 'var(--purple-dk)' }};letter-spacing:-0.5px;line-height:1;">{{ $productosStockBajo->count() }}</div>
         <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Requieren atención</div>
     </div>
