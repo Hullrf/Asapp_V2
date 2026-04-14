@@ -20,43 +20,33 @@
 </div>
 @endif
 
-{{-- ── TARJETAS RESUMEN ── --}}
-<div class="stats-grid">
-    <div class="stat-card">
-        <div class="stat-icon">🧾</div>
-        <div class="stat-valor">{{ $resumen['total_pedidos'] }}</div>
-        <div class="stat-label">Pedidos totales</div>
+{{-- KPIs --}}
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;">
+    <div class="card" style="margin-bottom:0;padding:14px 16px;border-color:#C4B5FD;background:#F5F3FF;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--purple);margin-bottom:4px;">Total cobrado</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple);letter-spacing:-0.5px;line-height:1;">${{ number_format($resumen['total_cobrado'], 0, ',', '.') }}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Acumulado</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">⏳</div>
-        <div class="stat-valor">{{ $resumen['pedidos_pendientes'] }}</div>
-        <div class="stat-label">Pendientes</div>
+    <div class="card" style="margin-bottom:0;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Pedidos totales</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $resumen['total_pedidos'] }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">◑</div>
-        <div class="stat-valor">{{ $resumen['pedidos_parciales'] }}</div>
-        <div class="stat-label">Parciales</div>
+    <div class="card" style="margin-bottom:0;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Pendientes</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $resumen['pedidos_pendientes'] }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">💰</div>
-        <div class="stat-valor">${{ number_format($resumen['total_cobrado'], 0, ',', '.') }}</div>
-        <div class="stat-label">Total cobrado</div>
+    <div class="card" style="margin-bottom:0;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Parciales</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $resumen['pedidos_parciales'] }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">📦</div>
-        <div class="stat-valor">{{ $resumen['productos_activos'] }}</div>
-        <div class="stat-label">Productos activos</div>
+    <div class="card" style="margin-bottom:0;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Productos</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $resumen['productos_activos'] }}</div>
     </div>
-    <div class="stat-card">
-        <div class="stat-icon">🪑</div>
-        <div class="stat-valor">{{ $resumen['mesas_total'] }}</div>
-        <div class="stat-label">Mesas registradas</div>
+    <div class="card" style="margin-bottom:0;padding:14px 16px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Mesas</div>
+        <div style="font-size:20px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $resumen['mesas_total'] }}</div>
     </div>
-</div>
-
-{{-- ── BOTÓN PERSONALIZAR ── --}}
-<div style="display:flex; justify-content:flex-end; margin-bottom:20px;">
-    <button onclick="abrirPersonalizar()" class="btn-personalizar">⚙ Personalizar panel</button>
 </div>
 
 {{-- ── GRID DE GRÁFICAS (2 por fila) ── --}}
@@ -64,7 +54,12 @@
 
     {{-- Top 5 productos --}}
     <div class="card chart-card" data-chart="top_productos" @if(!in_array('top_productos', $cp)) style="display:none" @endif>
-        <div class="card-title">🏆 Top 5 productos más pedidos</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg></div>
+                Top 5 productos más pedidos
+            </div>
+        </div>
         @if ($topProductos->isEmpty())
             <p class="chart-empty">Sin datos de productos aún.</p>
         @else
@@ -75,8 +70,11 @@
 
     {{-- Rendimiento por mesero --}}
     <div class="card chart-card" data-chart="rendimiento_mesero" @if(!in_array('rendimiento_mesero', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">👤 Rendimiento por mesero</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/></svg></div>
+                Rendimiento por mesero
+            </div>
             <div id="meseros-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn active" data-periodo="semana">7 días</button>
@@ -94,8 +92,11 @@
 
     {{-- Fuentes de pago --}}
     <div class="card chart-card" data-chart="fuentes_pago" @if(!in_array('fuentes_pago', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">💳 Fuentes de pago</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9z"/></svg></div>
+                Fuentes de pago
+            </div>
             <div id="pagos-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn active" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn" data-periodo="semana">7 días</button>
@@ -113,8 +114,11 @@
 
     {{-- Ingresos por mesa --}}
     <div class="card chart-card" data-chart="ingresos_mesa" @if(!in_array('ingresos_mesa', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">💵 Ingresos por mesa</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z"/></svg></div>
+                Ingresos por mesa
+            </div>
             <div id="mesas-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn active" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn" data-periodo="semana">7 días</button>
@@ -132,8 +136,11 @@
 
     {{-- Horas pico --}}
     <div class="card chart-card" data-chart="horas_pico" @if(!in_array('horas_pico', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">🕐 Horas pico</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/></svg></div>
+                Horas pico
+            </div>
             <div id="horas-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn active" data-periodo="semana">7 días</button>
@@ -151,8 +158,11 @@
 
     {{-- Ingresos por categoría --}}
     <div class="card chart-card" data-chart="categorias" @if(!in_array('categorias', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">🏷️ Ingresos por categoría</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg></div>
+                Ingresos por categoría
+            </div>
             <div id="categorias-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn active" data-periodo="semana">7 días</button>
@@ -170,8 +180,11 @@
 
     {{-- Ticket promedio --}}
     <div class="card chart-card" data-chart="ticket_promedio" @if(!in_array('ticket_promedio', $cp)) style="display:none" @endif>
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
-            <div class="card-title" style="margin:0;">🎫 Ticket promedio</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+            <div class="card-title" style="margin:0;">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z"/></svg></div>
+                Ticket promedio
+            </div>
             <div id="ticket-periodos" style="display:flex; gap:6px; flex-wrap:wrap;">
                 <button class="periodo-btn active" data-periodo="dia">Hoy</button>
                 <button class="periodo-btn" data-periodo="semana">7 días</button>
@@ -193,7 +206,12 @@
 @php $productosConStock = $productos->filter(fn($p) => $p->stock !== null)->sortBy('stock')->values(); @endphp
 @if ($productosConStock->isNotEmpty())
 <div class="card chart-card" data-chart="stock_productos" @if(!in_array('stock_productos', $cp)) style="display:none" @endif>
-    <div class="card-title">📦 Stock actual por producto</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">
+            <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="13" height="13"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4zM3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/></svg></div>
+            Stock actual por producto
+        </div>
+    </div>
     <div class="chart-wrap chart-wrap-wide" style="height: {{ max(200, $productosConStock->count() * 36) }}px;">
         <canvas id="chart-stock"></canvas>
     </div>
@@ -203,8 +221,8 @@
 {{-- ── MODAL PERSONALIZAR ── --}}
 <div class="modal-overlay" id="personalizar-overlay">
     <div class="modal" style="max-width:480px; text-align:left;">
-        <h3 style="margin-bottom:4px;">⚙ Personalizar estadísticas</h3>
-        <p style="font-size:13px; color:#9B8EC4; margin-bottom:20px;">Activa o desactiva las gráficas que quieres ver.</p>
+        <h3 style="margin-bottom:4px;">Personalizar estadísticas</h3>
+        <p style="font-size:13px;color:var(--text-faint);margin-bottom:20px;">Activa o desactiva las gráficas que quieres ver.</p>
         <div id="personalizar-toggles"></div>
         <div class="modal-acciones" style="margin-top:20px;">
             <button class="btn-modal-sec" onclick="cerrarPersonalizar()">Cancelar</button>
@@ -228,33 +246,19 @@
 }
 
 .periodo-btn {
-    background: #F5F3FF;
-    border: 1.5px solid #E0D9F5;
-    border-radius: 8px;
-    padding: 5px 12px;
-    font-size: 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
     font-weight: 600;
-    color: #9B8EC4;
+    color: var(--text-faint);
     cursor: pointer;
     transition: all 0.15s;
-    font-family: inherit;
+    font-family: var(--font);
 }
-.periodo-btn.active  { background: #EDE9FE; border-color: #6B21E8; color: #6B21E8; }
-.periodo-btn:hover:not(.active) { border-color: #C4B5FD; color: #5B21B6; }
-
-.btn-personalizar {
-    background: #F5F3FF;
-    border: 1.5px solid #E0D9F5;
-    border-radius: 10px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #6B21E8;
-    cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s;
-}
-.btn-personalizar:hover { background: #EDE9FE; border-color: #6B21E8; }
+.periodo-btn.active  { background: var(--purple); border-color: var(--purple); color: #fff; }
+.periodo-btn:hover:not(.active) { border-color: var(--purple); color: var(--purple); }
 
 .toggle-item {
     display: flex;
