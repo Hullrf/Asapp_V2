@@ -121,6 +121,10 @@ input:focus, select:focus, textarea:focus {
 .btn-ghost   { background:var(--purple-dim); color:var(--purple); }
 .btn-outline { background:transparent; color:var(--text-muted); border:1.5px solid var(--border); }
 .btn-danger  { background:var(--danger-bg); color:var(--danger); border:1px solid var(--danger-border); }
+/* ── COMPAT: aliases for partials not yet updated ── */
+.btn-success { background:var(--purple); color:#fff; box-shadow:0 2px 8px rgba(107,33,232,0.25); }
+.btn-warning { background:var(--purple-dim); color:var(--purple); }
+.btn-info    { background:var(--surface2); color:var(--text-muted); border:1.5px solid var(--border); }
 .btn-sm      { padding:6px 11px; font-size:12px; }
 .btn-xs      { padding:4px 9px; font-size:11px; border-radius:var(--r-sm); }
 .btn-icon    { padding:7px; border-radius:var(--r-sm); background:var(--surface2); border:1px solid var(--border); color:var(--text-muted); cursor:pointer; display:inline-flex; align-items:center; transition:background 0.15s; }
@@ -496,46 +500,46 @@ tbody tr:last-child { border-bottom:none; }
             @csrf
             <div style="margin-bottom:14px;">
                 <label style="font-size:11px; font-weight:700; text-transform:uppercase;
-                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                               letter-spacing:1px; color:var(--purple); display:block; margin-bottom:6px;">
                     Nombre de la sede *
                 </label>
                 <input type="text" name="nombre" required maxlength="100"
                        placeholder="Ej: Sede Norte, Sucursal Centro"
-                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                       style="width:100%; padding:10px 12px; border:1.5px solid var(--border);
                               border-radius:10px; font-size:14px; font-family:inherit;">
             </div>
             <div style="margin-bottom:14px;">
                 <label style="font-size:11px; font-weight:700; text-transform:uppercase;
-                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                               letter-spacing:1px; color:var(--purple); display:block; margin-bottom:6px;">
                     Dirección
                 </label>
                 <input type="text" name="direccion" maxlength="150"
                        placeholder="Calle 10 # 20-30"
-                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                       style="width:100%; padding:10px 12px; border:1.5px solid var(--border);
                               border-radius:10px; font-size:14px; font-family:inherit;">
             </div>
             <div style="margin-bottom:14px;">
                 <label style="font-size:11px; font-weight:700; text-transform:uppercase;
-                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:6px;">
+                               letter-spacing:1px; color:var(--purple); display:block; margin-bottom:6px;">
                     Teléfono
                 </label>
                 <input type="text" name="telefono" maxlength="20"
                        placeholder="300 000 0000"
-                       style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
+                       style="width:100%; padding:10px 12px; border:1.5px solid var(--border);
                               border-radius:10px; font-size:14px; font-family:inherit;">
             </div>
             @if($todasLasSedes->count() > 0)
-            <div style="margin-bottom:20px; padding:14px; background:#F5F0FF; border-radius:10px; border:1.5px solid #E0D9F5;">
+            <div style="margin-bottom:20px; padding:14px; background:var(--bg); border-radius:10px; border:1.5px solid var(--border);">
                 <label style="font-size:11px; font-weight:700; text-transform:uppercase;
-                               letter-spacing:1px; color:#6B21E8; display:block; margin-bottom:8px;">
+                               letter-spacing:1px; color:var(--purple); display:block; margin-bottom:8px;">
                     Importar catálogo desde otra sede
                 </label>
-                <p style="font-size:12px; color:#6B7280; margin:0 0 10px;">
+                <p style="font-size:12px; color:var(--text-muted); margin:0 0 10px;">
                     Copia las categorías y productos de una sede existente a esta nueva sede.
                 </p>
                 <select name="importar_desde"
-                        style="width:100%; padding:10px 12px; border:1.5px solid #E0D9F5;
-                               border-radius:10px; font-size:14px; font-family:inherit; background:#fff;">
+                        style="width:100%; padding:10px 12px; border:1.5px solid var(--border);
+                               border-radius:10px; font-size:14px; font-family:inherit; background:var(--surface);">
                     <option value="">— No importar —</option>
                     @foreach($todasLasSedes as $sede)
                         <option value="{{ $sede->id_negocio }}">{{ $sede->nombre }}</option>
@@ -730,7 +734,7 @@ function copiarLink() {
     navigator.clipboard.writeText(url).then(() => {
         const btn = document.getElementById('btn-copiar');
         btn.textContent = '✅ ¡Copiado!';
-        btn.style.background = '#5B21B6';
+        btn.style.background = 'var(--purple-dk)';
         setTimeout(() => { btn.textContent = '📋 Copiar link'; btn.style.background = ''; }, 2500);
     });
 }
