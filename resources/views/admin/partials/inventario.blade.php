@@ -1,292 +1,232 @@
-{{-- Badge oculto para actualizar el contador del tab sin recargar --}}
+{{-- Badge oculto para badge del sidebar --}}
 <span id="stock-bajo-count" data-count="{{ $productosStockBajo->count() }}" style="display:none;"></span>
 
-{{-- ── ALERTAS DE STOCK BAJO ── --}}
+{{-- KPIs --}}
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+    <div class="card" style="margin-bottom:0;padding:16px 18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Total productos</div>
+        <div style="font-size:24px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $productos->count() }}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">En {{ $categorias->count() }} categorías</div>
+    </div>
+    <div class="card" style="margin-bottom:0;padding:16px 18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Disponibles</div>
+        <div style="font-size:24px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $productos->where('disponible', true)->count() }}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Del catálogo activo</div>
+    </div>
+    <div class="card" style="margin-bottom:0;padding:16px 18px;{{ $productosStockBajo->isNotEmpty() ? 'border-color:var(--warn-border);background:var(--warn-bg);' : '' }}">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:{{ $productosStockBajo->isNotEmpty() ? 'var(--warn-text)' : 'var(--text-faint)' }};margin-bottom:4px;">Stock bajo</div>
+        <div style="font-size:24px;font-weight:800;color:{{ $productosStockBajo->isNotEmpty() ? 'var(--warn-text)' : 'var(--purple-dk)' }};letter-spacing:-0.5px;line-height:1;">{{ $productosStockBajo->count() }}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Requieren atención</div>
+    </div>
+    <div class="card" style="margin-bottom:0;padding:16px 18px;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Categorías</div>
+        <div style="font-size:24px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $categorias->count() }}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:3px;">Activas</div>
+    </div>
+</div>
+
+{{-- Alerta stock bajo --}}
 @if ($productosStockBajo->isNotEmpty())
-<div class="stock-alert-box">
-    <strong>⚠️ Stock bajo en {{ $productosStockBajo->count() }} producto{{ $productosStockBajo->count() !== 1 ? 's' : '' }}:</strong>
-    <div class="stock-alert-chips">
-        @foreach ($productosStockBajo as $p)
-            <span class="stock-chip-alerta">
-                {{ $p->nombre }} — {{ $p->stock === 0 ? 'Agotado' : $p->stock . ' ud.' }}
-            </span>
-        @endforeach
+<div style="background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--r-md);padding:12px 16px;font-size:13px;color:var(--warn-text);display:flex;align-items:flex-start;gap:10px;margin-bottom:16px;">
+    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="flex-shrink:0;margin-top:1px;"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/></svg>
+    <div>
+        <strong>Stock bajo en {{ $productosStockBajo->count() }} producto{{ $productosStockBajo->count() !== 1 ? 's' : '' }}:</strong>
+        <span style="margin-left:8px;font-size:12px;">
+            @foreach ($productosStockBajo as $p)
+                {{ $p->nombre }} — {{ $p->stock === 0 ? 'Agotado' : $p->stock . ' ud.' }}{{ !$loop->last ? ' · ' : '' }}
+            @endforeach
+        </span>
     </div>
 </div>
 @endif
 
-{{-- ── CATEGORÍAS ── --}}
-<div class="inv-top-grid">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
 
-    {{-- ── CATEGORÍAS ── --}}
+    {{-- Categorías --}}
     <div class="card" style="margin-bottom:0;">
-        <div class="card-title">🏷️ Categorías</div>
-        <form action="{{ route('panel.categorias.store') }}" method="POST"
-              data-ajax data-refresh="inventario"
-              style="display:flex; gap:8px; margin-bottom: {{ $categorias->isNotEmpty() ? '16px' : '0' }}">
-            @csrf
-            <input type="text" name="nombre" placeholder="Nueva categoría…" style="flex:1;" required>
-            <button type="submit" class="btn btn-primary btn-sm">+ Agregar</button>
-        </form>
-
-        @if ($categorias->isNotEmpty())
-            <div class="categorias-lista">
-                @foreach ($categorias as $cat)
-                    <div class="categoria-item">
-                        {{-- Fila superior: nombre + eliminar --}}
-                        <div class="cat-item-header">
-                            <span class="cat-chip">{{ $cat->nombre }}</span>
-                            <form action="{{ route('panel.categorias.destroy', $cat) }}" method="POST"
-                                  data-ajax data-refresh="inventario"
-                                  onsubmit="return confirm('¿Eliminar «{{ addslashes($cat->nombre) }}»? Los productos quedarán sin categoría.')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm">🗑</button>
-                            </form>
-                        </div>
-                        {{-- Fila inferior: renombrar --}}
-                        <form action="{{ route('panel.categorias.update', $cat) }}" method="POST"
-                              data-ajax data-refresh="inventario"
-                              class="cat-item-rename">
-                            @csrf
-                            @method('PUT')
-                            <input type="text" name="nombre" value="{{ $cat->nombre }}" required>
-                            <button type="submit" class="btn btn-warning btn-sm">✏️ Guardar</button>
-                        </form>
-                    </div>
-                @endforeach
-            </div>
-        @else
-            <p style="color:#9B8EC4; font-size:13px; text-align:center; padding:20px 0;">
-                Sin categorías aún.
-            </p>
-        @endif
-    </div>
-
-    {{-- ── AGREGAR PRODUCTO ── --}}
-    <div class="card" style="margin-bottom:0;">
-        <div class="card-title">➕ Agregar nuevo producto</div>
-        <form action="{{ route('panel.productos.store') }}" method="POST"
-              data-ajax data-refresh="inventario,estadisticas">
-            @csrf
-            <div class="inv-form-grid">
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" placeholder="Ej: Pizza Margarita" required>
-                </div>
-                <div class="form-group" style="grid-column: span 2;">
-                    <label>Descripción</label>
-                    <input type="text" name="descripcion" placeholder="Descripción breve" required>
-                </div>
-                <div class="form-group">
-                    <label>Precio ($)</label>
-                    <input type="number" name="precio" step="100" min="0" placeholder="35000" required>
-                </div>
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <select name="id_categoria">
-                        <option value="">— Sin categoría —</option>
-                        @foreach ($categorias as $cat)
-                            <option value="{{ $cat->id_categoria }}">{{ $cat->nombre }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Stock actual</label>
-                    <input type="number" name="stock" min="0" placeholder="Vacío = no rastrear">
-                </div>
-                <div class="form-group">
-                    <label>Alerta cuando queden</label>
-                    <input type="number" name="stock_minimo" min="1" placeholder="5" value="5">
-                </div>
-                <div class="form-group inv-footer">
-                    <div class="checkbox-row">
-                        <input type="checkbox" name="disponible" id="chk-disponible" checked>
-                        <label for="chk-disponible">Disponible</label>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Agregar producto</button>
-                </div>
-            </div>
-        </form>
-    </div>
-
-</div>{{-- /inv-top-grid --}}
-
-{{-- ── TABLA DE PRODUCTOS ── --}}
-<div class="card">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:16px; flex-wrap:wrap;">
-        <div class="card-title" style="margin-bottom:0;">📋 Productos del negocio</div>
-        @if ($productos->isNotEmpty())
-            <input type="text" id="buscador-productos" placeholder="🔍 Buscar por nombre, categoría…"
-                   oninput="filtrarProductos(this.value)"
-                   style="max-width:260px; font-size:13px; padding:7px 12px;">
-        @endif
-    </div>
-
-    @if ($productos->isEmpty())
-        <p style="color:#9B8EC4; font-size:14px; text-align:center; padding:24px 0;">
-            Aún no has agregado productos. Usa el formulario de arriba.
-        </p>
-    @else
-
-        {{-- Vista móvil: tarjetas (oculta en desktop) --}}
-        <div id="productos-cards" class="productos-cards-lista">
-            @foreach ($productos as $producto)
-            @php
-                $sinStock  = $producto->stock === null;
-                $agotado   = !$sinStock && $producto->stock === 0;
-                $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
-            @endphp
-            <div class="prod-card" data-busqueda="{{ strtolower($producto->nombre . ' ' . $producto->descripcion . ' ' . ($producto->categoria?->nombre ?? '')) }}">
-                <div class="prod-card-top">
-                    <div>
-                        <div class="prod-card-nombre">{{ $producto->nombre }}</div>
-                        @if ($producto->descripcion)
-                            <div class="prod-card-desc">{{ $producto->descripcion }}</div>
-                        @endif
-                    </div>
-                    <div class="prod-card-precio">${{ number_format($producto->precio, 0, ',', '.') }}</div>
-                </div>
-                <div class="prod-card-chips">
-                    @if ($producto->categoria)
-                        <span class="cat-chip">{{ $producto->categoria->nombre }}</span>
-                    @endif
-                    @if ($sinStock)
-                        <span class="stock-badge stock-ok" style="background:#F5F3FF; color:#9B8EC4;">Sin stock</span>
-                    @elseif ($agotado)
-                        <span class="stock-badge stock-agotado">Agotado</span>
-                    @elseif ($stockBajo)
-                        <span class="stock-badge stock-bajo">⚠ {{ $producto->stock }}</span>
-                    @else
-                        <span class="stock-badge stock-ok">{{ $producto->stock }} ud.</span>
-                    @endif
-                    <span class="{{ $producto->disponible ? 'badge-disponible' : 'badge-no' }}">
-                        {{ $producto->disponible ? 'Disponible' : 'No disponible' }}
-                    </span>
-                </div>
-                <div class="prod-card-acciones">
-                    <button class="btn btn-warning btn-sm" style="flex:1;"
-                            onclick="abrirModalProducto(
-                                {{ $producto->id_producto }},
-                                '{{ addslashes($producto->nombre) }}',
-                                '{{ addslashes($producto->descripcion) }}',
-                                {{ $producto->precio }},
-                                {{ $producto->id_categoria ?? 'null' }},
-                                {{ $producto->stock ?? 'null' }},
-                                {{ $producto->stock_minimo }},
-                                {{ $producto->disponible ? 'true' : 'false' }}
-                            )">✏️ Editar</button>
-                    <form action="{{ route('panel.productos.destroy', $producto) }}" method="POST"
-                          data-ajax data-refresh="inventario,estadisticas"
-                          onsubmit="return confirm('¿Eliminar «{{ addslashes($producto->nombre) }}»?')"
-                          style="flex:1;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" style="width:100%;">🗑 Eliminar</button>
-                    </form>
-                </div>
-            </div>
-            @endforeach
-            <div id="sin-resultados-cards" style="display:none; text-align:center; color:#9B8EC4; padding:20px; font-size:13px;">
-                Sin productos que coincidan.
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="14" height="14"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"/></svg></div>
+                Categorías
             </div>
         </div>
-
-        {{-- Vista desktop: tabla (oculta en móvil) --}}
-        <div id="productos-tabla-wrap" style="overflow-x:auto; max-height:420px; overflow-y:auto;">
-            <table id="tabla-productos">
-                <thead>
-                    <tr>
-                        <th data-col="0" data-tipo="num" class="th-sort"># <span class="sort-icon">↕</span></th>
-                        <th data-col="1" data-tipo="txt" class="th-sort">Nombre <span class="sort-icon">↕</span></th>
-                        <th>Descripción</th>
-                        <th data-col="3" data-tipo="txt" class="th-sort">Categoría <span class="sort-icon">↕</span></th>
-                        <th data-col="4" data-tipo="num" class="th-sort right">Precio <span class="sort-icon">↕</span></th>
-                        <th data-col="5" data-tipo="num" class="th-sort center">Stock <span class="sort-icon">↕</span></th>
-                        <th data-col="6" data-tipo="txt" class="th-sort center">Disp. <span class="sort-icon">↕</span></th>
-                        <th class="center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($productos as $i => $producto)
-                    @php $busqueda = strtolower($producto->nombre . ' ' . $producto->descripcion . ' ' . ($producto->categoria?->nombre ?? '')); @endphp
-                        @php
-                            $sinStock  = $producto->stock === null;
-                            $agotado   = !$sinStock && $producto->stock === 0;
-                            $stockBajo = !$sinStock && !$agotado && $producto->stock <= $producto->stock_minimo;
-                        @endphp
-                        <tr data-busqueda="{{ $busqueda }}">
-                            <td style="color:#9B8EC4;" data-val="{{ $i + 1 }}">{{ $i + 1 }}</td>
-                            <td style="font-weight:600;" data-val="{{ strtolower($producto->nombre) }}">{{ $producto->nombre }}</td>
-                            <td style="color:#9B8EC4; font-size:12px;">{{ $producto->descripcion }}</td>
-                            <td data-val="{{ strtolower($producto->categoria?->nombre ?? '') }}">
-                                @if ($producto->categoria)
-                                    <span class="cat-chip">{{ $producto->categoria->nombre }}</span>
-                                @else
-                                    <span style="color:#D4C9F0;">—</span>
-                                @endif
-                            </td>
-                            <td class="right" data-val="{{ $producto->precio }}">${{ number_format($producto->precio, 0, ',', '.') }}</td>
-                            <td class="center" data-val="{{ $producto->stock ?? -1 }}">
-                                @if ($sinStock)
-                                    <span style="color:#D4C9F0;">—</span>
-                                @elseif ($agotado)
-                                    <span class="stock-badge stock-agotado">Agotado</span>
-                                @elseif ($stockBajo)
-                                    <span class="stock-badge stock-bajo">⚠ {{ $producto->stock }}</span>
-                                @else
-                                    <span class="stock-badge stock-ok">{{ $producto->stock }}</span>
-                                @endif
-                            </td>
-                            <td class="center" data-val="{{ $producto->disponible ? '1' : '0' }}">
-                                <span class="{{ $producto->disponible ? 'badge-disponible' : 'badge-no' }}">
-                                    {{ $producto->disponible ? 'Sí' : 'No' }}
-                                </span>
-                            </td>
-                            <td class="center">
-                                <div style="display:flex; gap:6px; justify-content:center;">
-                                    <button class="btn btn-warning btn-sm"
-                                            onclick="abrirModalProducto(
-                                                {{ $producto->id_producto }},
-                                                '{{ addslashes($producto->nombre) }}',
-                                                '{{ addslashes($producto->descripcion) }}',
-                                                {{ $producto->precio }},
-                                                {{ $producto->id_categoria ?? 'null' }},
-                                                {{ $producto->stock ?? 'null' }},
-                                                {{ $producto->stock_minimo }},
-                                                {{ $producto->disponible ? 'true' : 'false' }}
-                                            )">
-                                        ✏️ Editar
-                                    </button>
-
-                                    <form action="{{ route('panel.productos.destroy', $producto) }}" method="POST"
-                                          data-ajax data-refresh="inventario,estadisticas"
-                                          onsubmit="return confirm('¿Eliminar «{{ addslashes($producto->nombre) }}»?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">🗑 Eliminar</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
+        <div class="card-body">
+            <form action="{{ route('panel.categorias.store') }}" method="POST"
+                  data-ajax data-refresh="inventario"
+                  style="display:flex;gap:8px;margin-bottom:14px;">
+                @csrf
+                <input type="text" name="nombre" placeholder="Nueva categoría…" style="flex:1;" required>
+                <button type="submit" class="btn btn-primary btn-sm">+ Agregar</button>
+            </form>
+            @if ($categorias->isNotEmpty())
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    @foreach ($categorias as $cat)
+                        <span style="display:inline-flex;align-items:center;gap:6px;background:var(--purple-dim);color:var(--purple);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;">
+                            {{ $cat->nombre }}
+                            <form action="{{ route('panel.categorias.destroy', $cat) }}" method="POST"
+                                  data-ajax data-refresh="inventario" style="margin:0;"
+                                  onsubmit="return confirm('¿Eliminar «{{ addslashes($cat->nombre) }}»?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" style="background:none;border:none;cursor:pointer;color:var(--text-faint);font-size:14px;line-height:1;padding:0;font-family:inherit;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-faint)'">×</button>
+                            </form>
+                        </span>
                     @endforeach
-                    <tr id="sin-resultados" style="display:none;">
-                        <td colspan="8" style="text-align:center; color:#9B8EC4; padding:20px; font-size:13px;">
-                            Sin productos que coincidan con la búsqueda.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>{{-- /productos-tabla-wrap --}}
+                </div>
+            @else
+                <p style="color:var(--text-faint);font-size:13px;text-align:center;padding:16px 0;">Sin categorías aún.</p>
+            @endif
+        </div>
+    </div>
 
-    @endif
+    {{-- Agregar producto --}}
+    <div class="card" style="margin-bottom:0;">
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="14" height="14"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg></div>
+                Agregar producto
+            </div>
+        </div>
+        <div class="card-body">
+            <form action="{{ route('panel.productos.store') }}" method="POST"
+                  data-ajax data-refresh="inventario,estadisticas">
+                @csrf
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                    <div class="form-group">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" name="nombre" placeholder="Pizza Margarita" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Precio ($)</label>
+                        <input type="number" name="precio" step="100" min="0" placeholder="35000" required>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom:10px;">
+                    <label class="form-label">Descripción</label>
+                    <input type="text" name="descripcion" placeholder="Descripción breve" required>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px;">
+                    <div class="form-group">
+                        <label class="form-label">Categoría</label>
+                        <select name="id_categoria">
+                            <option value="">— Sin categoría —</option>
+                            @foreach ($categorias as $cat)
+                                <option value="{{ $cat->id_categoria }}">{{ $cat->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock actual</label>
+                        <input type="number" name="stock" min="0" placeholder="Vacío = libre">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Alerta en</label>
+                        <input type="number" name="stock_minimo" min="1" placeholder="5" value="5">
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                    <input type="checkbox" name="disponible" value="1" checked id="chk-disp" style="width:18px;height:18px;accent-color:var(--purple);">
+                    <label for="chk-disp" style="font-size:13px;color:var(--text-muted);cursor:pointer;">Disponible al crear</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/></svg>
+                    Guardar producto
+                </button>
+            </form>
+        </div>
+    </div>
 </div>
 
-{{-- ── MODAL EDITAR PRODUCTO ── --}}
+{{-- Tabla de productos --}}
+<div class="card">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="14" height="14"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/></svg></div>
+            Todos los productos
+        </div>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($productos as $producto)
+                <tr>
+                    <td>
+                        <div style="font-weight:600;">{{ $producto->nombre }}</div>
+                        @if($producto->descripcion)
+                            <div style="font-size:11px;color:var(--text-faint);">{{ $producto->descripcion }}</div>
+                        @endif
+                    </td>
+                    <td style="color:var(--text-muted);font-size:12px;">{{ $producto->categoria?->nombre ?? '—' }}</td>
+                    <td style="font-weight:700;color:var(--purple-dk);">${{ number_format($producto->precio, 0, ',', '.') }}</td>
+                    <td>
+                        @if($producto->stock !== null)
+                            @if($producto->stock === 0)
+                                <span style="color:var(--danger);font-weight:600;font-size:12px;">Agotado</span>
+                            @elseif($producto->stock <= $producto->stock_minimo)
+                                <span style="color:var(--warn-text);font-weight:600;font-size:12px;">{{ $producto->stock }} ud.</span>
+                            @else
+                                <span style="color:var(--text-muted);font-size:12px;">{{ $producto->stock }} ud.</span>
+                            @endif
+                        @else
+                            <span style="color:var(--text-faint);font-size:12px;">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        @if($producto->disponible)
+                            <span class="badge badge-ok">Disponible</span>
+                        @elseif($producto->stock === 0)
+                            <span class="badge badge-warn">Sin stock</span>
+                        @else
+                            <span class="badge badge-off">No disponible</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;justify-content:flex-end;">
+                            <button class="btn btn-ghost btn-xs"
+                                    onclick="abrirModalProducto(
+                                        {{ $producto->id_producto }},
+                                        '{{ addslashes($producto->nombre) }}',
+                                        '{{ addslashes($producto->descripcion) }}',
+                                        {{ $producto->precio }},
+                                        {{ $producto->id_categoria ?? 'null' }},
+                                        {{ $producto->stock ?? 'null' }},
+                                        {{ $producto->stock_minimo }},
+                                        {{ $producto->disponible ? 'true' : 'false' }}
+                                    )">Editar</button>
+                            <form action="{{ route('panel.productos.destroy', $producto) }}" method="POST"
+                                  data-ajax data-refresh="inventario,estadisticas" style="margin:0;"
+                                  onsubmit="return confirm('¿Eliminar {{ addslashes($producto->nombre) }}?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-xs">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"/></svg>
+                                    Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                @empty
+                <tr><td colspan="6" style="text-align:center;color:var(--text-faint);padding:32px;">Sin productos aún.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{{-- Modal editar producto --}}
 <div class="inv-modal-overlay" id="modal-producto" onclick="if(event.target===this) cerrarModalProducto()">
     <div class="inv-modal">
         <div class="inv-modal-header">
-            <span class="inv-modal-titulo">✏️ Editar producto</span>
+            <span class="inv-modal-titulo">Editar producto</span>
             <button class="inv-modal-close" onclick="cerrarModalProducto()">✕</button>
         </div>
 
@@ -340,14 +280,70 @@
 </div>
 
 <style>
-.th-sort { cursor: pointer; user-select: none; white-space: nowrap; }
-.th-sort:hover { background: #7C3AED; }
-.sort-icon { font-size: 11px; color: #C4B5FD; margin-left: 3px; }
-.th-sort.asc  .sort-icon { color: #6B21E8; }
-.th-sort.desc .sort-icon { color: #6B21E8; }
-.th-sort.asc  .sort-icon::before { content: '▲'; }
-.th-sort.desc .sort-icon::before { content: '▼'; }
-.th-sort:not(.asc):not(.desc) .sort-icon::before { content: '↕'; }
+/* Modal editar producto */
+.inv-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 10, 30, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.inv-modal-overlay.open { display: flex; }
+
+.inv-modal {
+    background: var(--card, #fff);
+    border-radius: var(--r-lg, 16px);
+    padding: 28px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: var(--shadow-lg, 0 24px 64px rgba(107,33,232,0.2));
+    border: 1px solid var(--border, #E0D9F5);
+}
+
+.inv-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.inv-modal-titulo {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--purple-dk);
+}
+
+.inv-modal-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: var(--text-faint);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: var(--r-sm, 6px);
+    transition: background 0.2s;
+}
+
+.inv-modal-close:hover { background: var(--surface2); color: var(--purple-dk); }
+
+/* Grid form dentro del modal */
+.inv-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.inv-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 4px;
+}
 </style>
 
 <script>
@@ -372,329 +368,4 @@ function cerrarModalProducto() {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModalProducto(); });
-
-function filtrarProductos(q) {
-    const term = q.toLowerCase().trim();
-    let visiblesTabla = 0, visiblesCards = 0;
-
-    // Tabla (desktop)
-    document.querySelectorAll('#tabla-productos tbody tr[data-busqueda]').forEach(fila => {
-        const match = !term || (fila.dataset.busqueda || '').includes(term);
-        fila.style.display = match ? '' : 'none';
-        if (match) visiblesTabla++;
-    });
-    const avisoTabla = document.getElementById('sin-resultados');
-    if (avisoTabla) avisoTabla.style.display = visiblesTabla === 0 ? '' : 'none';
-
-    // Tarjetas (móvil)
-    document.querySelectorAll('.prod-card').forEach(card => {
-        const match = !term || (card.dataset.busqueda || '').includes(term);
-        card.style.display = match ? '' : 'none';
-        if (match) visiblesCards++;
-    });
-    const avisoCards = document.getElementById('sin-resultados-cards');
-    if (avisoCards) avisoCards.style.display = visiblesCards === 0 ? '' : 'none';
-}
-
-// ── Sorting ────────────────────────────────────────────────────────────
-(function () {
-    let sortCol = null, sortDir = 1;
-
-    function sortTabla(th) {
-        const col  = parseInt(th.dataset.col);
-        const tipo = th.dataset.tipo;
-
-        if (sortCol === col) {
-            sortDir = -sortDir;
-        } else {
-            sortCol = col;
-            sortDir = 1;
-        }
-
-        document.querySelectorAll('#tabla-productos thead .th-sort').forEach(h => {
-            h.classList.remove('asc', 'desc');
-        });
-        th.classList.add(sortDir === 1 ? 'asc' : 'desc');
-
-        const tbody = document.querySelector('#tabla-productos tbody');
-        const filas = Array.from(tbody.querySelectorAll('tr'));
-
-        filas.sort((a, b) => {
-            const celdaA = a.querySelectorAll('td')[col];
-            const celdaB = b.querySelectorAll('td')[col];
-            const valA   = celdaA ? (celdaA.dataset.val ?? celdaA.textContent.trim()) : '';
-            const valB   = celdaB ? (celdaB.dataset.val ?? celdaB.textContent.trim()) : '';
-
-            if (tipo === 'num') {
-                return (parseFloat(valA) - parseFloat(valB)) * sortDir;
-            }
-            return valA.localeCompare(valB, 'es') * sortDir;
-        });
-
-        filas.forEach(f => tbody.appendChild(f));
-    }
-
-    document.querySelectorAll('#tabla-productos thead .th-sort').forEach(th => {
-        th.addEventListener('click', () => sortTabla(th));
-    });
-})();
 </script>
-
-<style>
-    /* Layout superior: categorías + agregar producto en fila */
-    .inv-top-grid {
-        display: grid;
-        grid-template-columns: 3fr 7fr;
-        gap: 24px;
-        margin-bottom: 24px;
-        align-items: stretch;
-    }
-
-    .inv-top-grid > .card {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .inv-top-grid > .card form:last-child,
-    .inv-top-grid > .card > form { flex: 1; }
-
-    .inv-top-grid > .card { min-width: 0; }
-
-    /* Grid del formulario de agregar/editar */
-    .inv-form-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-    }
-
-    .inv-footer {
-        grid-column: 1 / -1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding-top: 4px;
-    }
-
-    /* Columnas de la tabla */
-    thead th.right, tbody td.right   { text-align: right; }
-    thead th.center, tbody td.center { text-align: center; }
-
-    /* Badges */
-    .cat-chip {
-        display: inline-block;
-        background: #EDE9FE;
-        color: #5B21B6;
-        border: 1px solid #C4B5FD;
-        border-radius: 20px;
-        padding: 2px 10px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .stock-badge {
-        display: inline-block;
-        border-radius: 20px;
-        padding: 2px 10px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .stock-ok     { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
-    .stock-bajo   { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
-    .stock-agotado{ background: #FEE2E2; color: #C8102E; border: 1px solid #FECACA; }
-
-    /* Alertas */
-    .stock-alert-box {
-        background: #FEF3C7;
-        border: 1px solid #FCD34D;
-        border-radius: 12px;
-        padding: 14px 18px;
-        margin-bottom: 20px;
-        font-size: 13px;
-        color: #92400E;
-    }
-
-    .stock-alert-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-
-    .stock-chip-alerta {
-        background: #FDE68A;
-        border: 1px solid #F59E0B;
-        border-radius: 20px;
-        padding: 3px 10px;
-        font-size: 12px;
-        color: #78350F;
-        font-weight: 600;
-    }
-
-    /* Categorías lista */
-    .categorias-lista {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-height: 260px;
-        overflow-y: auto;
-        padding-right: 4px;
-    }
-
-    .categorias-lista::-webkit-scrollbar { width: 4px; }
-    .categorias-lista::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
-    .categorias-lista::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
-
-    .categoria-item {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 12px 14px;
-        background: #fff;
-        border: 1px solid #E0D9F5;
-        border-radius: 14px;
-    }
-
-    .cat-item-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .cat-item-rename {
-        display: flex;
-        gap: 6px;
-    }
-
-    .cat-item-rename input {
-        flex: 1;
-        min-width: 0;
-        font-size: 12px;
-        padding: 5px 8px;
-    }
-
-    @media (max-width: 640px) {
-        .categorias-lista { max-height: none; }
-        .cat-item-rename { flex-direction: column; }
-        .cat-item-rename button { width: 100%; }
-    }
-
-    /* Modal */
-    .inv-modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(15, 10, 30, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        padding: 24px;
-    }
-
-    .inv-modal-overlay.open { display: flex; }
-
-    .inv-modal {
-        background: #fff;
-        border-radius: 16px;
-        padding: 28px;
-        width: 100%;
-        max-width: 600px;
-        box-shadow: 0 24px 64px rgba(107,33,232,0.2);
-        border: 1px solid #E0D9F5;
-    }
-
-    .inv-modal-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-    }
-
-    .inv-modal-titulo {
-        font-size: 16px;
-        font-weight: 700;
-        color: #3D0E8A;
-    }
-
-    .inv-modal-close {
-        background: none;
-        border: none;
-        font-size: 16px;
-        color: #9B8EC4;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 6px;
-        transition: background 0.2s;
-    }
-
-    .inv-modal-close:hover { background: #F5F3FF; color: #3D0E8A; }
-
-    /* Scrollbar tabla productos */
-    #tabla-productos { border-collapse: collapse; width: 100%; }
-    div:has(> #tabla-productos)::-webkit-scrollbar { width: 4px; height: 4px; }
-    div:has(> #tabla-productos)::-webkit-scrollbar-track { background: #F5F3FF; border-radius: 4px; }
-    div:has(> #tabla-productos)::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
-
-    @media (max-width: 900px) {
-        .inv-top-grid { grid-template-columns: 1fr; }
-    }
-
-    @media (max-width: 640px) {
-        .inv-form-grid { grid-template-columns: 1fr; }
-        .form-group[style*="span 2"] { grid-column: span 1 !important; }
-
-        /* Mostrar tarjetas, ocultar tabla */
-        #productos-tabla-wrap { display: none; }
-        #productos-cards      { display: flex !important; }
-    }
-
-    /* ── Tarjetas de productos (móvil) ── */
-    .productos-cards-lista {
-        display: none; /* visible solo en móvil via media query */
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .prod-card {
-        background: #fff;
-        border: 1px solid #E0D9F5;
-        border-radius: 14px;
-        padding: 14px 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .prod-card-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .prod-card-nombre {
-        font-weight: 700;
-        font-size: 15px;
-        color: #1a1a2e;
-    }
-
-    .prod-card-desc {
-        font-size: 12px;
-        color: #9B8EC4;
-        margin-top: 2px;
-    }
-
-    .prod-card-precio {
-        font-size: 16px;
-        font-weight: 800;
-        color: #3D0E8A;
-        white-space: nowrap;
-    }
-
-    .prod-card-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-    }
-
-    .prod-card-acciones {
-        display: flex;
-        gap: 8px;
-    }
-</style>
