@@ -592,14 +592,14 @@ function initEstadisticasCharts() {
 
     // ── PERSONALIZAR ─────────────────────────────────────────────────────
     const CHARTS_META = [
-        { id:'top_productos',      label:'🏆 Top 5 productos' },
-        { id:'rendimiento_mesero', label:'👤 Rendimiento por mesero' },
-        { id:'fuentes_pago',       label:'💳 Fuentes de pago' },
-        { id:'ingresos_mesa',      label:'💵 Ingresos por mesa' },
-        { id:'horas_pico',         label:'🕐 Horas pico' },
-        { id:'categorias',         label:'🏷️ Ingresos por categoría' },
-        { id:'ticket_promedio',    label:'🎫 Ticket promedio' },
-        { id:'stock_productos',    label:'📦 Stock actual' },
+        { id:'top_productos',      label:'Top 5 productos más pedidos' },
+        { id:'rendimiento_mesero', label:'Rendimiento por mesero' },
+        { id:'fuentes_pago',       label:'Fuentes de pago' },
+        { id:'ingresos_mesa',      label:'Ingresos por mesa' },
+        { id:'horas_pico',         label:'Horas pico' },
+        { id:'categorias',         label:'Ingresos por categoría' },
+        { id:'ticket_promedio',    label:'Ticket promedio' },
+        { id:'stock_productos',    label:'Stock actual' },
     ];
 
     window.abrirPersonalizar = function() {
