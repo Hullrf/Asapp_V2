@@ -71,7 +71,7 @@
                 </div>
                 <div style="display:flex;gap:6px;">
                     <form action="{{ route('panel.pisos.destroy', $piso) }}" method="POST"
-                          data-ajax data-refresh="mesas"
+                          data-ajax data-refresh="mesas,estadisticas"
                           onsubmit="return confirm('¿Eliminar el piso {{ addslashes($piso->nombre) }}?')">
                         @csrf @method('DELETE')
                         <button type="submit" class="btn btn-danger btn-xs">Eliminar piso</button>
