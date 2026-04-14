@@ -5,20 +5,30 @@
     </div>
 @else
     <div class="card">
-        <div class="card-title" style="margin-bottom:16px;">
-            ✅ Pedidos pagados
-            <span id="hist-contador" style="margin-left:auto; font-size:12px; font-weight:500; color:#9B8EC4;">
-                {{ $pedidosPagados->count() }} registro{{ $pedidosPagados->count() !== 1 ? 's' : '' }}
-            </span>
+        <div class="card-header">
+            <div class="card-title">
+                <div class="card-icon"><svg viewBox="0 0 20 20" fill="#6B21E8" width="14" height="14"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/></svg></div>
+                Pedidos pagados
+            </div>
+            <span id="hist-contador" class="card-count">{{ $pedidosPagados->count() }} registro{{ $pedidosPagados->count() !== 1 ? 's' : '' }}</span>
         </div>
 
         {{-- Filtros --}}
-        <div class="hist-filtros">
-            <input type="text" id="hist-buscar" placeholder="🔍 # pedido o mesa…"
-                   oninput="filtrarHistorial()" class="hist-input">
-            <input type="date" id="hist-fecha" onchange="filtrarHistorial()" class="hist-input">
+        <div style="display:flex;gap:10px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border-soft);flex-wrap:wrap;">
+            <div style="position:relative;flex:1;max-width:280px;">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-faint);pointer-events:none;">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/></svg>
+                </span>
+                <input type="text" id="hist-buscar" placeholder="# pedido o mesa…"
+                       oninput="filtrarHistorial()"
+                       style="padding-left:32px;">
+            </div>
+            <input type="date" id="hist-fecha" onchange="filtrarHistorial()" style="max-width:160px;">
             <button type="button" id="hist-limpiar" class="btn btn-outline btn-sm"
-                    onclick="limpiarFiltrosHistorial()" style="display:none;">✕ Limpiar</button>
+                    onclick="limpiarFiltrosHistorial()" style="display:none;">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
+                Limpiar
+            </button>
         </div>
 
         <div style="overflow-x:auto;">
@@ -55,7 +65,7 @@
                             </td>
                             <td style="text-align:center;">
                                 <a href="{{ route('factura.show', $p->id_pedido) }}"
-                                   class="btn btn-primary btn-sm"
+                                   class="btn btn-ghost btn-xs"
                                    target="_blank">Ver</a>
                             </td>
                         </tr>
@@ -145,25 +155,22 @@ function limpiarFiltrosHistorial() {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        padding: 10px 16px;
+        padding: 8px 14px 12px;
+        background: var(--surface2);
     }
-
     .detalle-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        background: #EDE9FE;
-        border: 1px solid #D4C9F0;
+        background: var(--purple-dim);
+        color: var(--purple-dk);
+        border: 1px solid var(--border);
         border-radius: 20px;
+        font-size: 11px;
+        font-weight: 500;
         padding: 3px 10px;
-        font-size: 12px;
-        color: #3D0E8A;
     }
-
     .detalle-chip em {
         font-style: normal;
-        font-weight: 700;
-        color: #6B21E8;
+        color: var(--text-faint);
+        margin-left: 2px;
     }
 
     /* Filtros */
