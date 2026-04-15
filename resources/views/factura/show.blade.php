@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factura #{{ $pedido->id_pedido }} — ASAPP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -21,8 +21,8 @@
             --teal:       #6B21E8;
             --text:       #1a1a2e;
             --muted:      #9B8EC4;
-            --mono:       'DM Mono', monospace;
-            --sans:       'Syne', sans-serif;
+            --mono:       ui-monospace, 'SF Mono', Menlo, monospace;
+            --sans:       'Plus Jakarta Sans', system-ui, sans-serif;
         }
 
         body {
@@ -235,7 +235,7 @@
             font-size: 36px;
             font-weight: 800;
             font-family: var(--mono);
-            color: #9B8EC4;
+            color: var(--purple-dk);
             text-align: center;
         }
 
@@ -252,6 +252,7 @@
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
+            touch-action: manipulation;
             transition: background 0.2s, transform 0.1s;
             letter-spacing: 0.3px;
         }
@@ -274,6 +275,7 @@
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
+            touch-action: manipulation;
             transition: background 0.2s, transform 0.1s;
             letter-spacing: 0.3px;
             margin-top: 8px;
@@ -465,7 +467,7 @@
         }
 
         .btn-reabrir:hover { background: var(--purple); color: #fff; }
-        .empty-state .empty-icon { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.5; }
+        .empty-state .empty-icon { display: block; margin-bottom: 12px; opacity: 0.4; color: var(--muted); }
         .empty-state p { font-size: 14px; }
 
         .live-badge {
@@ -772,7 +774,10 @@
 
             @if ($pedidoPagado)
                 <div style="padding: 16px 24px 0;">
-                    <div class="alert-pagado">✅ Este pedido está completamente pagado.</div>
+                    <div class="alert-pagado">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="flex-shrink:0;"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                        Este pedido está completamente pagado.
+                    </div>
                 </div>
             @endif
 
@@ -796,7 +801,7 @@
                             <tr>
                                 <td colspan="{{ ($es_admin || $es_mesero) ? ($pedidoBloqueado ? 5 : 7) : 6 }}">
                                     <div class="empty-state">
-                                        <span class="empty-icon">🧾</span>
+                                        <span class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25z"/></svg></span>
                                         <p>No hay ítems en este pedido aún.</p>
                                     </div>
                                 </td>
