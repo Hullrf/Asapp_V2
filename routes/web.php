@@ -17,7 +17,7 @@ use App\Http\Controllers\PasarelaController;
 use Illuminate\Support\Facades\Route;
 
 // ── Raíz ────────────────────────────────────────────────────────────
-Route::get('/', fn() => redirect()->route('login'));
+Route::get('/', fn() => view('landing'))->name('home');
 
 // ── Superadmin ───────────────────────────────────────────────────────
 Route::get('/superadmin/login',  [SuperAdminController::class, 'showLogin'])->name('superadmin.login');
