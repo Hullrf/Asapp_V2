@@ -210,7 +210,7 @@
         <div class="badge-parcial">⏳ Aún quedan ítems pendientes por pagar en esta mesa.</div>
     @endif
 
-    <a href="{{ route('factura.show', $pedido->id_pedido) }}" class="btn">📄 Ver factura completa</a>
+    <a href="{{ route('factura.cliente', $pedido->id_pedido) }}" class="btn">📄 Ver factura completa</a>
     <a href="javascript:window.close()" class="btn-outline">Cerrar</a>
 
     <p class="simulado-nota">

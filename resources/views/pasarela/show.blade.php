@@ -261,7 +261,7 @@
         <div class="negocio-info">{{ $pedido->negocio->nombre }} · Pedido #{{ $pedido->id_pedido }}</div>
         <p class="sin-items">
             No se recibieron ítems para pagar.<br>
-            <a href="{{ route('factura.show', $pedido->id_pedido) }}" style="color:#6B21E8;">← Volver a la factura</a>
+            <a href="{{ route('factura.cliente', $pedido->id_pedido) }}" style="color:#6B21E8;">← Volver a la factura</a>
         </p>
     </div>
 @else
@@ -413,7 +413,7 @@
             </button>
         </form>
 
-        <a href="{{ route('factura.show', $pedido->id_pedido) }}" class="link-cancelar">← Cancelar y volver</a>
+        <a href="{{ route('factura.cliente', $pedido->id_pedido) }}" class="link-cancelar">← Cancelar y volver</a>
     </div>
 
     <p class="security-note">🔒 Pago cifrado · Simulación académica · Universidad de Cundinamarca 2026</p>

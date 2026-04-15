@@ -205,7 +205,7 @@
         </div>
     </div>
 
-    <a href="{{ route('factura.show', $pedido->id_pedido) }}" class="btn-reintentar">
+    <a href="{{ route('factura.cliente', $pedido->id_pedido) }}" class="btn-reintentar">
         🔄 Volver e intentar de nuevo
     </a>
     <a href="javascript:window.close()" class="btn-outline">Cerrar</a>
