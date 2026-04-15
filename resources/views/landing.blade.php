@@ -105,6 +105,48 @@ a { text-decoration:none; color:inherit; }
 }
 .badge-text { font-size:12px; font-weight:700; color: var(--text); }
 .badge-sub { font-size:11px; color: var(--text-muted); }
+
+/* ── FEATURES ────────────────────────────── */
+.section-header {
+    text-align:center; padding:72px 40px 0;
+    background: var(--purple-bg);
+}
+.section-label {
+    font-size:11px; font-weight:700; letter-spacing:3px;
+    text-transform:uppercase; color: var(--text-muted); margin-bottom:12px;
+}
+.section-title {
+    font-size:34px; font-weight:800; letter-spacing:-1px; margin-bottom:10px;
+}
+.section-sub { font-size:15px; color:#6B7280; }
+
+.features-wrap {
+    background: var(--purple-bg); padding:40px 40px 72px;
+}
+.features-grid {
+    max-width:1100px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(3, 1fr);
+    gap:20px; margin-top:40px;
+}
+.feat-card {
+    background:#fff; border:1px solid var(--border);
+    border-radius:16px; padding:28px 24px;
+    transition: box-shadow 0.2s;
+}
+.feat-card:hover { box-shadow: var(--shadow-card); }
+.feat-icon {
+    width:44px; height:44px;
+    background:#EDE9FE; border-radius:10px;
+    margin-bottom:16px;
+    display:flex; align-items:center; justify-content:center;
+}
+.feat-icon svg {
+    width:22px; height:22px;
+    stroke: var(--purple); fill:none;
+    stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round;
+}
+.feat-card h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
+.feat-card p { font-size:13px; color:#6B7280; line-height:1.6; }
 </style>
 </head>
 <body>
@@ -141,6 +183,66 @@ a { text-decoration:none; color:inherit; }
                 </div>
             </div>
         </div>
+    </div>
+</section>
+
+{{-- FEATURES --}}
+<div class="section-header">
+    <div class="section-label">Funcionalidades</div>
+    <div class="section-title">Todo lo que necesita tu negocio</div>
+    <div class="section-sub">Desde el pedido hasta el pago, en un solo lugar.</div>
+</div>
+<section class="features-wrap">
+    <div class="features-grid">
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3"/></svg>
+            </div>
+            <h3>QR por mesa</h3>
+            <p>El cliente escanea y accede a su factura. Sin apps, sin descargas.</p>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+            </div>
+            <h3>Pagos desde el celular</h3>
+            <p>El cliente paga sin esperar al mesero. Sin efectivo obligatorio.</p>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><path d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3"/></svg>
+            </div>
+            <h3>Panel en tiempo real</h3>
+            <p>Pedidos, ventas e inventario desde cualquier dispositivo.</p>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><path d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+            </div>
+            <h3>Roles de mesero</h3>
+            <p>Asigná cuentas con acceso limitado. Cada mesero gestiona sus mesas.</p>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><path d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/></svg>
+            </div>
+            <h3>División de cuenta</h3>
+            <p>Los clientes dividen ítems entre varios pagadores sin cálculos manuales.</p>
+        </div>
+
+        <div class="feat-card">
+            <div class="feat-icon">
+                <svg viewBox="0 0 24 24"><path d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg>
+            </div>
+            <h3>Inventario y menú</h3>
+            <p>Creá categorías y productos. Activá o desactivá al instante.</p>
+        </div>
+
     </div>
 </section>
 
