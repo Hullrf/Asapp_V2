@@ -104,8 +104,9 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::delete('/meseros/{user}', [\App\Http\Controllers\Admin\MeseroAdminController::class, 'destroy'])->name('meseros.destroy');
 });
 
-// ── Factura (accesible por admin y por cliente vía QR) ───────────────
-Route::get('/factura/{pedido}',              [FacturaController::class, 'show'])->name('factura.show');
+// ── Factura ───────────────────────────────────────────────────────────
+Route::get('/factura/{pedido}',         [FacturaController::class, 'show'])->name('factura.show');
+Route::get('/factura/{pedido}/cliente', [FacturaController::class, 'showCliente'])->name('factura.cliente');
 Route::get('/factura/{pedido}/sync',         [FacturaController::class, 'sync'])->name('factura.sync');
 Route::post('/factura/{pedido}/item',        [FacturaController::class, 'addItem'])->name('factura.item.add')->middleware('personal');
 Route::put('/factura/{pedido}/item/{item}',  [FacturaController::class, 'updateItem'])->name('factura.item.update')->middleware('personal');

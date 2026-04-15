@@ -23,6 +23,19 @@ class FacturaController extends Controller
         return view('factura.show', compact('pedido', 'es_admin', 'es_mesero', 'pedidoPagado', 'pedidoBloqueado', 'productos'));
     }
 
+    /** Vista pública para clientes (vía QR) — sin controles de edición. */
+    public function showCliente(Pedido $pedido)
+    {
+        $pedido->load(['negocio', 'mesa', 'items.producto']);
+        $es_admin        = false;
+        $es_mesero       = false;
+        $pedidoPagado    = $pedido->estaPagado();
+        $pedidoBloqueado = false;
+        $productos       = collect();
+
+        return view('factura.show', compact('pedido', 'es_admin', 'es_mesero', 'pedidoPagado', 'pedidoBloqueado', 'productos'));
+    }
+
     public function addItem(Pedido $pedido, Request $request)
     {
         $request->validate([

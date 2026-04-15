@@ -28,6 +28,6 @@ class MesaPublicaController extends Controller
             return view('mesa.sin-pedido', compact('mesa'));
         }
 
-        return redirect()->route('factura.show', $pedido->id_pedido);
+        return redirect()->route('factura.cliente', $pedido->id_pedido);
     }
 }
