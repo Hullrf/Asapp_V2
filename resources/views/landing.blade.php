@@ -147,6 +147,69 @@ a { text-decoration:none; color:inherit; }
 }
 .feat-card h3 { font-size:16px; font-weight:700; margin-bottom:8px; }
 .feat-card p { font-size:13px; color:#6B7280; line-height:1.6; }
+
+/* ── PANEL PREVIEW ───────────────────────── */
+.panel-preview-wrap {
+    background:#fff; padding:72px 40px;
+    text-align:center;
+}
+.panel-preview-wrap .section-header-inline {
+    margin-bottom:48px;
+}
+.panel-preview-wrap .section-label { display:block; margin-bottom:10px; }
+.panel-preview-wrap .section-title { margin-bottom:10px; }
+.panel-preview-wrap .section-sub { margin-bottom:0; }
+
+.browser-mockup {
+    max-width:860px; margin:0 auto;
+    border-radius:16px; overflow:hidden;
+    box-shadow:0 24px 64px rgba(107,33,232,0.12);
+    border:1px solid var(--border);
+}
+.browser-bar {
+    background:#f0f0f5; padding:10px 16px;
+    display:flex; align-items:center; gap:10px;
+    border-bottom:1px solid var(--border);
+}
+.browser-dots { display:flex; gap:6px; }
+.browser-dot {
+    width:10px; height:10px; border-radius:50%;
+}
+.browser-url {
+    flex:1; background:#fff;
+    border:1px solid var(--border); border-radius:6px;
+    padding:4px 12px; font-size:11px; color:#9B8EC4;
+    text-align:left;
+}
+.browser-body {
+    background: var(--purple-bg); padding:24px;
+}
+.kpi-row {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:16px; margin-bottom:20px;
+}
+.kpi-card {
+    background:#fff; border:1px solid var(--border);
+    border-radius:12px; padding:18px 20px; text-align:left;
+}
+.kpi-label { font-size:11px; color:#6B7280; font-weight:600; margin-bottom:6px; }
+.kpi-value { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+.kpi-value.green { color:#16a34a; }
+.kpi-value.purple { color: var(--purple); }
+.kpi-value.blue { color:#2563eb; }
+
+.chart-mockup {
+    background:#fff; border:1px solid var(--border);
+    border-radius:12px; padding:18px 20px;
+}
+.chart-title { font-size:12px; font-weight:700; color: var(--text); margin-bottom:14px; }
+.chart-bars {
+    display:flex; align-items:flex-end; gap:8px; height:72px;
+}
+.chart-bar {
+    flex:1; border-radius:4px 4px 0 0;
+    background: var(--purple);
+}
 </style>
 </head>
 <body>
@@ -243,6 +306,53 @@ a { text-decoration:none; color:inherit; }
             <p>Creá categorías y productos. Activá o desactivá al instante.</p>
         </div>
 
+    </div>
+</section>
+
+{{-- PANEL PREVIEW --}}
+<section class="panel-preview-wrap">
+    <div class="section-header-inline">
+        <span class="section-label">Panel de control</span>
+        <div class="section-title">Estadísticas en tiempo real</div>
+        <div class="section-sub">Todo lo que pasa en tu restaurante, visible desde cualquier dispositivo.</div>
+    </div>
+    <div class="browser-mockup">
+        <div class="browser-bar">
+            <div class="browser-dots">
+                <div class="browser-dot" style="background:#ff5f57;"></div>
+                <div class="browser-dot" style="background:#febc2e;"></div>
+                <div class="browser-dot" style="background:#28c840;"></div>
+            </div>
+            <div class="browser-url">app.asapp.co/panel</div>
+        </div>
+        <div class="browser-body">
+            <div class="kpi-row">
+                <div class="kpi-card">
+                    <div class="kpi-label">Ventas hoy</div>
+                    <div class="kpi-value green">$1.240.000</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Pedidos</div>
+                    <div class="kpi-value purple">38</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Ticket promedio</div>
+                    <div class="kpi-value blue">$32.600</div>
+                </div>
+            </div>
+            <div class="chart-mockup">
+                <div class="chart-title">Ventas últimos 7 días</div>
+                <div class="chart-bars">
+                    <div class="chart-bar" style="height:40%; opacity:0.4;"></div>
+                    <div class="chart-bar" style="height:60%; opacity:0.5;"></div>
+                    <div class="chart-bar" style="height:50%; opacity:0.45;"></div>
+                    <div class="chart-bar" style="height:75%; opacity:0.6;"></div>
+                    <div class="chart-bar" style="height:55%; opacity:0.5;"></div>
+                    <div class="chart-bar" style="height:90%; opacity:0.75;"></div>
+                    <div class="chart-bar" style="height:100%; opacity:1;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
