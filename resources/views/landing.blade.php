@@ -268,6 +268,47 @@ a { text-decoration:none; color:inherit; }
 }
 .footer-logo { font-size:18px; font-weight:900; color: var(--purple-lt); }
 .footer-copy { font-size:12px; color:#4B5563; }
+
+/* ── RESPONSIVE ≤ 600px ──────────────────────────── */
+@media (max-width:600px) {
+
+    /* Navbar: ocultar "Iniciar sesión" */
+    #nav-login { display:none; }
+    .nav { padding:0 20px; }
+
+    /* Hero: columna única, imagen debajo del texto */
+    .hero { padding:48px 20px 56px; }
+    .hero-inner { grid-template-columns:1fr; gap:32px; }
+    .hero-text h1 { font-size:36px; letter-spacing:-1px; }
+    .hero-badge { left:12px; bottom:12px; }
+
+    /* Features: 1 columna */
+    .section-header { padding:48px 20px 0; }
+    .features-wrap { padding:24px 20px 48px; }
+    .features-grid { grid-template-columns:1fr; }
+
+    /* Panel Preview */
+    .panel-preview-wrap { padding:48px 20px; }
+    .kpi-row { grid-template-columns:1fr; }
+
+    /* Flujo: vertical con línea izquierda */
+    .flujo-wrap { padding:48px 20px; }
+    .flujo-steps { flex-direction:column; align-items:flex-start; gap:0; }
+    .flujo-steps::before {
+        top:28px; bottom:28px; left:27px;
+        right:auto; width:2px; height:auto;
+    }
+    .flujo-step { display:flex; align-items:flex-start; gap:16px; text-align:left; padding:0 0 32px 0; }
+    .flujo-step:last-child { padding-bottom:0; }
+    .step-circle { flex-shrink:0; margin:0; }
+
+    /* CTA */
+    .cta-section { padding:56px 20px; }
+    .cta-section h2 { font-size:28px; }
+
+    /* Footer */
+    .footer { padding:20px; flex-direction:column; gap:8px; text-align:center; }
+}
 </style>
 </head>
 <body>
