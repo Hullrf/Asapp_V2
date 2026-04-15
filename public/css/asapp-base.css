@@ -1,0 +1,31 @@
+/* ─────────────────────────────────────────────
+   ASAPP — Base CSS
+   Shared font + design tokens for all views
+   ───────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+:root {
+    /* Typography */
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+    /* Brand */
+    --purple-dk:   #3D0E8A;
+    --purple:      #6B21E8;
+    --purple-mid:  #7C3AED;
+    --purple-lt:   #C4B5FD;
+    --purple-bg:   #F4F1FA;
+
+    /* Surface */
+    --surface:     #ffffff;
+    --border:      #E0D9F5;
+    --border-red:  #FECACA;
+
+    /* Text */
+    --text:        #1a1a2e;
+    --text-muted:  #9B8EC4;
+
+    /* Shadows */
+    --shadow-card: 0 8px 32px rgba(107, 33, 232, 0.08);
+    --shadow-card-sm: 0 4px 16px rgba(107, 33, 232, 0.1);
+}

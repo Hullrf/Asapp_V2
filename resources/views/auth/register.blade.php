@@ -7,7 +7,7 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-        font-family: 'Segoe UI', system-ui, sans-serif;
+        font-family: var(--font-sans);
         background: #F4F1FA;
         color: #1a1a2e;
         min-height: 100vh;
