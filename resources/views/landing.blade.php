@@ -210,6 +210,33 @@ a { text-decoration:none; color:inherit; }
     flex:1; border-radius:4px 4px 0 0;
     background: var(--purple);
 }
+
+/* ── FLUJO ───────────────────────────────── */
+.flujo-wrap {
+    background: var(--purple-bg); padding:72px 40px;
+    text-align:center;
+}
+.flujo-steps {
+    max-width:800px; margin:48px auto 0;
+    display:flex; align-items:flex-start;
+    position:relative;
+}
+.flujo-steps::before {
+    content:'';
+    position:absolute; top:28px; left:calc(16.66% + 28px);
+    right:calc(16.66% + 28px); height:2px;
+    background:linear-gradient(90deg, var(--purple-lt), var(--purple));
+}
+.flujo-step { flex:1; text-align:center; padding:0 16px; }
+.step-circle {
+    width:56px; height:56px; border-radius:50%;
+    background:linear-gradient(135deg, var(--purple), var(--purple-dk));
+    color:#fff; font-size:20px; font-weight:900;
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 16px; position:relative; z-index:1;
+}
+.step-title { font-size:15px; font-weight:700; margin-bottom:6px; }
+.step-desc { font-size:13px; color:#6B7280; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -352,6 +379,30 @@ a { text-decoration:none; color:inherit; }
                     <div class="chart-bar" style="height:100%; opacity:1;"></div>
                 </div>
             </div>
+        </div>
+    </div>
+</section>
+
+{{-- FLUJO --}}
+<section class="flujo-wrap" id="como-funciona">
+    <div class="section-label">¿Cómo funciona?</div>
+    <div class="section-title">Tres pasos, sin complicaciones</div>
+    <div class="section-sub">Tu cliente paga solo. Vos cobrás al instante.</div>
+    <div class="flujo-steps">
+        <div class="flujo-step">
+            <div class="step-circle">1</div>
+            <div class="step-title">Cliente escanea el QR</div>
+            <div class="step-desc">Cada mesa tiene su propio código QR. Sin apps ni descargas.</div>
+        </div>
+        <div class="flujo-step">
+            <div class="step-circle">2</div>
+            <div class="step-title">Selecciona y paga</div>
+            <div class="step-desc">Ve su factura, elige sus ítems y paga desde el celular.</div>
+        </div>
+        <div class="flujo-step">
+            <div class="step-circle">3</div>
+            <div class="step-title">Vos cobrás al instante</div>
+            <div class="step-desc">El pago llega directo a tu cuenta. Sin intermediarios.</div>
         </div>
     </div>
 </section>
