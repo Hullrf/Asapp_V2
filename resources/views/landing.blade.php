@@ -272,8 +272,7 @@ a { text-decoration:none; color:inherit; }
 /* ── RESPONSIVE ≤ 600px ──────────────────────────── */
 @media (max-width:600px) {
 
-    /* Navbar: ocultar "Iniciar sesión" */
-    #nav-login { display:none; }
+    /* Navbar */
     .nav { padding:0 20px; }
 
     /* Hero: columna única, imagen debajo del texto */
