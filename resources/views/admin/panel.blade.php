@@ -7,9 +7,7 @@
     <title>Panel de Control — ASAPP</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/asapp-base.css">
     <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -183,7 +181,6 @@ tbody tr:last-child { border-bottom:none; }
 .pedido-tabla th { text-align:left; padding:8px 10px; color:var(--purple); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:0.5px; border-bottom:2px solid var(--border); position:sticky; top:0; background:#fff; }
 .pedido-tabla td { padding:9px 10px; border-bottom:1px solid var(--border-soft); vertical-align:middle; }
 .pedido-tabla input[type="number"] { width:65px; }
-.pedido-tabla input[type="checkbox"] { width:18px; height:18px; accent-color:var(--purple); cursor:pointer; }
 
 /* -- SWIPE DOTS (movil) -- */
 #swipe-dots { display:none; }
