@@ -72,17 +72,20 @@
         .chip { display: inline-block; background: rgba(107,33,232,0.2); color: #C4A0FF; border: 1px solid rgba(107,33,232,0.4); border-radius: 20px; padding: 2px 10px; font-size: 12px; font-weight: 600; }
         .chip-muted { background: rgba(255,255,255,0.05); color: #7C3AED; border-color: rgba(255,255,255,0.1); }
 
-        .acciones { display: flex; gap: 8px; }
-        .btn-edit { background: rgba(107,33,232,0.2); color: #C4A0FF; border: 1px solid rgba(107,33,232,0.4); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; width: 168px; }
+        .btn-edit { background: rgba(107,33,232,0.2); color: #C4A0FF; border: 1px solid rgba(107,33,232,0.4); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-edit:hover { background: rgba(107,33,232,0.4); }
-        .btn-del  { background: rgba(200,16,46,0.15); color: #f87171; border: 1px solid rgba(200,16,46,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-del  { background: rgba(200,16,46,0.15); color: #f87171; border: 1px solid rgba(200,16,46,0.3); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-del:hover { background: rgba(200,16,46,0.3); }
-        .btn-stats { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-stats { background: rgba(6,182,212,0.15); color: #67e8f9; border: 1px solid rgba(6,182,212,0.3); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-stats:hover { background: rgba(6,182,212,0.3); }
-        .btn-suspend   { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-suspend   { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-suspend:hover { background: rgba(234,179,8,0.3); }
-        .btn-reactivar { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-reactivar { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); padding: 5px 8px; border-radius: 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
         .btn-reactivar:hover { background: rgba(34,197,94,0.3); }
+        .stats-cell { display: flex; flex-direction: column; gap: 3px; }
+        .stats-cell span { font-size: 11px; color: #9B8EC4; }
+        .stats-cell span b { color: #C4A0FF; font-weight: 700; margin-right: 3px; }
         .badge-suspendido { background: rgba(200,16,46,0.2); color: #f87171; border: 1px solid rgba(200,16,46,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
         .badge-activo     { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 20px; padding: 2px 10px; font-size: 11px; font-weight: 700; }
 
@@ -239,9 +242,7 @@
                     <th>Admin</th>
                     <th>Teléfono</th>
                     <th style="text-align:center">Estado</th>
-                    <th class="center" style="text-align:center">Productos</th>
-                    <th class="center" style="text-align:center">Mesas</th>
-                    <th class="center" style="text-align:center">Pedidos</th>
+                    <th>Datos</th>
                     <th style="text-align:center">Acciones</th>
                 </tr>
             </thead>
@@ -276,11 +277,15 @@
                             {{ $negocio->suspendido ? 'Suspendido' : 'Activo' }}
                         </span>
                     </td>
-                    <td style="text-align:center;"><span class="chip">{{ $negocio->productos_count }}</span></td>
-                    <td style="text-align:center;"><span class="chip">{{ $negocio->mesas_count }}</span></td>
-                    <td style="text-align:center;"><span class="chip">{{ $negocio->pedidos_count }}</span></td>
                     <td>
-                        <div class="acciones" style="justify-content:center;">
+                        <div class="stats-cell">
+                            <span><b>{{ $negocio->productos_count }}</b>productos</span>
+                            <span><b>{{ $negocio->mesas_count }}</b>mesas</span>
+                            <span><b>{{ $negocio->pedidos_count }}</b>pedidos</span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="acciones">
                             <button class="btn-stats" onclick="verMetricas({{ $negocio->id_negocio }}, '{{ addslashes($negocio->nombre) }}')">📊 Métricas</button>
                             <button class="btn-edit" onclick="abrirEditar(
                                 {{ $negocio->id_negocio }},
