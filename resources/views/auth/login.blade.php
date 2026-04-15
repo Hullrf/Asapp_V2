@@ -151,14 +151,6 @@
         margin-bottom: 16px;
     }
 
-    .remember-row input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        accent-color: #6B21E8;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
     .remember-row label {
         display: inline;
         font-size: 13px;

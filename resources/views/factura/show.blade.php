@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factura #{{ $pedido->id_pedido }} — ASAPP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/asapp-base.css">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -328,15 +328,6 @@
 
         .producto-nombre { font-weight: 600; font-size: 14px; }
         .precio-unit { font-family: var(--mono); font-size: 12px; color: var(--muted); }
-
-        input[type="checkbox"] {
-            width: 17px;
-            height: 17px;
-            accent-color: var(--purple);
-            cursor: pointer;
-        }
-
-        input[type="checkbox"]:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .actions-cell { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
 

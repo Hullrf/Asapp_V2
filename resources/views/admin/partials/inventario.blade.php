@@ -133,7 +133,7 @@
                     </div>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-                    <input type="checkbox" name="disponible" value="1" checked id="chk-disp" style="width:18px;height:18px;accent-color:var(--purple);">
+                    <input type="checkbox" name="disponible" value="1" checked id="chk-disp">
                     <label for="chk-disp" style="font-size:13px;color:var(--text-muted);cursor:pointer;">Disponible al crear</label>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">

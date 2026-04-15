@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Mesero — ASAPP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/asapp-base.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -273,33 +273,6 @@
         .prod-item:active  { background: #F5F3FF; }
         .prod-item.selected { background: #EDE9FE; }
         .prod-item.hidden  { display: none; }
-
-        .prod-check {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 22px; height: 22px;
-            border: 2px solid #C4B5FD;
-            border-radius: 3px;
-            background: #fff;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.15s, border-color 0.15s;
-            position: relative;
-        }
-        .prod-check:checked {
-            background: #6B21E8;
-            border-color: #6B21E8;
-        }
-        .prod-check:checked::after {
-            content: '';
-            position: absolute;
-            left: 5px; top: 2px;
-            width: 8px; height: 12px;
-            border: 2.5px solid #fff;
-            border-top: none;
-            border-left: none;
-            transform: rotate(45deg);
-        }
 
         .prod-info { flex: 1; min-width: 0; }
         .prod-nombre { font-size: 14px; font-weight: 600; color: #1a1a2e; }

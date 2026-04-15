@@ -29,3 +29,45 @@
     --shadow-card: 0 8px 32px rgba(107, 33, 232, 0.08);
     --shadow-card-sm: 0 4px 16px rgba(107, 33, 232, 0.1);
 }
+
+/* ── Checkboxes (globales) ───────────────────────────────────────────
+   Aplica a todos los input[type="checkbox"] excepto los toggle-switch
+   de estadísticas (.chart-toggle tiene su propio estilo).
+   ─────────────────────────────────────────────────────────────────── */
+input[type="checkbox"]:not(.chart-toggle) {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--purple-lt, #C4B5FD);
+    border-radius: 3px;
+    background: var(--surface, #fff);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+    position: relative;
+    vertical-align: middle;
+}
+
+input[type="checkbox"]:not(.chart-toggle):checked {
+    background: var(--purple, #6B21E8);
+    border-color: var(--purple, #6B21E8);
+}
+
+input[type="checkbox"]:not(.chart-toggle):checked::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 7px;
+    height: 11px;
+    border: 2.5px solid #fff;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg);
+}
+
+input[type="checkbox"]:not(.chart-toggle):disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
