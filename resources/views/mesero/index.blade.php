@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Mesero — ASAPP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
             background: #F4F1FA;
             color: #1a1a2e;
             min-height: 100vh;
@@ -116,13 +117,14 @@
             gap: 6px;
             transition: opacity 0.2s;
             white-space: nowrap;
-            min-height: 40px;
+            min-height: 44px;
+            touch-action: manipulation;
         }
         .btn:hover { opacity: 0.85; }
         .btn-primary { background: #6B21E8; color: #fff; }
         .btn-success { background: #3D0E8A; color: #fff; }
         .btn-outline { background: transparent; color: #6B21E8; border: 1px solid #6B21E8; }
-        .btn-sm      { padding: 8px 14px; font-size: 13px; min-height: 36px; }
+        .btn-sm      { padding: 8px 14px; font-size: 13px; min-height: 44px; }
         .btn-block   { width: 100%; }
 
         /* ── GRID MESAS ── */
@@ -145,7 +147,10 @@
         .mesa-card.libre   { border-color: #D4C9F0; background: #F5F3FF; }
         .mesa-card:hover   { box-shadow: 0 4px 16px rgba(107,33,232,0.12); }
 
-        .mesa-icono  { font-size: 30px; margin-bottom: 8px; }
+        .mesa-icono  { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:10px; color:var(--purple, #6B21E8); }
+        .mesa-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .dot-libre   { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,0.2); }
+        .dot-ocupada { background:#eab308; box-shadow:0 0 0 3px rgba(234,179,8,0.2); }
         .mesa-nombre { font-size: 15px; font-weight: 700; color: #3D0E8A; margin-bottom: 6px; }
 
         .mesa-estado {
@@ -215,14 +220,16 @@
         .np-close {
             background: #F5F3FF;
             border: none;
-            font-size: 15px;
             color: #6B21E8;
             cursor: pointer;
-            padding: 6px 10px;
+            padding: 0;
             border-radius: 8px;
-            line-height: 1;
-            min-width: 36px;
-            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+            touch-action: manipulation;
         }
 
         /* buscador */
@@ -287,11 +294,11 @@
             flex-shrink: 0;
         }
         .cant-btn {
-            width: 30px; height: 30px;
+            width: 44px; height: 44px;
             background: #EDE9FE;
             border: none;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 20px;
             color: #6B21E8;
             cursor: pointer;
             display: flex;
@@ -299,6 +306,8 @@
             justify-content: center;
             line-height: 1;
             font-weight: 700;
+            touch-action: manipulation;
+            flex-shrink: 0;
         }
         .cant-btn:active { background: #C4B5FD; }
         .cant-num {
@@ -394,8 +403,9 @@
     </div>
 
     <div class="topbar-right">
-        <span class="topbar-info">
-            👤 <strong>{{ auth()->user()->nombre }}</strong>
+        <span class="topbar-info" style="display:flex;align-items:center;gap:6px;">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" style="opacity:0.7;flex-shrink:0;"><path d="M10 8a3 3 0 100-6 3 3 0 000 6zM3.465 14.493a1.23 1.23 0 00.41 1.412A9.957 9.957 0 0010 18c2.31 0 4.438-.784 6.131-2.1.43-.333.604-.903.408-1.41a7.002 7.002 0 00-13.074.003z"/></svg>
+            <strong>{{ auth()->user()->nombre }}</strong>
         </span>
         <form action="{{ route('logout') }}" method="POST" style="margin:0">
             @csrf
@@ -423,7 +433,10 @@
             @php $mesasDePiso = $mesasPorPiso->get($piso->id_piso, collect()); @endphp
             @if ($mesasDePiso->isNotEmpty())
                 <div class="card">
-                    <div class="piso-label">🏢 {{ $piso->nombre }}</div>
+                    <div class="piso-label">
+                        <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15" style="flex-shrink:0;"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"/></svg>
+                        {{ $piso->nombre }}
+                    </div>
                     <div class="mesas-grid">
                         @foreach ($mesasDePiso as $mesa)
                             @php
@@ -439,7 +452,14 @@
                             <div class="mesa-card {{ $ocupada ? 'ocupada' : 'libre' }}"
                                  style="{{ $esSecundaria ? 'border-style: dashed; opacity: 0.85;' : '' }}">
 
-                                <div class="mesa-icono">{{ $ocupada ? '🟡' : '🟢' }} {{ $esSecundaria ? '🔗' : '🪑' }}</div>
+                                <div class="mesa-icono">
+                                    <span class="mesa-status-dot {{ $ocupada ? 'dot-ocupada' : 'dot-libre' }}"></span>
+                                    @if ($esSecundaria)
+                                        <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/></svg>
+                                    @else
+                                        <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+                                    @endif
+                                </div>
                                 <div class="mesa-nombre">{{ $nombreDisplay }}</div>
 
                                 @if ($mesa->alias)
@@ -453,14 +473,13 @@
                                 </span>
 
                                 @if ($esSecundaria)
-                                    <div style="font-size:11px; color:#7C3AED; background:#EDE9FE; border-radius:6px;
-                                                padding:3px 8px; margin-bottom:8px; text-align:center;">
-                                        🔗 Unida a: <strong>{{ $mesa->mesaPrincipal->nombre_display }}</strong>
+                                    <div style="font-size:11px; color:#7C3AED; background:#EDE9FE; border-radius:6px; padding:3px 8px; margin-bottom:8px; text-align:center; display:flex; align-items:center; justify-content:center; gap:4px;">
+                                        <svg viewBox="0 0 20 20" fill="currentColor" width="11" height="11"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"/></svg>
+                                        Unida a: <strong>{{ $mesa->mesaPrincipal->nombre_display }}</strong>
                                     </div>
                                 @elseif ($mesa->mesasUnidas->isNotEmpty())
-                                    <div style="font-size:11px; color:#6B21A8; background:#F3E8FF; border-radius:6px;
-                                                padding:3px 8px; margin-bottom:8px; text-align:center;">
-                                        🪑 Grupo: {{ $mesa->mesasUnidas->map(fn($m) => $m->nombre_display)->prepend($nombreDisplay)->join(' + ') }}
+                                    <div style="font-size:11px; color:#6B21A8; background:#F3E8FF; border-radius:6px; padding:3px 8px; margin-bottom:8px; text-align:center;">
+                                        Grupo: {{ $mesa->mesasUnidas->map(fn($m) => $m->nombre_display)->prepend($nombreDisplay)->join(' + ') }}
                                     </div>
                                 @endif
 
@@ -468,13 +487,15 @@
                                     @if ($ocupada)
                                         <a href="{{ route('factura.show', $pedidoActivo->id_pedido) }}"
                                            class="btn btn-success btn-sm">
-                                            📄 Ver factura
+                                            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+                                            Ver factura
                                         </a>
                                     @else
                                         @if (! $esSecundaria)
                                             <button class="btn btn-primary btn-sm"
                                                     onclick="abrirNuevoPedido({{ $mesa->id_mesa }}, '{{ addslashes($nombreDisplay) }}')">
-                                                🧾 Nuevo pedido
+                                                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+                                                Nuevo pedido
                                             </button>
                                         @endif
                                     @endif
@@ -490,7 +511,10 @@
         @php $mesasSinPiso = $mesasPorPiso->get(null, collect()); @endphp
         @if ($mesasSinPiso->isNotEmpty())
             <div class="card" style="border-color:#FECACA;">
-                <div class="card-title" style="color:#DC2626;">⚠️ Sin piso asignado</div>
+                <div class="card-title" style="color:#DC2626;">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" style="flex-shrink:0;"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                    Sin piso asignado
+                </div>
                 <div class="mesas-grid">
                     @foreach ($mesasSinPiso as $mesa)
                         @php
@@ -502,7 +526,10 @@
                             $nombreDisplay = $mesa->nombre_display;
                         @endphp
                         <div class="mesa-card {{ $ocupada ? 'ocupada' : 'libre' }}">
-                            <div class="mesa-icono">{{ $ocupada ? '🟡' : '🟢' }} 🪑</div>
+                            <div class="mesa-icono">
+                                <span class="mesa-status-dot {{ $ocupada ? 'dot-ocupada' : 'dot-libre' }}"></span>
+                                <svg viewBox="0 0 20 20" fill="currentColor" width="22" height="22"><path fill-rule="evenodd" d="M5 4a3 3 0 00-3 3v6a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H5zm-1 9v-1h5v2H5a1 1 0 01-1-1zm7 1h4a1 1 0 001-1v-1h-5v2zm0-4h5V8h-5v2zM9 8H4v2h5V8z" clip-rule="evenodd"/></svg>
+                            </div>
                             <div class="mesa-nombre">{{ $nombreDisplay }}</div>
                             <span class="mesa-estado {{ $ocupada ? 'estado-ocupada' : 'estado-libre' }}">
                                 {{ $ocupada ? 'Ocupada' : 'Libre' }}
@@ -538,8 +565,10 @@
     <div class="modal modal-np">
         <div class="np-handle"></div>
         <div class="np-header">
-            <h3 id="np-titulo">🧾 Nuevo pedido</h3>
-            <button class="np-close" onclick="cerrarNuevoPedido()">✕</button>
+            <h3 id="np-titulo">Nuevo pedido</h3>
+            <button class="np-close" onclick="cerrarNuevoPedido()" aria-label="Cerrar">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+            </button>
         </div>
 
         @php $productosDisp = $productos->filter(fn($p) => $p->disponible)->values(); @endphp
@@ -549,7 +578,7 @@
                 No hay productos disponibles. Pide al administrador que los active.
             </p>
         @else
-            <input type="text" id="np-buscador" placeholder="🔍 Buscar producto…"
+            <input type="text" id="np-buscador" placeholder="Buscar producto…"
                    oninput="filtrarNP(this.value)">
 
             <input type="hidden" id="np-id-mesa">
@@ -588,7 +617,10 @@
 
             <div class="np-footer">
                 <button type="button" class="btn btn-outline" onclick="cerrarNuevoPedido()">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btn-crear-pedido" onclick="crearPedido()">✅ Crear pedido</button>
+                <button type="button" class="btn btn-primary" id="btn-crear-pedido" onclick="crearPedido()">
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                    Crear pedido
+                </button>
             </div>
         @endif
     </div>
@@ -600,7 +632,7 @@ const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 // ── Modal Nuevo Pedido ────────────────────────────────────────────────
 function abrirNuevoPedido(idMesa, nombreMesa) {
     document.getElementById('np-id-mesa').value = idMesa;
-    document.getElementById('np-titulo').textContent = '🧾 Nuevo pedido — ' + nombreMesa;
+    document.getElementById('np-titulo').textContent = 'Nuevo pedido — ' + nombreMesa;
 
     // Resetear selecciones y cantidades
     document.querySelectorAll('#np-lista .prod-item').forEach(item => {
@@ -657,7 +689,7 @@ async function crearPedido() {
     // Recolectar productos seleccionados
     const checkboxes = document.querySelectorAll('#np-lista .prod-check:checked');
     if (checkboxes.length === 0) {
-        showToast('⚠️ Selecciona al menos un producto.', false);
+        showToast('Selecciona al menos un producto.', false);
         return;
     }
 
@@ -689,9 +721,9 @@ async function crearPedido() {
         });
         data = await res.json();
     } catch {
-        showToast('❌ Error de conexión', false);
-        btn.disabled    = false;
-        btn.textContent = '✅ Crear pedido';
+        showToast('Error de conexión', false);
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Crear pedido';
         return;
     }
 
@@ -699,9 +731,9 @@ async function crearPedido() {
         const msg = data.errors
             ? Object.values(data.errors).flat().join(' · ')
             : (data.message || 'Error de validación');
-        showToast('❌ ' + msg, false);
-        btn.disabled    = false;
-        btn.textContent = '✅ Crear pedido';
+        showToast(msg, false);
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Crear pedido';
         return;
     }
 
@@ -713,16 +745,16 @@ async function crearPedido() {
             window.location.href = data.factura_url;
         }, 900);
     } else {
-        showToast('❌ ' + (data.message || 'Error al crear el pedido'), false);
-        btn.disabled    = false;
-        btn.textContent = '✅ Crear pedido';
+        showToast(data.message || 'Error al crear el pedido', false);
+        btn.disabled = false;
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg> Crear pedido';
     }
 }
 
 // ── Toast ─────────────────────────────────────────────────────────────
 function showToast(msg, ok = true) {
     const t = document.getElementById('mesero-toast');
-    t.innerHTML = `<div class="toast-inner"><span>${msg}</span><button class="toast-close" onclick="document.getElementById('mesero-toast').classList.remove('show')">✕</button></div>`;
+    t.innerHTML = `<div class="toast-inner"><span>${msg}</span><button class="toast-close" aria-label="Cerrar" onclick="document.getElementById('mesero-toast').classList.remove('show')"><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/></svg></button></div>`;
     t.className = (ok ? 'toast-ok' : 'toast-err');
     t.classList.add('show');
     clearTimeout(t._timer);
