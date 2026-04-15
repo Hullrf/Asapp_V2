@@ -2,6 +2,10 @@
     $mesasPorPiso = $mesas->groupBy('id_piso');
     $mesasSinPiso = $mesasPorPiso->get(null, collect());
 @endphp
+<style>
+.mesas-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; padding:16px 20px; }
+@media (max-width:600px) { .mesas-grid { grid-template-columns:1fr 1fr; gap:10px; padding:12px 14px; } }
+</style>
 
 {{-- Card unificada: crear piso + crear mesa --}}
 <div class="card">

@@ -21,7 +21,7 @@
 @endif
 
 {{-- KPIs --}}
-<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;">
+<div class="kpi-grid-6" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:16px;">
     <div class="card" style="margin-bottom:0;padding:14px 16px;border-color:#C4B5FD;background:#F5F3FF;">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--purple);margin-bottom:4px;">Total cobrado</div>
         <div style="font-size:20px;font-weight:800;color:var(--purple);letter-spacing:-0.5px;line-height:1;">${{ number_format($resumen['total_cobrado'], 0, ',', '.') }}</div>
@@ -244,6 +244,17 @@
 @media (max-width: 700px) {
     .charts-grid { grid-template-columns: 1fr; }
 }
+@media (max-width: 900px) {
+    .kpi-grid-6 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── LEYENDA TOP PRODUCTOS ── */
+.chart-leyenda { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+.leyenda-item  { display:flex; align-items:center; gap:8px; font-size:12px; }
+.leyenda-dot   { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.leyenda-num   { font-weight:700; color:var(--text-faint); min-width:16px; }
+.leyenda-nombre{ flex:1; color:var(--text); }
+.leyenda-cant  { font-weight:600; color:var(--purple); white-space:nowrap; }
 
 .periodo-btn {
     background: var(--surface2);

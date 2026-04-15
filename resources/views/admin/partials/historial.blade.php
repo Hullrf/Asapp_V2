@@ -52,7 +52,9 @@
                         <tr class="hist-fila"
                             data-id="{{ $p->id_pedido }}"
                             data-mesa="{{ strtolower($p->mesa?->nombre ?? '') }}"
-                            data-fecha="{{ \Carbon\Carbon::parse($p->fecha)->format('Y-m-d') }}">
+                            data-fecha="{{ \Carbon\Carbon::parse($p->fecha)->format('Y-m-d') }}"
+                            onclick="toggleDetalle(this)"
+                            style="cursor:pointer;">
                             <td style="font-weight:700; color:#3D0E8A;">
                                 #{{ $p->id_pedido }}
                                 <div class="hist-mesa-sub">{{ $p->mesa?->nombre ?? '—' }}</div>
@@ -71,7 +73,7 @@
                         </tr>
 
                         {{-- Detalle de ítems expandible --}}
-                        <tr class="historial-detalle hist-detalle-fila">
+                        <tr class="historial-detalle hist-detalle-fila" style="display:none;">
                             <td colspan="6" style="padding:0;">
                                 <div class="detalle-items">
                                     @foreach ($p->items as $item)
@@ -97,6 +99,13 @@
 @endif
 
 <script>
+function toggleDetalle(fila) {
+    const detalle = fila.nextElementSibling;
+    if (detalle?.classList.contains('hist-detalle-fila')) {
+        detalle.style.display = detalle.style.display === 'none' ? '' : 'none';
+    }
+}
+
 function filtrarHistorial() {
     const texto = document.getElementById('hist-buscar')?.value.toLowerCase().trim() ?? '';
     const fecha  = document.getElementById('hist-fecha')?.value ?? '';
