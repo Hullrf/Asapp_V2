@@ -14,7 +14,7 @@ class DivisionController extends Controller
     {
         $request->validate([
             'token'    => ['required', 'string', 'max:64'],
-            'partes'   => ['required', 'integer', 'min:2', 'max:20'],
+            'partes'   => ['required', 'integer', 'min:2'],
             'montos'   => ['required', 'array', 'min:2'],
             'montos.*' => ['required', 'numeric', 'min:0.01'],
         ]);
@@ -130,7 +130,7 @@ class DivisionController extends Controller
     {
         $request->validate([
             'token'    => ['required', 'string', 'max:64'],
-            'partes'   => ['required', 'integer', 'min:2', 'max:20'],
+            'partes'   => ['required', 'integer', 'min:2'],
             'montos'   => ['required', 'array', 'min:2'],
             'montos.*' => ['required', 'numeric', 'min:0.01'],
         ]);

@@ -1368,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const modalCancelar = document.getElementById('modalDivCancelarBtn');
 
     const PARTES_MIN = 2;
-    const PARTES_MAX = 20;
+    const PARTES_MAX = Infinity;
 
     function getN() { return parseInt(stepperVal?.textContent || '2'); }
 
