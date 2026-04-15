@@ -1,8 +1,17 @@
+<style>
+.inv-kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:16px; }
+.inv-top-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+@media (max-width:700px) {
+    .inv-kpi-grid { grid-template-columns:repeat(2,1fr); }
+    .inv-top-grid { grid-template-columns:1fr; }
+}
+</style>
+
 {{-- Badge oculto para badge del sidebar --}}
 <span id="stock-bajo-count" data-count="{{ $productosStockBajo->count() }}" style="display:none;"></span>
 
 {{-- KPIs --}}
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px;">
+<div class="inv-kpi-grid">
     <div class="card" style="margin-bottom:0;padding:16px 18px;">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-faint);margin-bottom:4px;">Total productos</div>
         <div style="font-size:24px;font-weight:800;color:var(--purple-dk);letter-spacing:-0.5px;line-height:1;">{{ $productos->count() }}</div>
@@ -40,7 +49,7 @@
 </div>
 @endif
 
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+<div class="inv-top-grid">
 
     {{-- Categorías --}}
     <div class="card" style="margin-bottom:0;">
