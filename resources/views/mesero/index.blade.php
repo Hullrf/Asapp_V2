@@ -275,10 +275,30 @@
         .prod-item.hidden  { display: none; }
 
         .prod-check {
+            appearance: none;
+            -webkit-appearance: none;
             width: 22px; height: 22px;
-            accent-color: #6B21E8;
+            border: 2px solid #C4B5FD;
+            border-radius: 3px;
+            background: #fff;
             cursor: pointer;
             flex-shrink: 0;
+            transition: background 0.15s, border-color 0.15s;
+            position: relative;
+        }
+        .prod-check:checked {
+            background: #6B21E8;
+            border-color: #6B21E8;
+        }
+        .prod-check:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px; top: 2px;
+            width: 8px; height: 12px;
+            border: 2.5px solid #fff;
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
         }
 
         .prod-info { flex: 1; min-width: 0; }
