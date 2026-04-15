@@ -240,6 +240,8 @@
 }
 .charts-grid .card {
     margin-bottom: 0;
+    border-color: #C4B5FD;
+    padding: 20px;
 }
 @media (max-width: 700px) {
     .charts-grid { grid-template-columns: 1fr; }
