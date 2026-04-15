@@ -45,7 +45,22 @@ No requiere autenticación, no usa layouts existentes, es autocontenida.
 
 En móvil: grid 1 columna
 
-### 4. Flujo "¿Cómo funciona?" (3 pasos)
+### 4. Panel Preview
+- Fondo blanco, centrado, max-width 900px
+- Label superior: "Panel de control" (texto morado, mayúsculas, letra spacing)
+- H2: "Estadísticas en tiempo real"
+- Subtítulo: "Todo lo que pasa en tu restaurante, visible desde cualquier dispositivo."
+- Mockup de browser window:
+  - Barra del navegador simulada (3 puntos de colores + URL ficticia `app.asapp.co/panel`)
+  - Fondo `#F4F1FA`, padding interno
+  - Fila de 3 tarjetas KPI:
+    1. **Ventas hoy** — `$1.240.000` — color verde `#4ade80`
+    2. **Pedidos** — `38` — color morado `#6B21E8`
+    3. **Ticket promedio** — `$32.600` — color azul `#3b82f6`
+  - Barra de gráfico simplificada (7 barras de altura variable, color `#6B21E8` con opacidad decreciente)
+- Sombra: `0 24px 64px rgba(107,33,232,0.12)`, border-radius 16px
+
+### 5. Flujo "¿Cómo funciona?" (3 pasos)
 Línea horizontal conectando 3 círculos numerados:
 1. Cliente escanea el QR
 2. Selecciona y paga
@@ -53,14 +68,14 @@ Línea horizontal conectando 3 círculos numerados:
 
 En móvil: columna vertical con línea izquierda
 
-### 5. CTA Final
+### 6. CTA Final
 - Fondo degradado `#6B21E8 → #3D0E8A`
 - H2 "Empezá hoy mismo."
 - Párrafo de apoyo
 - Botón blanco "Crear cuenta gratis" → `route('register')`
 - Nota: "Sin tarjeta de crédito · Cancelá cuando quieras"
 
-### 6. Footer
+### 7. Footer
 - Fondo `#1a1a2e`
 - Logo ASAPP en `#C4B5FD`
 - Copyright "© 2025 ASAPP. Sistema POS para restaurantes."
