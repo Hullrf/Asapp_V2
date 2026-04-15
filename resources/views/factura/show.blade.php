@@ -665,6 +665,48 @@
             margin-bottom: 16px;
         }
         .modal-input:focus { outline: none; border-color: #6B21E8; }
+        .partes-stepper {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            margin-bottom: 20px;
+            border: 1.5px solid #e9d5ff;
+            border-radius: 12px;
+            overflow: hidden;
+            width: fit-content;
+        }
+        .stepper-btn {
+            background: #f5f0ff;
+            border: none;
+            color: #6B21E8;
+            font-size: 22px;
+            font-weight: 700;
+            width: 52px;
+            height: 52px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .stepper-btn:hover:not(:disabled) { background: #ede9fe; }
+        .stepper-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        .stepper-val {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1a1a2e;
+            min-width: 56px;
+            text-align: center;
+            font-family: var(--mono);
+            border-left: 1.5px solid #e9d5ff;
+            border-right: 1.5px solid #e9d5ff;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .modal-partes-grid {
             display: flex;
             flex-direction: column;
@@ -1060,7 +1102,11 @@
         <div class="modal-subtitulo" id="modalDivSubtitulo"></div>
 
         <label class="modal-label">¿En cuántas partes?</label>
-        <input type="number" class="modal-input" id="modalDivN" min="2" max="20" value="2">
+        <div class="partes-stepper">
+            <button class="stepper-btn" id="stepperMenos" type="button">−</button>
+            <span class="stepper-val" id="stepperVal">2</span>
+            <button class="stepper-btn" id="stepperMas" type="button">+</button>
+        </div>
 
         <label class="modal-label">Monto por parte</label>
         <div class="modal-partes-grid" id="modalDivPartes"></div>
@@ -1313,11 +1359,26 @@ document.addEventListener('DOMContentLoaded', function () {
     let modalDivId     = null; // null = nuevo, int = modificar
 
     const modalOverlay  = document.getElementById('modalDivision');
-    const modalN        = document.getElementById('modalDivN');
+    const stepperVal    = document.getElementById('stepperVal');
+    const stepperMenos  = document.getElementById('stepperMenos');
+    const stepperMas    = document.getElementById('stepperMas');
     const modalPartes   = document.getElementById('modalDivPartes');
     const modalRestante = document.getElementById('modalDivRestante');
     const modalConfirm  = document.getElementById('modalDivConfirmarBtn');
     const modalCancelar = document.getElementById('modalDivCancelarBtn');
+
+    const PARTES_MIN = 2;
+    const PARTES_MAX = 20;
+
+    function getN() { return parseInt(stepperVal?.textContent || '2'); }
+
+    function setN(n) {
+        n = Math.max(PARTES_MIN, Math.min(PARTES_MAX, n));
+        if (stepperVal)  stepperVal.textContent    = n;
+        if (stepperMenos) stepperMenos.disabled    = n <= PARTES_MIN;
+        if (stepperMas)   stepperMas.disabled      = n >= PARTES_MAX;
+        renderModalPartes(n);
+    }
 
     function abrirModal(itemId, subtotal, nombre, divId = null, partesActuales = null) {
         if (!modalOverlay) return;
@@ -1327,10 +1388,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('modalDivTitulo').textContent = divId ? 'Modificar división' : 'Dividir ítem';
         document.getElementById('modalDivSubtitulo').textContent = nombre + ' · Total: ' + formatCOP(subtotal);
         const n = partesActuales ? partesActuales.length : 2;
-        modalN.value = n;
+        setN(n);
         renderModalPartes(n, partesActuales);
         modalOverlay.classList.add('visible');
-        modalN.focus();
     }
 
     function cerrarModal() {
@@ -1374,12 +1434,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    if (modalN) {
-        modalN.addEventListener('input', function () {
-            const n = Math.max(2, Math.min(20, parseInt(this.value) || 2));
-            renderModalPartes(n);
-        });
-    }
+    if (stepperMenos) stepperMenos.addEventListener('click', () => setN(getN() - 1));
+    if (stepperMas)   stepperMas.addEventListener('click',   () => setN(getN() + 1));
 
     if (modalCancelar) modalCancelar.addEventListener('click', cerrarModal);
     if (modalOverlay)  modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) cerrarModal(); });
@@ -1388,7 +1444,7 @@ document.addEventListener('DOMContentLoaded', function () {
         modalConfirm.addEventListener('click', async function () {
             const inputs = Array.from(modalPartes.querySelectorAll('input'));
             const montos = inputs.map(inp => parseFloat(inp.value));
-            const n      = montos.length;
+            const n      = getN();
             modalConfirm.disabled    = true;
             modalConfirm.textContent = 'Guardando...';
             try {
