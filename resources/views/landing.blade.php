@@ -178,7 +178,7 @@ a { text-decoration:none; color:inherit; }
 .browser-url {
     flex:1; background:#fff;
     border:1px solid var(--border); border-radius:6px;
-    padding:4px 12px; font-size:11px; color:#9B8EC4;
+    padding:4px 12px; font-size:11px; color: var(--text-muted);
     text-align:left;
 }
 .browser-body {
