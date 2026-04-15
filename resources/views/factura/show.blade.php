@@ -499,6 +499,14 @@
             .card-body { padding: 16px; }
             .form-agregar { grid-template-columns: 1fr; }
             .qty-input { width: 100%; }
+
+            /* Tabla compacta en móvil */
+            .table-wrap { overflow-x: visible; }
+            .col-precio-unit { display: none; }
+            thead th { padding: 10px 8px; font-size: 9px; }
+            tbody td { padding: 10px 8px; font-size: 12px; }
+            thead th:first-child { width: 36px; }
+            .producto-nombre { font-size: 13px; }
         }
 
         /* ── División ─────────────────────────────────────────────────────── */
@@ -779,7 +787,7 @@
                             @if ($es_admin ? !$pedidoPagado : !$es_mesero)<th></th>@endif
                             <th>Producto</th>
                             <th class="center">Cant.</th>
-                            <th class="right">Precio unit.</th>
+                            <th class="right col-precio-unit">Precio unit.</th>
                             <th class="right">Subtotal</th>
                             <th class="center">Estado</th>
                             @if (($es_admin || $es_mesero) && !$pedidoBloqueado)
@@ -835,7 +843,7 @@
                                     </td>
 
                                     {{-- Precio unitario --}}
-                                    <td class="right">
+                                    <td class="right col-precio-unit">
                                         <span class="precio-unit">${{ number_format($item->precio_unitario, 0, ',', '.') }}</span>
                                     </td>
 
