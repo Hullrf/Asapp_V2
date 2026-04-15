@@ -237,6 +237,37 @@ a { text-decoration:none; color:inherit; }
 }
 .step-title { font-size:15px; font-weight:700; margin-bottom:6px; }
 .step-desc { font-size:13px; color:#6B7280; line-height:1.5; }
+
+/* ── CTA FINAL ───────────────────────────── */
+.cta-section {
+    background:linear-gradient(135deg, var(--purple) 0%, var(--purple-dk) 100%);
+    padding:72px 40px; text-align:center;
+}
+.cta-section h2 {
+    font-size:38px; font-weight:900; color:#fff;
+    letter-spacing:-1px; margin-bottom:14px;
+}
+.cta-section p {
+    font-size:16px; color:rgba(255,255,255,0.75);
+    margin-bottom:36px; max-width:500px; margin-left:auto; margin-right:auto;
+}
+.btn-white {
+    display:inline-block;
+    background:#fff; color: var(--purple);
+    font-size:15px; font-weight:800;
+    padding:16px 36px; border-radius:12px;
+    transition: box-shadow 0.15s;
+}
+.btn-white:hover { box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+.cta-note { margin-top:16px; font-size:12px; color:rgba(255,255,255,0.45); }
+
+/* ── FOOTER ──────────────────────────────── */
+.footer {
+    background:#1a1a2e; padding:28px 40px;
+    display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { font-size:18px; font-weight:900; color: var(--purple-lt); }
+.footer-copy { font-size:12px; color:#4B5563; }
 </style>
 </head>
 <body>
@@ -406,6 +437,20 @@ a { text-decoration:none; color:inherit; }
         </div>
     </div>
 </section>
+
+{{-- CTA FINAL --}}
+<section class="cta-section">
+    <h2>Empezá hoy mismo.</h2>
+    <p>Registrá tu negocio en minutos y empezá a cobrar desde el celular de tus clientes.</p>
+    <a href="{{ route('register') }}" class="btn-white">Crear cuenta gratis</a>
+    <p class="cta-note">Sin tarjeta de crédito &middot; Cancelá cuando quieras</p>
+</section>
+
+{{-- FOOTER --}}
+<footer class="footer">
+    <div class="footer-logo">ASAPP</div>
+    <div class="footer-copy">© 2025 ASAPP. Sistema POS para restaurantes.</div>
+</footer>
 
 </body>
 </html>
