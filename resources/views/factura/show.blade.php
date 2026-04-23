@@ -890,7 +890,7 @@
                                     </td>
 
                                     {{-- Subtotal --}}
-                                    <td class="right" style="font-weight: 700; color: var(--gold);">
+                                    <td class="right" style="font-weight: 700; color: var(--purple);">
                                         ${{ number_format($item->subtotal, 0, ',', '.') }}
                                     </td>
 
