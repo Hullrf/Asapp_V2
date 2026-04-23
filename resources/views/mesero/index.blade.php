@@ -101,18 +101,18 @@
 
         /* ── CARDS ── */
         .card {
-            background: #fff;
-            border-radius: 14px;
+            background: var(--surface);
+            border-radius: var(--r-lg);
             padding: 20px;
-            border: 1px solid #E0D9F5;
+            border: 1px solid var(--border);
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(107,33,232,0.06);
+            box-shadow: var(--shadow-sm);
         }
 
         .card-title {
             font-size: 16px;
             font-weight: 700;
-            color: #3D0E8A;
+            color: var(--text);
             margin-bottom: 16px;
             display: flex;
             align-items: center;
@@ -122,7 +122,7 @@
         /* ── BOTONES ── */
         .btn {
             padding: 10px 18px;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             font-size: 14px;
             font-weight: 600;
             border: none;
@@ -138,9 +138,9 @@
             touch-action: manipulation;
         }
         .btn:hover { opacity: 0.85; }
-        .btn-primary { background: #6B21E8; color: #fff; }
-        .btn-success { background: #3D0E8A; color: #fff; }
-        .btn-outline { background: transparent; color: #6B21E8; border: 1px solid #6B21E8; }
+        .btn-primary { background: var(--purple); color: #fff; box-shadow: 0 2px 8px rgba(107,33,232,0.25); }
+        .btn-success { background: var(--purple-dk); color: #fff; }
+        .btn-outline { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border); }
         .btn-sm      { padding: 8px 14px; font-size: 13px; min-height: 44px; }
         .btn-block   { width: 100%; }
 
@@ -152,23 +152,23 @@
         }
 
         .mesa-card {
-            background: #FAF8FF;
-            border: 2px solid #E0D9F5;
-            border-radius: 14px;
+            background: var(--surface2);
+            border: 2px solid var(--border);
+            border-radius: var(--r-lg);
             padding: 20px 16px;
             text-align: center;
             transition: border-color 0.2s, box-shadow 0.2s;
             cursor: default;
         }
-        .mesa-card.ocupada { border-color: #8B5CF6; background: #EDE9FE; }
-        .mesa-card.libre   { border-color: #D4C9F0; background: #F5F3FF; }
-        .mesa-card:hover   { box-shadow: 0 4px 16px rgba(107,33,232,0.12); }
+        .mesa-card.ocupada { border-color: var(--purple-lt); background: #EDE9FE; }
+        .mesa-card.libre   { border-color: var(--border); background: var(--surface2); }
+        .mesa-card:hover   { box-shadow: var(--shadow-md); }
 
-        .mesa-icono  { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:10px; color:var(--purple, #6B21E8); }
+        .mesa-icono  { display:flex; align-items:center; justify-content:center; gap:6px; margin-bottom:10px; color:var(--purple); }
         .mesa-status-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
         .dot-libre   { background:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,0.2); }
         .dot-ocupada { background:#eab308; box-shadow:0 0 0 3px rgba(234,179,8,0.2); }
-        .mesa-nombre { font-size: 15px; font-weight: 700; color: #3D0E8A; margin-bottom: 6px; }
+        .mesa-nombre { font-size: 15px; font-weight: 700; color: var(--purple-dk); margin-bottom: 6px; }
 
         .mesa-estado {
             font-size: 12px;
@@ -178,15 +178,15 @@
             display: inline-block;
             margin-bottom: 12px;
         }
-        .estado-libre   { background: #F5F3FF; color: #9B8EC4; }
-        .estado-ocupada { background: #C4B5FD; color: #3D0E8A; }
+        .estado-libre   { background: var(--surface2); color: var(--text-faint); }
+        .estado-ocupada { background: #C4B5FD; color: var(--purple-dk); }
         .mesa-acciones  { display: flex; flex-direction: column; gap: 6px; }
 
         /* ── PISO LABEL ── */
         .piso-label {
             font-size: 14px;
             font-weight: 700;
-            color: #3D0E8A;
+            color: var(--purple-dk);
             margin-bottom: 14px;
             display: flex;
             align-items: center;
@@ -206,20 +206,20 @@
         .modal-overlay.open { display: flex; }
 
         .modal {
-            background: #fff;
-            border-radius: 20px 20px 0 0;
+            background: var(--surface);
+            border-radius: var(--r-xl) var(--r-xl) 0 0;
             padding: 24px 20px 20px;
             width: 100%;
             max-width: 640px;
             max-height: 92dvh;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+            box-shadow: var(--shadow-lg);
             display: flex;
             flex-direction: column;
         }
 
         .np-handle {
             width: 40px; height: 4px;
-            background: #D4C9F0;
+            background: var(--border);
             border-radius: 4px;
             margin: 0 auto 16px;
             flex-shrink: 0;
@@ -232,15 +232,15 @@
             margin-bottom: 12px;
             flex-shrink: 0;
         }
-        .np-header h3 { font-size: 17px; font-weight: 700; color: #3D0E8A; }
+        .np-header h3 { font-size: 17px; font-weight: 700; color: var(--purple-dk); }
 
         .np-close {
-            background: #F5F3FF;
+            background: var(--purple-dim);
             border: none;
-            color: #6B21E8;
+            color: var(--purple);
             cursor: pointer;
             padding: 0;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -253,17 +253,17 @@
         #np-buscador {
             width: 100%;
             padding: 10px 14px;
-            border: 1.5px solid #D4C9F0;
-            border-radius: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--r-md);
             font-size: 15px;
-            background: #FAF8FF;
-            color: #1a1a2e;
+            background: var(--surface2);
+            color: var(--text);
             outline: none;
             font-family: inherit;
             margin-bottom: 10px;
             flex-shrink: 0;
         }
-        #np-buscador:focus { border-color: #6B21E8; }
+        #np-buscador:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-glow); }
 
         .np-body {
             overflow-y: auto;
@@ -271,7 +271,7 @@
             -webkit-overflow-scrolling: touch;
         }
         .np-body::-webkit-scrollbar { width: 4px; }
-        .np-body::-webkit-scrollbar-thumb { background: #C4B5FD; border-radius: 4px; }
+        .np-body::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
 
         /* Lista de productos — tarjetas táctiles */
         .prod-lista { display: flex; flex-direction: column; gap: 2px; }
@@ -281,21 +281,21 @@
             align-items: center;
             gap: 12px;
             padding: 12px 10px;
-            border-radius: 10px;
-            border-bottom: 1px solid #F0EBF8;
+            border-radius: var(--r-md);
+            border-bottom: 1px solid var(--border-soft);
             transition: background 0.15s;
             cursor: pointer;
             user-select: none;
         }
-        .prod-item:active  { background: #F5F3FF; }
+        .prod-item:active  { background: var(--surface2); }
         .prod-item.selected { background: #EDE9FE; }
         .prod-item.hidden  { display: none; }
 
         .prod-info { flex: 1; min-width: 0; }
-        .prod-nombre { font-size: 14px; font-weight: 600; color: #1a1a2e; }
-        .prod-cat    { font-size: 12px; color: #9B8EC4; }
+        .prod-nombre { font-size: 14px; font-weight: 600; color: var(--text); }
+        .prod-cat    { font-size: 12px; color: var(--text-faint); }
 
-        .prod-precio { font-size: 13px; font-weight: 700; color: #6B21E8; white-space: nowrap; flex-shrink: 0; }
+        .prod-precio { font-size: 13px; font-weight: 700; color: var(--purple); white-space: nowrap; flex-shrink: 0; }
 
         .prod-cant {
             display: flex;
@@ -305,11 +305,11 @@
         }
         .cant-btn {
             width: 44px; height: 44px;
-            background: #EDE9FE;
+            background: var(--purple-dim);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             font-size: 20px;
-            color: #6B21E8;
+            color: var(--purple);
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -325,7 +325,7 @@
             text-align: center;
             font-size: 15px;
             font-weight: 700;
-            color: #3D0E8A;
+            color: var(--purple-dk);
         }
         .prod-cant-wrap { display: none; }
         .prod-item.selected .prod-cant-wrap { display: flex; }
@@ -335,7 +335,7 @@
             gap: 10px;
             padding-top: 14px;
             flex-shrink: 0;
-            border-top: 1px solid #E0D9F5;
+            border-top: 1px solid var(--border);
             margin-top: 10px;
         }
 
@@ -358,7 +358,7 @@
             pointer-events: none;
         }
         #mesero-toast.show      { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
-        #mesero-toast.toast-ok  { background: #EDE9FE; color: #5B21B6; border: 1px solid #C4B5FD; }
+        #mesero-toast.toast-ok  { background: var(--purple-dim); color: var(--purple-dk); border: 1px solid #C4B5FD; }
         #mesero-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
 
         .toast-inner { display: flex; align-items: center; gap: 12px; }
@@ -366,12 +366,12 @@
         .toast-close:hover { opacity: 1; }
 
         /* ── EMPTY STATE ── */
-        .empty-state { text-align: center; color: #9B8EC4; font-size: 14px; padding: 48px 0; }
+        .empty-state { text-align: center; color: var(--text-faint); font-size: 14px; padding: 48px 0; }
 
         /* ── TABLET (≥ 640px) ── */
         @media (min-width: 640px) {
             .modal {
-                border-radius: 20px;
+                border-radius: var(--r-xl);
                 max-width: 580px;
                 margin-bottom: 40px;
                 max-height: 88vh;
