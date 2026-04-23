@@ -359,7 +359,7 @@
         }
         #mesero-toast.show      { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
         #mesero-toast.toast-ok  { background: var(--purple-dim); color: var(--purple-dk); border: 1px solid #C4B5FD; }
-        #mesero-toast.toast-err { background: #FFF0F0; color: #C8102E; border: 1px solid #F5C6CB; }
+        #mesero-toast.toast-err { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
 
         .toast-inner { display: flex; align-items: center; gap: 12px; }
         .toast-close { background: none; border: none; font-size: 16px; cursor: pointer; opacity: 0.5; color: inherit; padding: 0; flex-shrink: 0; }
