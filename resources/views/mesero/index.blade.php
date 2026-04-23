@@ -7,18 +7,35 @@
     <title>Mesero — ASAPP</title>
     <link rel="stylesheet" href="/css/asapp-base.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+        :root {
+          --bg:#F4F1FA; --surface:#ffffff; --surface2:#FAF8FF;
+          --border:#E0D9F5; --border-soft:#EDE9F8;
+          --sb-bg:#0F0A1E;
+          --purple:#6B21E8; --purple-dk:#3D0E8A; --purple-lt:#8B5CF6;
+          --purple-dim:rgba(107,33,232,0.10); --purple-glow:rgba(107,33,232,0.20);
+          --accent:#C4A0FF;
+          --text:#1a1a2e; --text-muted:#6B7280; --text-faint:#9B8EC4;
+          --danger:#B91C1C; --danger-bg:#FEF2F2; --danger-border:#FECACA;
+          --r-sm:6px; --r-md:10px; --r-lg:14px; --r-xl:20px;
+          --shadow-sm:0 1px 4px rgba(107,33,232,0.06);
+          --shadow-md:0 4px 16px rgba(107,33,232,0.10);
+          --shadow-lg:0 8px 32px rgba(0,0,0,0.18);
+          --font:'Plus Jakarta Sans',system-ui,sans-serif;
+          --mono:ui-monospace,'SF Mono',Menlo,monospace;
+        }
 
         body {
-            font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-            background: #F4F1FA;
-            color: #1a1a2e;
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
         }
 
         /* ── TOPBAR ── */
         .topbar {
-            background: #3D0E8A;
+            background: var(--sb-bg);
             color: #fff;
             padding: 0 24px;
             height: 60px;
@@ -28,14 +45,14 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            box-shadow: var(--shadow-lg);
         }
 
         .topbar-logo {
             font-size: 22px;
             font-weight: 800;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #C4A0FF, #ffffff);
+            background: linear-gradient(135deg, #C4A0FF, #A78BFA);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -62,10 +79,10 @@
 
         .btn-logout {
             background: rgba(107,33,232,0.15);
-            color: #C4A0FF;
+            color: var(--accent);
             border: 1px solid rgba(107,33,232,0.3);
             padding: 7px 16px;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             text-decoration: none;
             font-size: 13px;
             font-weight: 600;
