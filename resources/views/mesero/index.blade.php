@@ -346,12 +346,12 @@
             left: 50%;
             transform: translateX(-50%) translateY(12px);
             padding: 13px 20px;
-            border-radius: 12px;
+            border-radius: var(--r-lg);
             font-size: 14px;
             font-weight: 600;
             width: calc(100% - 32px);
             max-width: 420px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            box-shadow: var(--shadow-lg);
             z-index: 9999;
             opacity: 0;
             transition: opacity 0.25s, transform 0.25s;
