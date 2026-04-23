@@ -68,7 +68,7 @@
             padding: 5px 10px;
         }
 
-        .pedido-badge span { color: #C4A0FF; }
+        .pedido-badge span { color: var(--accent); }
 
         .btn-logout {
             font-family: var(--font);
@@ -565,7 +565,7 @@
         }
         .btn-div-accion:hover { opacity: 0.82; }
         .btn-div-mod  { background: var(--purple-dim); color: var(--purple); }
-        .btn-div-cancel { background: #fee2e2; color: #dc2626; }
+        .btn-div-cancel { background: var(--danger-bg); color: var(--danger); }
 
         .division-partes {
             display: flex;
