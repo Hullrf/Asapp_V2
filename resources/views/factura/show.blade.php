@@ -9,24 +9,24 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg:         #F4F1FA;
-            --surface:    #ffffff;
-            --surface2:   #FAF8FF;
-            --border:     #E0D9F5;
-            --border-hot: #D4C9F0;
-            --purple:     #6B21E8;
-            --purple-lt:  #8B45F5;
-            --purple-dk:  #3D0E8A;
-            --gold:       #6B21E8;
-            --teal:       #6B21E8;
-            --text:       #1a1a2e;
-            --muted:      #9B8EC4;
-            --mono:       ui-monospace, 'SF Mono', Menlo, monospace;
-            --sans:       'Plus Jakarta Sans', system-ui, sans-serif;
+          --bg:#F4F1FA; --surface:#ffffff; --surface2:#FAF8FF;
+          --border:#E0D9F5; --border-soft:#EDE9F8;
+          --sb-bg:#0F0A1E;
+          --purple:#6B21E8; --purple-dk:#3D0E8A; --purple-lt:#8B5CF6;
+          --purple-dim:rgba(107,33,232,0.10); --purple-glow:rgba(107,33,232,0.20);
+          --accent:#C4A0FF;
+          --text:#1a1a2e; --text-muted:#6B7280; --text-faint:#9B8EC4;
+          --danger:#B91C1C; --danger-bg:#FEF2F2; --danger-border:#FECACA;
+          --r-sm:6px; --r-md:10px; --r-lg:14px; --r-xl:20px;
+          --shadow-sm:0 1px 4px rgba(107,33,232,0.06);
+          --shadow-md:0 4px 16px rgba(107,33,232,0.10);
+          --shadow-lg:0 8px 32px rgba(0,0,0,0.18);
+          --font:'Plus Jakarta Sans',system-ui,sans-serif;
+          --mono:ui-monospace,'SF Mono',Menlo,monospace;
         }
 
         body {
-            font-family: var(--sans);
+            font-family: var(--font);
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
@@ -41,16 +41,16 @@
             align-items: center;
             padding: 0 32px;
             height: 60px;
-            background: #3D0E8A;
-            border-bottom: 1px solid #2d0a6b;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+            background: var(--sb-bg);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            box-shadow: var(--shadow-lg);
         }
 
         .logo {
             font-size: 22px;
             font-weight: 800;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #C4A0FF, #fff);
+            background: linear-gradient(135deg, #C4A0FF, #A78BFA);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -71,14 +71,14 @@
         .pedido-badge span { color: #C4A0FF; }
 
         .btn-logout {
-            font-family: var(--sans);
+            font-family: var(--font);
             font-size: 12px;
             font-weight: 600;
-            color: #C4A0FF;
+            color: var(--accent);
             background: rgba(107,33,232,0.15);
             border: 1px solid rgba(107,33,232,0.3);
             padding: 7px 14px;
-            border-radius: 8px;
+            border-radius: var(--r-md);
             text-decoration: none;
             transition: background 0.2s;
             cursor: pointer;
@@ -122,7 +122,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: var(--muted);
+            color: var(--text-faint);
         }
 
         .card-body { padding: 20px 24px; }
@@ -141,7 +141,7 @@
             align-items: flex-start;
             gap: 10px;
             font-size: 13px;
-            color: var(--muted);
+            color: var(--text-faint);
         }
 
         .info-list li strong {
@@ -158,7 +158,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 12px;
-            color: var(--muted);
+            color: var(--text-faint);
             padding: 4px 0;
         }
 
@@ -211,7 +211,7 @@
 
         .ipo-desglose {
             font-size: 12px;
-            color: var(--muted);
+            color: var(--text-faint);
             display: flex;
             justify-content: space-between;
             margin-bottom: 4px;
@@ -226,7 +226,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 2px;
-            color: var(--muted);
+            color: var(--text-faint);
             margin-bottom: 6px;
             text-align: center;
         }
@@ -248,7 +248,7 @@
             border: none;
             border-radius: 10px;
             padding: 14px;
-            font-family: var(--sans);
+            font-family: var(--font);
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
@@ -271,7 +271,7 @@
             border: none;
             border-radius: 10px;
             padding: 14px;
-            font-family: var(--sans);
+            font-family: var(--font);
             font-size: 14px;
             font-weight: 800;
             cursor: pointer;
@@ -291,7 +291,7 @@
         .hint-text {
             text-align: center;
             font-size: 11px;
-            color: var(--muted);
+            color: var(--text-faint);
             margin-top: 10px;
             line-height: 1.5;
         }
@@ -300,7 +300,7 @@
 
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
 
-        thead tr { border-bottom: 1px solid var(--border-hot); }
+        thead tr { border-bottom: 1px solid var(--border); }
 
         thead th {
             padding: 12px 16px;
@@ -309,7 +309,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            color: var(--muted);
+            color: var(--text-faint);
             white-space: nowrap;
         }
 
@@ -327,7 +327,7 @@
         tbody td.center { text-align: center; }
 
         .producto-nombre { font-weight: 600; font-size: 14px; }
-        .precio-unit { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+        .precio-unit { font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
 
         .actions-cell { display: flex; gap: 6px; align-items: center; justify-content: flex-end; }
 
@@ -347,7 +347,7 @@
         .small-input:focus { border-color: var(--purple); }
 
         .btn {
-            font-family: var(--sans);
+            font-family: var(--font);
             font-size: 11px;
             font-weight: 700;
             padding: 5px 11px;
@@ -392,7 +392,7 @@
             border: 1px solid #D4C9F0;
             border-radius: 8px;
             font-size: 13px;
-            font-family: var(--sans);
+            font-family: var(--font);
             color: var(--text);
             box-sizing: border-box;
             outline: none;
@@ -441,7 +441,7 @@
 
         .btn-crear:hover { background: var(--purple-lt); }
 
-        .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+        .empty-state { text-align: center; padding: 48px 24px; color: var(--text-faint); }
 
         .btn-reabrir {
             width: 100%;
@@ -450,7 +450,7 @@
             border: 1.5px solid var(--purple);
             border-radius: 10px;
             padding: 12px;
-            font-family: var(--sans);
+            font-family: var(--font);
             font-size: 13px;
             font-weight: 700;
             cursor: pointer;
@@ -458,7 +458,7 @@
         }
 
         .btn-reabrir:hover { background: var(--purple); color: #fff; }
-        .empty-state .empty-icon { display: block; margin-bottom: 12px; opacity: 0.4; color: var(--muted); }
+        .empty-state .empty-icon { display: block; margin-bottom: 12px; opacity: 0.4; color: var(--text-faint); }
         .empty-state p { font-size: 14px; }
 
         .live-badge {
@@ -660,7 +660,7 @@
             border: 1.5px solid #e9d5ff;
             border-radius: 9px;
             font-size: 14px;
-            font-family: var(--sans);
+            font-family: var(--font);
             box-sizing: border-box;
             margin-bottom: 16px;
         }
@@ -787,7 +787,7 @@
 <div id="toast-efectivo" style="
     position:fixed; bottom:24px; right:24px; z-index:9999;
     background:#16a34a; color:#fff; border-radius:12px;
-    padding:14px 20px; font-family:var(--sans); font-size:14px; font-weight:700;
+    padding:14px 20px; font-family:var(--font); font-size:14px; font-weight:700;
     box-shadow:0 4px 20px rgba(0,0,0,0.18); display:flex; align-items:center; gap:10px;
     animation: slideIn 0.3s ease;">
     ✓ Pago en efectivo registrado — {{ '$' . number_format(session('success_efectivo'), 0, ',', '.') }}
@@ -1025,7 +1025,7 @@
                             🔓 Reabrir pedido
                         </button>
                     </form>
-                    <p style="font-size:11px; color:var(--muted); margin-top:10px; line-height:1.5;">
+                    <p style="font-size:11px; color:var(--text-faint); margin-top:10px; line-height:1.5;">
                         Úsalo si el cliente pide algo adicional después de haber pagado.
                     </p>
                 </div>
