@@ -7,6 +7,7 @@ use App\Models\Mesa;
 use App\Models\Pedido;
 use App\Models\Producto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MeseroController extends Controller
@@ -90,7 +91,7 @@ class MeseroController extends Controller
 
         $request->validate([
             'id_mesas'   => ['required', 'array', 'min:1'],
-            'id_mesas.*' => ['integer', 'exists:mesas,id_mesa'],
+            'id_mesas.*' => ['integer'],
         ]);
         $ids = $request->input('id_mesas');
 
@@ -105,25 +106,27 @@ class MeseroController extends Controller
         $unidas   = [];
         $omitidas = [];
 
-        foreach ($ids as $id) {
-            $secundaria = Mesa::where('id_mesa', $id)
-                ->where('id_negocio', $negocio->id_negocio)
-                ->first();
+        DB::transaction(function () use ($ids, $mesa, $negocio, &$unidas, &$omitidas) {
+            foreach ($ids as $id) {
+                $secundaria = Mesa::where('id_mesa', $id)
+                    ->where('id_negocio', $negocio->id_negocio)
+                    ->first();
 
-            if (! $secundaria
-                || $secundaria->id_mesa === $mesa->id_mesa
-                || $secundaria->estaUnida()
-                || $secundaria->estaOcupada()
-                || $secundaria->mesasUnidas()->exists()) {
-                if ($secundaria) {
-                    $omitidas[] = $secundaria->nombre_display;
+                if (! $secundaria
+                    || $secundaria->id_mesa === $mesa->id_mesa
+                    || $secundaria->estaUnida()
+                    || $secundaria->estaOcupada()
+                    || $secundaria->mesasUnidas()->exists()) {
+                    if ($secundaria) {
+                        $omitidas[] = $secundaria->nombre_display;
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            $secundaria->update(['mesa_principal_id' => $mesa->id_mesa]);
-            $unidas[] = $secundaria->nombre_display;
-        }
+                $secundaria->update(['mesa_principal_id' => $mesa->id_mesa]);
+                $unidas[] = $secundaria->nombre_display;
+            }
+        });
 
         if (empty($unidas)) {
             $msg = '❌ Ninguna mesa pudo unirse.' . (! empty($omitidas) ? ' Omitidas: ' . implode(', ', $omitidas) : '');
