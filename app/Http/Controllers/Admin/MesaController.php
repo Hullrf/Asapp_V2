@@ -115,14 +115,11 @@ class MesaController extends Controller
                 : back()->with('message', $msg);
         }
 
-        $ids = array_filter((array) $request->input('id_mesas', []), 'is_numeric');
-
-        if (empty($ids)) {
-            $msg = '❌ Selecciona al menos una mesa.';
-            return $request->ajax()
-                ? response()->json(['success' => false, 'message' => $msg], 422)
-                : back()->with('message', $msg);
-        }
+        $request->validate([
+            'id_mesas'   => ['required', 'array', 'min:1'],
+            'id_mesas.*' => ['integer'],
+        ]);
+        $ids = $request->input('id_mesas');
 
         $unidas   = [];
         $omitidas = [];
@@ -137,7 +134,9 @@ class MesaController extends Controller
                 || $secundaria->estaUnida()
                 || $secundaria->estaOcupada()
                 || $secundaria->mesasUnidas()->exists()) {
-                $omitidas[] = $secundaria?->nombre_display ?? "#$id";
+                if ($secundaria) {
+                    $omitidas[] = $secundaria->nombre_display;
+                }
                 continue;
             }
 
