@@ -927,7 +927,7 @@ function actualizarBadgeStock() {
             'piso'   => optional($m->piso)->nombre ?? 'Sin piso',
         ]);
 @endphp
-const todasLasMesasData = @json($mesasParaUnir);
+var todasLasMesasData = @json($mesasParaUnir);
 var _unirBaseMesaId = null;
 
 function abrirModalUnir(mesaId, mesaNombre) {

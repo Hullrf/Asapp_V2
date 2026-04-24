@@ -127,6 +127,3 @@
             'piso'   => optional($m->piso)->nombre ?? 'Sin piso',
         ]);
 @endphp
-<script>
-var todasLasMesasData = @json($mesasParaModal);
-</script>
