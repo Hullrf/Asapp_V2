@@ -987,6 +987,10 @@ async function confirmarUnirGrupo() {
         .map(function(cb) { return cb.value; });
     if (!ids.length || !_unirBaseMesaId) return;
 
+    const btn = document.getElementById('modal-unir-confirmar');
+    btn.disabled    = true;
+    btn.textContent = 'Procesando…';
+
     const fd = new FormData();
     fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
     ids.forEach(function(id) { fd.append('id_mesas[]', id); });
@@ -998,6 +1002,15 @@ async function confirmarUnirGrupo() {
             body: fd,
         });
         const data = await res.json();
+        if (res.status === 422) {
+            const msg = data.errors
+                ? Object.values(data.errors).flat().join(' · ')
+                : (data.message || 'Error de validación');
+            showToast('❌ ' + msg, false);
+            btn.disabled = false;
+            actualizarContadorUnir();
+            return;
+        }
         showToast(data.message, data.success !== false);
         if (data.success !== false) {
             cerrarModalUnir();
@@ -1005,11 +1018,19 @@ async function confirmarUnirGrupo() {
         }
     } catch {
         showToast('❌ Error de conexión', false);
+        btn.disabled = false;
+        actualizarContadorUnir();
     }
 }
 
 document.getElementById('modal-unir-grupo').addEventListener('click', function(e) {
     if (e.target === this) cerrarModalUnir();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('modal-unir-grupo').style.display === 'flex') {
+        cerrarModalUnir();
+    }
 });
 </script>
 
