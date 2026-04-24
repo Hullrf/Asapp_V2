@@ -88,6 +88,12 @@ class MeseroController extends Controller
         $this->autorizarMesa($mesa);
         $negocio = auth()->user()->negocio;
 
+        $request->validate([
+            'id_mesas'   => ['required', 'array', 'min:1'],
+            'id_mesas.*' => ['integer', 'exists:mesas,id_mesa'],
+        ]);
+        $ids = $request->input('id_mesas');
+
         if ($mesa->estaUnida()) {
             return response()->json(['success' => false, 'message' => '❌ Esta mesa ya es secundaria. Sepárala primero.'], 422);
         }
@@ -95,12 +101,6 @@ class MeseroController extends Controller
         if ($mesa->estaOcupada()) {
             return response()->json(['success' => false, 'message' => '❌ La mesa base tiene un pedido activo.'], 422);
         }
-
-        $request->validate([
-            'id_mesas'   => ['required', 'array', 'min:1'],
-            'id_mesas.*' => ['integer'],
-        ]);
-        $ids = $request->input('id_mesas');
 
         $unidas   = [];
         $omitidas = [];
