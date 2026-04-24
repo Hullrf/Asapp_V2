@@ -919,7 +919,7 @@ function actualizarBadgeStock() {
 // ── Unir mesas multi-select ────────────────────────────────────────────
 @php
     $mesasParaUnir = $mesas
-        ->filter(fn($m) => ! $m->estaUnida() && $m->mesasUnidas->isEmpty())
+        ->filter(fn($m) => ! $m->estaUnida() && $m->mesasUnidas->isEmpty() && $m->pedidos->isEmpty())
         ->values()
         ->map(fn($m) => [
             'id'     => $m->id_mesa,
