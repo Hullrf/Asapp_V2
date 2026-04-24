@@ -917,16 +917,17 @@ function actualizarBadgeStock() {
 }
 
 // ── Unir mesas multi-select ────────────────────────────────────────────
-const todasLasMesasData = @json(
-    $mesas
+@php
+    $mesasParaUnir = $mesas
         ->filter(fn($m) => ! $m->estaUnida() && $m->mesasUnidas->isEmpty())
         ->values()
         ->map(fn($m) => [
             'id'     => $m->id_mesa,
             'nombre' => $m->nombre_display,
             'piso'   => optional($m->piso)->nombre ?? 'Sin piso',
-        ])
-);
+        ]);
+@endphp
+const todasLasMesasData = @json($mesasParaUnir);
 var _unirBaseMesaId = null;
 
 function abrirModalUnir(mesaId, mesaNombre) {
