@@ -502,11 +502,27 @@
                                         </a>
                                     @else
                                         @if (! $esSecundaria)
+                                            @php
+                                                $candidatasMesero = $mesas->filter(fn($m) =>
+                                                    $m->id_mesa !== $mesa->id_mesa &&
+                                                    ! $m->estaUnida() &&
+                                                    $m->pedidos->isEmpty() &&
+                                                    $m->mesasUnidas->isEmpty()
+                                                );
+                                            @endphp
                                             <button class="btn btn-primary btn-sm"
                                                     onclick="abrirNuevoPedido({{ $mesa->id_mesa }}, '{{ addslashes($nombreDisplay) }}')">
                                                 <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
                                                 Nuevo pedido
                                             </button>
+                                            @if ($candidatasMesero->isNotEmpty())
+                                                <button class="btn btn-outline btn-sm"
+                                                        style="margin-top:5px;"
+                                                        onclick="abrirModalUnirMesero({{ $mesa->id_mesa }}, '{{ addslashes($nombreDisplay) }}')">
+                                                    <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"/></svg>
+                                                    Unir mesas
+                                                </button>
+                                            @endif
                                         @endif
                                     @endif
                                 </div>
@@ -569,6 +585,21 @@
 
 {{-- TOAST --}}
 <div id="mesero-toast"></div>
+
+{{-- MODAL UNIR MESAS (mesero) --}}
+<div id="modal-unir-mesero" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:var(--r-xl);padding:24px;width:min(420px,92vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--border);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 id="mu-titulo" style="font-size:15px;font-weight:700;color:var(--text);margin:0;"></h3>
+      <button onclick="cerrarModalUnirMesero()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:22px;line-height:1;padding:0 4px;">×</button>
+    </div>
+    <div id="mu-lista" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:4px;margin-bottom:16px;min-height:40px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="cerrarModalUnirMesero()" style="padding:8px 14px;border-radius:var(--r-md);font-size:13px;font-weight:600;border:1.5px solid var(--border);background:none;color:var(--text-muted);cursor:pointer;">Cancelar</button>
+      <button id="mu-confirmar" onclick="confirmarUnirMesero()" style="padding:8px 14px;border-radius:var(--r-md);font-size:13px;font-weight:600;background:var(--purple);color:#fff;border:none;cursor:pointer;" disabled>Confirmar unión (0)</button>
+    </div>
+  </div>
+</div>
 
 {{-- MODAL NUEVO PEDIDO --}}
 <div class="modal-overlay" id="modal-np">
@@ -774,6 +805,137 @@ function showToast(msg, ok = true) {
 // ── Cerrar modal al clic fuera ────────────────────────────────────────
 document.getElementById('modal-np').addEventListener('click', function(e) {
     if (e.target === this) cerrarNuevoPedido();
+});
+
+// ── Unir mesas multi-select (mesero) ──────────────────────────────────
+var _muBaseMesaId = null;
+
+const todasLasMesasDataMesero = @json(
+    $mesas
+        ->filter(fn($m) => ! $m->estaUnida() && $m->pedidos->isEmpty() && $m->mesasUnidas->isEmpty())
+        ->values()
+        ->map(fn($m) => [
+            'id'     => $m->id_mesa,
+            'nombre' => $m->nombre_display,
+            'piso'   => optional($m->piso)->nombre ?? 'Sin piso',
+        ])
+);
+
+function abrirModalUnirMesero(mesaId, mesaNombre) {
+    _muBaseMesaId = mesaId;
+    document.getElementById('mu-titulo').textContent = 'Unir mesas a ' + mesaNombre;
+
+    const candidatas = todasLasMesasDataMesero.filter(function(m) { return m.id !== mesaId; });
+    const lista      = document.getElementById('mu-lista');
+    lista.innerHTML  = '';
+
+    if (candidatas.length === 0) {
+        lista.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No hay mesas libres disponibles.</p>';
+    } else {
+        const porPiso = {};
+        candidatas.forEach(function(m) {
+            if (!porPiso[m.piso]) porPiso[m.piso] = [];
+            porPiso[m.piso].push(m);
+        });
+        Object.keys(porPiso).forEach(function(piso) {
+            const lbl = document.createElement('p');
+            lbl.style.cssText = 'font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);margin:8px 0 4px;';
+            lbl.textContent   = piso;
+            lista.appendChild(lbl);
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+            porPiso[piso].forEach(function(m) {
+                const chip = document.createElement('label');
+                chip.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;font-size:12px;font-weight:500;color:var(--text);background:var(--surface2);transition:border-color 0.15s,background 0.15s;';
+                const cb = document.createElement('input');
+                cb.type  = 'checkbox';
+                cb.value = m.id;
+                cb.style.accentColor = 'var(--purple)';
+                cb.addEventListener('change', function() {
+                    chip.style.borderColor = cb.checked ? 'var(--purple)' : 'var(--border)';
+                    chip.style.background  = cb.checked ? 'var(--purple-dim)' : 'var(--surface2)';
+                    chip.style.color       = cb.checked ? 'var(--purple)' : 'var(--text)';
+                    actualizarContadorMesero();
+                });
+                chip.appendChild(cb);
+                chip.appendChild(document.createTextNode(' ' + m.nombre));
+                grid.appendChild(chip);
+            });
+            lista.appendChild(grid);
+        });
+    }
+
+    actualizarContadorMesero();
+    document.getElementById('modal-unir-mesero').style.display = 'flex';
+}
+
+function cerrarModalUnirMesero() {
+    document.getElementById('modal-unir-mesero').style.display = 'none';
+    _muBaseMesaId = null;
+}
+
+function actualizarContadorMesero() {
+    const n   = document.querySelectorAll('#mu-lista input[type=checkbox]:checked').length;
+    const btn = document.getElementById('mu-confirmar');
+    btn.textContent = 'Confirmar unión (' + n + ')';
+    btn.disabled    = n === 0;
+}
+
+async function confirmarUnirMesero() {
+    const ids = Array.from(document.querySelectorAll('#mu-lista input[type=checkbox]:checked'))
+        .map(function(cb) { return cb.value; });
+    if (!ids.length || !_muBaseMesaId) return;
+
+    const btn = document.getElementById('mu-confirmar');
+    btn.disabled    = true;
+    btn.textContent = 'Procesando…';
+
+    const fd = new FormData();
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+    ids.forEach(function(id) { fd.append('id_mesas[]', id); });
+
+    try {
+        const res  = await fetch('/mesero/mesas/' + _muBaseMesaId + '/unir-grupo', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            body: fd,
+        });
+        const data = await res.json();
+
+        if (res.status === 422) {
+            const msg = data.errors
+                ? Object.values(data.errors).flat().join(' · ')
+                : (data.message || 'Error de validación');
+            showToast('❌ ' + msg, false);
+            btn.disabled    = false;
+            actualizarContadorMesero();
+            return;
+        }
+
+        showToast(data.message, data.success !== false);
+        if (data.success !== false) {
+            cerrarModalUnirMesero();
+            setTimeout(function() { location.reload(); }, 800);
+        } else {
+            btn.disabled = false;
+            actualizarContadorMesero();
+        }
+    } catch {
+        showToast('❌ Error de conexión', false);
+        btn.disabled = false;
+        actualizarContadorMesero();
+    }
+}
+
+document.getElementById('modal-unir-mesero').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalUnirMesero();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('modal-unir-mesero').style.display === 'flex') {
+        cerrarModalUnirMesero();
+    }
 });
 </script>
 
