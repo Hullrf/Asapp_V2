@@ -88,7 +88,7 @@ Route::middleware('admin')->prefix('panel')->name('panel.')->group(function () {
     Route::post('/mesas',                    [MesaController::class, 'store'])->name('mesas.store');
     Route::put('/mesas/{mesa}',              [MesaController::class, 'update'])->name('mesas.update');
     Route::delete('/mesas/{mesa}',           [MesaController::class, 'destroy'])->name('mesas.destroy');
-    Route::post('/mesas/{mesa}/unir',        [MesaController::class, 'unir'])->name('mesas.unir');
+    Route::post('/mesas/{mesa}/unir-grupo',  [MesaController::class, 'unirGrupo'])->name('mesas.unir-grupo');
     Route::post('/mesas/{mesa}/separar',     [MesaController::class, 'separar'])->name('mesas.separar');
 
     // Pedidos

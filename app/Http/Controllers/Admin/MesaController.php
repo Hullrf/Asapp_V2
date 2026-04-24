@@ -97,32 +97,66 @@ class MesaController extends Controller
             : back()->with('message', $msg);
     }
 
-    public function unir(Request $request, Mesa $mesa)
+    public function unirGrupo(Request $request, Mesa $mesa)
     {
         $this->autorizarMesa($mesa);
-        $request->validate(['id_mesa_principal' => ['required', 'integer']]);
 
-        $principal = Mesa::findOrFail($request->id_mesa_principal);
-        $this->autorizarMesa($principal);
-
-        $checks = [
-            $mesa->id_mesa === $principal->id_mesa           => '❌ Una mesa no puede unirse a sí misma.',
-            $mesa->estaUnida()                                => '❌ Esta mesa ya está unida a otra. Sepárala primero.',
-            $mesa->mesasUnidas()->exists()                    => '❌ Esta mesa ya tiene mesas unidas. No puede unirse a otra.',
-            $principal->estaUnida()                           => '❌ La mesa seleccionada ya está unida a otra. No se pueden encadenar uniones.',
-            $mesa->estaOcupada() || $principal->estaOcupada() => '❌ Solo se pueden unir mesas que estén libres.',
-        ];
-
-        foreach ($checks as $condition => $msg) {
-            if ($condition) {
-                return $request->ajax()
-                    ? response()->json(['success' => false, 'message' => $msg], 422)
-                    : back()->with('message', $msg);
-            }
+        if ($mesa->estaUnida()) {
+            $msg = '❌ Esta mesa ya es secundaria de otra. Sepárala primero.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
         }
 
-        $mesa->update(['mesa_principal_id' => $principal->id_mesa]);
-        $msg = "✅ {$mesa->nombre_display} unida a {$principal->nombre_display}.";
+        if ($mesa->estaOcupada()) {
+            $msg = '❌ La mesa base tiene un pedido activo.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
+        }
+
+        $ids = array_filter((array) $request->input('id_mesas', []), 'is_numeric');
+
+        if (empty($ids)) {
+            $msg = '❌ Selecciona al menos una mesa.';
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
+        }
+
+        $unidas   = [];
+        $omitidas = [];
+
+        foreach ($ids as $id) {
+            $secundaria = Mesa::where('id_mesa', $id)
+                ->where('id_negocio', $mesa->id_negocio)
+                ->first();
+
+            if (! $secundaria
+                || $secundaria->id_mesa === $mesa->id_mesa
+                || $secundaria->estaUnida()
+                || $secundaria->estaOcupada()
+                || $secundaria->mesasUnidas()->exists()) {
+                $omitidas[] = $secundaria?->nombre_display ?? "#$id";
+                continue;
+            }
+
+            $secundaria->update(['mesa_principal_id' => $mesa->id_mesa]);
+            $unidas[] = $secundaria->nombre_display;
+        }
+
+        if (empty($unidas)) {
+            $msg = '❌ Ninguna mesa pudo unirse.' . (! empty($omitidas) ? ' Omitidas: ' . implode(', ', $omitidas) : '');
+            return $request->ajax()
+                ? response()->json(['success' => false, 'message' => $msg], 422)
+                : back()->with('message', $msg);
+        }
+
+        $msg = '✅ Unidas a ' . $mesa->nombre_display . ': ' . implode(', ', $unidas);
+        if (! empty($omitidas)) {
+            $msg .= '. Omitidas: ' . implode(', ', $omitidas);
+        }
+
         return $request->ajax()
             ? response()->json(['success' => true, 'message' => $msg])
             : back()->with('message', $msg);
