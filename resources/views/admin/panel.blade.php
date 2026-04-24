@@ -202,8 +202,12 @@ tbody tr:last-child { border-bottom:none; }
     background:var(--sb-bg); flex-shrink:0; position:sticky; top:0; z-index:50;
   }
   .m-logo { font-size:19px; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,#C4A0FF,#A78BFA); -webkit-background-clip:text; -webkit-text-fill-color:transparent; flex:1; }
-  .m-sede { font-size:11px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:5px; }
-  .m-sede-dot { width:6px; height:6px; border-radius:50%; background:#C4A0FF; }
+  .m-sede { font-size:11px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:5px; cursor:pointer; background:none; border:none; font-family:var(--font); padding:0; position:relative; }
+  .m-sede-dot { width:6px; height:6px; border-radius:50%; background:#C4A0FF; flex-shrink:0; }
+  .m-sede-drop { display:none; position:absolute; top:calc(100% + 10px); right:0; background:#fff; border-radius:var(--r-lg); min-width:200px; box-shadow:var(--shadow-lg); z-index:500; overflow:hidden; border:1px solid var(--border); }
+  .m-sede-drop.open { display:block; }
+  .m-logout-btn { background:none; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:6px; color:rgba(255,255,255,0.5); border-radius:var(--r-sm); flex-shrink:0; }
+  .m-logout-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
 
   .m-tabs {
     display:flex; background:var(--surface); border-bottom:1px solid var(--border);
@@ -296,10 +300,32 @@ tbody tr:last-child { border-bottom:none; }
 {{-- TOPBAR MÓVIL --}}
 <div class="m-topbar">
     <div class="m-logo">ASAPP</div>
-    <div class="m-sede">
+    <button class="m-sede" id="mSedeBtn" type="button" onclick="toggleMSedeDrop(event)">
         <span class="m-sede-dot"></span>
         {{ $negocio->nombre }}
-    </div>
+        <svg viewBox="0 0 20 20" fill="currentColor" width="10" height="10" style="opacity:0.5;margin-left:2px;"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+        <div class="m-sede-drop" id="mSedeDrop">
+            <div class="sede-drop-title">Tus sedes</div>
+            @foreach ($todasLasSedes as $sede)
+                <a href="{{ route('panel.sedes.activar', $sede) }}"
+                   class="sede-item {{ $sede->id_negocio === $negocio->id_negocio ? 'activa' : '' }}">
+                    {{ $sede->nombre }}
+                    @if ($sede->id_negocio === $negocio->id_negocio) &nbsp;✓ @endif
+                </a>
+            @endforeach
+            <div class="sede-divider"></div>
+            <button type="button" class="sede-item sede-nueva"
+                    onclick="abrirNuevaSede(); document.getElementById('mSedeDrop').classList.remove('open');">
+                + Nueva sede
+            </button>
+        </div>
+    </button>
+    <form action="{{ route('logout') }}" method="POST" style="margin:0">
+        @csrf
+        <button type="submit" class="m-logout-btn" title="Cerrar sesión">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+    </form>
 </div>
 
 {{-- TABS MÓVIL --}}
@@ -696,7 +722,7 @@ function cerrarModal() {
     document.getElementById('qr-container').innerHTML = '';
 }
 
-// ── Sede switcher ─────────────────────────────────────────────────────
+// ── Sede switcher (desktop) ────────────────────────────────────────────
 const sedeBtn  = document.getElementById('sedeBtn');
 const sedeDrop = document.getElementById('sedeDrop');
 
@@ -707,11 +733,25 @@ sedeBtn.addEventListener('click', function (e) {
 
 document.addEventListener('click', function () {
     sedeDrop.classList.remove('open');
+    const md = document.getElementById('mSedeDrop');
+    if (md) md.classList.remove('open');
 });
 
 sedeDrop.addEventListener('click', function (e) {
     e.stopPropagation();
 });
+
+// ── Sede switcher (mobile) ─────────────────────────────────────────────
+function toggleMSedeDrop(e) {
+    e.stopPropagation();
+    const md = document.getElementById('mSedeDrop');
+    if (md) md.classList.toggle('open');
+}
+
+const mSedeDrop = document.getElementById('mSedeDrop');
+if (mSedeDrop) {
+    mSedeDrop.addEventListener('click', function (e) { e.stopPropagation(); });
+}
 
 // ── Modal nueva sede ──────────────────────────────────────────────────
 function abrirNuevaSede() {
