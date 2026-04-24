@@ -48,6 +48,7 @@ Route::post('/verificar-rol', [LoginController::class, 'verificarRol'])->name('v
 Route::middleware('mesero')->prefix('mesero')->name('mesero.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Mesero\MeseroController::class, 'index'])->name('index');
     Route::post('/pedidos', [\App\Http\Controllers\Mesero\MeseroController::class, 'storePedido'])->name('pedidos.store');
+    Route::post('/mesas/{mesa}/unir-grupo', [\App\Http\Controllers\Mesero\MeseroController::class, 'unirGrupo'])->name('mesas.unir-grupo');
 });
 
 // ── Admin (protegido con middleware 'admin') ──────────────────────────

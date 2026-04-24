@@ -82,4 +82,64 @@ class MeseroController extends Controller
             'factura_url' => route('factura.show', $pedido->id_pedido),
         ]);
     }
+
+    public function unirGrupo(Request $request, Mesa $mesa)
+    {
+        $this->autorizarMesa($mesa);
+        $negocio = auth()->user()->negocio;
+
+        if ($mesa->estaUnida()) {
+            return response()->json(['success' => false, 'message' => '❌ Esta mesa ya es secundaria. Sepárala primero.'], 422);
+        }
+
+        if ($mesa->estaOcupada()) {
+            return response()->json(['success' => false, 'message' => '❌ La mesa base tiene un pedido activo.'], 422);
+        }
+
+        $request->validate([
+            'id_mesas'   => ['required', 'array', 'min:1'],
+            'id_mesas.*' => ['integer'],
+        ]);
+        $ids = $request->input('id_mesas');
+
+        $unidas   = [];
+        $omitidas = [];
+
+        foreach ($ids as $id) {
+            $secundaria = Mesa::where('id_mesa', $id)
+                ->where('id_negocio', $negocio->id_negocio)
+                ->first();
+
+            if (! $secundaria
+                || $secundaria->id_mesa === $mesa->id_mesa
+                || $secundaria->estaUnida()
+                || $secundaria->estaOcupada()
+                || $secundaria->mesasUnidas()->exists()) {
+                if ($secundaria) {
+                    $omitidas[] = $secundaria->nombre_display;
+                }
+                continue;
+            }
+
+            $secundaria->update(['mesa_principal_id' => $mesa->id_mesa]);
+            $unidas[] = $secundaria->nombre_display;
+        }
+
+        if (empty($unidas)) {
+            $msg = '❌ Ninguna mesa pudo unirse.' . (! empty($omitidas) ? ' Omitidas: ' . implode(', ', $omitidas) : '');
+            return response()->json(['success' => false, 'message' => $msg], 422);
+        }
+
+        $msg = '✅ Unidas a ' . $mesa->nombre_display . ': ' . implode(', ', $unidas);
+        if (! empty($omitidas)) {
+            $msg .= '. Omitidas: ' . implode(', ', $omitidas);
+        }
+
+        return response()->json(['success' => true, 'message' => $msg]);
+    }
+
+    private function autorizarMesa(Mesa $mesa): void
+    {
+        abort_unless($mesa->id_negocio === auth()->user()->negocio->id_negocio, 403);
+    }
 }
