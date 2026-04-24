@@ -117,3 +117,15 @@
         </div>
     @endif
 @endif
+<script>
+var todasLasMesasData = @json(
+    $mesas
+        ->filter(fn($m) => ! $m->estaUnida() && $m->pedidos->isEmpty() && $m->mesasUnidas->isEmpty())
+        ->values()
+        ->map(fn($m) => [
+            'id'     => $m->id_mesa,
+            'nombre' => $m->nombre_display,
+            'piso'   => optional($m->piso)->nombre ?? 'Sin piso',
+        ])
+);
+</script>

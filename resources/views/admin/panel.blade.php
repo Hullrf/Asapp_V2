@@ -425,6 +425,21 @@ tbody tr:last-child { border-bottom:none; }
     <span class="swipe-dot"></span>
 </div>
 
+{{-- MODAL UNIR MESAS (multi-select) --}}
+<div id="modal-unir-grupo" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:var(--r-xl);padding:24px;width:min(420px,92vw);max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);border:1px solid var(--border);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <h3 id="modal-unir-titulo" style="font-size:15px;font-weight:700;color:var(--text);margin:0;"></h3>
+      <button onclick="cerrarModalUnir()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:22px;line-height:1;padding:0 4px;">×</button>
+    </div>
+    <div id="modal-unir-lista" style="overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:4px;margin-bottom:16px;min-height:40px;"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button onclick="cerrarModalUnir()" class="btn btn-outline btn-sm">Cancelar</button>
+      <button id="modal-unir-confirmar" onclick="confirmarUnirGrupo()" class="btn btn-primary btn-sm" disabled>Confirmar unión (0)</button>
+    </div>
+  </div>
+</div>
+
 {{-- TOAST --}}
 <div id="panel-toast"></div>
 
@@ -900,6 +915,102 @@ function actualizarBadgeStock() {
     badge.textContent    = n;
     badge.style.display  = n > 0 ? '' : 'none';
 }
+
+// ── Unir mesas multi-select ────────────────────────────────────────────
+var todasLasMesasData = [];
+var _unirBaseMesaId   = null;
+
+function abrirModalUnir(mesaId, mesaNombre) {
+    _unirBaseMesaId = mesaId;
+    document.getElementById('modal-unir-titulo').textContent = 'Unir mesas a ' + mesaNombre;
+
+    const candidatas = todasLasMesasData.filter(function(m) { return m.id !== mesaId; });
+    const lista      = document.getElementById('modal-unir-lista');
+    lista.innerHTML  = '';
+
+    if (candidatas.length === 0) {
+        lista.innerHTML = '<p style="color:var(--text-muted);font-size:13px;">No hay mesas libres disponibles.</p>';
+    } else {
+        const porPiso = {};
+        candidatas.forEach(function(m) {
+            if (!porPiso[m.piso]) porPiso[m.piso] = [];
+            porPiso[m.piso].push(m);
+        });
+        Object.keys(porPiso).forEach(function(piso) {
+            const lbl = document.createElement('p');
+            lbl.style.cssText = 'font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-faint);margin:8px 0 4px;';
+            lbl.textContent   = piso;
+            lista.appendChild(lbl);
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+            porPiso[piso].forEach(function(m) {
+                const chip = document.createElement('label');
+                chip.style.cssText = 'display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1.5px solid var(--border);border-radius:var(--r-md);cursor:pointer;font-size:12px;font-weight:500;color:var(--text);background:var(--surface2);transition:border-color 0.15s,background 0.15s;';
+                const cb = document.createElement('input');
+                cb.type  = 'checkbox';
+                cb.value = m.id;
+                cb.style.accentColor = 'var(--purple)';
+                cb.addEventListener('change', function() {
+                    chip.style.borderColor = cb.checked ? 'var(--purple)' : 'var(--border)';
+                    chip.style.background  = cb.checked ? 'var(--purple-dim)' : 'var(--surface2)';
+                    chip.style.color       = cb.checked ? 'var(--purple)' : 'var(--text)';
+                    actualizarContadorUnir();
+                });
+                chip.appendChild(cb);
+                chip.appendChild(document.createTextNode(' ' + m.nombre));
+                grid.appendChild(chip);
+            });
+            lista.appendChild(grid);
+        });
+    }
+
+    actualizarContadorUnir();
+    const modal = document.getElementById('modal-unir-grupo');
+    modal.style.display = 'flex';
+}
+
+function cerrarModalUnir() {
+    document.getElementById('modal-unir-grupo').style.display = 'none';
+    _unirBaseMesaId = null;
+}
+
+function actualizarContadorUnir() {
+    const n   = document.querySelectorAll('#modal-unir-lista input[type=checkbox]:checked').length;
+    const btn = document.getElementById('modal-unir-confirmar');
+    btn.textContent = 'Confirmar unión (' + n + ')';
+    btn.disabled    = n === 0;
+}
+
+async function confirmarUnirGrupo() {
+    const ids = Array.from(document.querySelectorAll('#modal-unir-lista input[type=checkbox]:checked'))
+        .map(function(cb) { return cb.value; });
+    if (!ids.length || !_unirBaseMesaId) return;
+
+    const fd = new FormData();
+    fd.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+    ids.forEach(function(id) { fd.append('id_mesas[]', id); });
+
+    try {
+        const res  = await fetch('/panel/mesas/' + _unirBaseMesaId + '/unir-grupo', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+            body: fd,
+        });
+        const data = await res.json();
+        showToast(data.message, data.success !== false);
+        if (data.success !== false) {
+            cerrarModalUnir();
+            await refreshPartials(['mesas']);
+        }
+    } catch {
+        showToast('❌ Error de conexión', false);
+    }
+}
+
+document.getElementById('modal-unir-grupo').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalUnir();
+});
 </script>
 
 </body>

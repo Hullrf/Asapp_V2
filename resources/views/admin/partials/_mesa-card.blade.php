@@ -8,10 +8,11 @@
     $ocupada       = (bool) $pedidoActivo;
     $urlQr         = route('mesa.publica', $mesa->codigo_qr);
     $nombreDisplay = $mesa->nombre_display;
-    $candidatas    = $mesas->filter(fn($m) =>
+    $candidatasMesas = $mesas->filter(fn($m) =>
         $m->id_mesa !== $mesa->id_mesa &&
         ! $m->estaUnida() &&
-        $m->pedidos->isEmpty()
+        $m->pedidos->isEmpty() &&
+        $m->mesasUnidas->isEmpty()
     );
 @endphp
 
@@ -105,23 +106,15 @@
             @endif
         </div>
 
-        {{-- Unir mesa (libre, no secundaria, hay candidatas) --}}
-        @if (! $ocupada && ! $esSecundaria && $mesa->mesasUnidas->isEmpty() && $candidatas->isNotEmpty())
-            <form action="{{ route('panel.mesas.unir', $mesa) }}" method="POST"
-                  data-ajax data-refresh="mesas"
-                  style="display:flex;gap:6px;">
-                @csrf
-                <select name="id_mesa_principal" required style="flex:1;font-size:12px;padding:5px 8px;">
-                    <option value="">— Unir con —</option>
-                    @foreach ($candidatas as $c)
-                        <option value="{{ $c->id_mesa }}">{{ $c->nombre_display }}</option>
-                    @endforeach
-                </select>
-                <button type="submit" class="btn btn-ghost btn-sm" title="Unir mesa">
-                    <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"/></svg>
-                    Unir
-                </button>
-            </form>
+        {{-- Unir mesas (libre, no secundaria, hay candidatas disponibles) --}}
+        @if (! $ocupada && ! $esSecundaria && $candidatasMesas->isNotEmpty())
+            <button type="button"
+                    class="btn btn-ghost btn-sm"
+                    style="width:100%;justify-content:center;"
+                    onclick="abrirModalUnir({{ $mesa->id_mesa }}, '{{ addslashes($nombreDisplay) }}')">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"/></svg>
+                Unir mesas
+            </button>
         @endif
 
     </div>
