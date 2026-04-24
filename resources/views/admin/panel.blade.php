@@ -202,7 +202,8 @@ tbody tr:last-child { border-bottom:none; }
     background:var(--sb-bg); flex-shrink:0; position:sticky; top:0; z-index:50;
   }
   .m-logo { font-size:19px; font-weight:800; letter-spacing:-0.5px; background:linear-gradient(135deg,#C4A0FF,#A78BFA); -webkit-background-clip:text; -webkit-text-fill-color:transparent; flex:1; }
-  .m-sede { font-size:11px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:5px; cursor:pointer; background:none; border:none; font-family:var(--font); padding:0; position:relative; }
+  .m-sede-wrap { position:relative; }
+  .m-sede { font-size:11px; color:rgba(255,255,255,0.5); display:flex; align-items:center; gap:5px; cursor:pointer; background:none; border:none; font-family:var(--font); padding:0; }
   .m-sede-dot { width:6px; height:6px; border-radius:50%; background:#C4A0FF; flex-shrink:0; }
   .m-sede-drop { display:none; position:absolute; top:calc(100% + 10px); right:0; background:#fff; border-radius:var(--r-lg); min-width:200px; box-shadow:var(--shadow-lg); z-index:500; overflow:hidden; border:1px solid var(--border); }
   .m-sede-drop.open { display:block; }
@@ -300,10 +301,12 @@ tbody tr:last-child { border-bottom:none; }
 {{-- TOPBAR MÓVIL --}}
 <div class="m-topbar">
     <div class="m-logo">ASAPP</div>
-    <button class="m-sede" id="mSedeBtn" type="button" onclick="toggleMSedeDrop(event)">
-        <span class="m-sede-dot"></span>
-        {{ $negocio->nombre }}
-        <svg viewBox="0 0 20 20" fill="currentColor" width="10" height="10" style="opacity:0.5;margin-left:2px;"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+    <div class="m-sede-wrap">
+        <button class="m-sede" id="mSedeBtn" type="button" onclick="toggleMSedeDrop(event)">
+            <span class="m-sede-dot"></span>
+            {{ $negocio->nombre }}
+            <svg viewBox="0 0 20 20" fill="currentColor" width="10" height="10" style="opacity:0.5;margin-left:2px;"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+        </button>
         <div class="m-sede-drop" id="mSedeDrop">
             <div class="sede-drop-title">Tus sedes</div>
             @foreach ($todasLasSedes as $sede)
@@ -319,7 +322,7 @@ tbody tr:last-child { border-bottom:none; }
                 + Nueva sede
             </button>
         </div>
-    </button>
+    </div>
     <form action="{{ route('logout') }}" method="POST" style="margin:0">
         @csrf
         <button type="submit" class="m-logout-btn" title="Cerrar sesión">
